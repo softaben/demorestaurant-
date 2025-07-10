@@ -391,14 +391,6 @@
       background: #3d8b40;
     }
 
-    .action-btn.print {
-      background: var(--gold);
-    }
-
-    .action-btn.print:hover {
-      background: #e6c125;
-    }
-
     /* مودال تفاصيل الطلب */
     .modal-overlay {
       position: fixed;
@@ -539,6 +531,50 @@
       border-color: var(--secondary);
     }
 
+    /* زر طباعة التاريخ */
+    .print-history-btn {
+      background: var(--secondary);
+      color: var(--white);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: 'Tajawal', sans-serif;
+      font-weight: 500;
+      transition: var(--transition);
+      margin-left: 0.5rem;
+    }
+
+    .print-history-btn:hover {
+      background: #0d2b4f;
+    }
+
+    /* زر الإشعارات */
+    .notifications-btn {
+      position: relative;
+      background: none;
+      border: none;
+      color: var(--white);
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-left: 1rem;
+    }
+
+    .notifications-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--primary);
+      color: var(--white);
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     /* تنسيقات للجوال */
     @media (max-width: 768px) {
       .admin-header .container {
@@ -575,38 +611,23 @@
       .status-filter {
         flex-wrap: wrap;
       }
-      
-      .form-actions {
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      
-      .form-actions .btn {
-        width: 100%;
-        justify-content: center;
-      }
     }
-    
-    /* طباعة الفاتورة */
+
+    /* طباعة التاريخ */
     @media print {
       body * {
         visibility: hidden;
       }
-      .modal, .modal * {
+      .print-section, .print-section * {
         visibility: visible;
       }
-      .modal {
+      .print-section {
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
-        height: auto;
-        max-width: 100%;
-        max-height: 100%;
-        box-shadow: none;
-        transform: none !important;
       }
-      .form-actions {
+      .no-print {
         display: none;
       }
     }
@@ -633,6 +654,10 @@
           <i class="fas fa-list"></i>
           <span>قائمة الطعام</span>
         </a>
+        <button class="notifications-btn" id="notificationsBtn">
+          <i class="fas fa-bell"></i>
+          <span class="notifications-badge" id="notificationsBadge" style="display: none;">0</span>
+        </button>
         <button class="logout-btn">
           <i class="fas fa-sign-out-alt"></i>
           <span>تسجيل الخروج</span>
@@ -650,6 +675,10 @@
           <button class="btn btn-primary" id="refreshOrders">
             <i class="fas fa-sync-alt"></i>
             تحديث الطلبات
+          </button>
+          <button class="btn btn-secondary" id="printHistoryBtn">
+            <i class="fas fa-print"></i>
+            طباعة تاريخ 24 ساعة
           </button>
         </div>
       </div>
@@ -783,10 +812,35 @@
           <button type="button" class="btn btn-danger" id="cancelOrderBtn">
             <i class="fas fa-times"></i> إلغاء الطلب
           </button>
-          <button type="button" class="btn btn-primary" id="printOrderBtn">
-            <i class="fas fa-print"></i> طباعة الفاتورة
-          </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- طباعة تاريخ 24 ساعة -->
+  <div id="printSection" class="print-section" style="display: none;">
+    <div style="padding: 20px; font-family: 'Tajawal', sans-serif;">
+      <h1 style="text-align: center; margin-bottom: 20px;">تقرير طلبات 24 ساعة</h1>
+      <p style="text-align: center; margin-bottom: 30px;" id="printDateRange"></p>
+      
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+        <thead>
+          <tr style="background-color: #f5f5f5;">
+            <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">رقم الطلب</th>
+            <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">رقم الطاولة</th>
+            <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">الوقت</th>
+            <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">المجموع</th>
+            <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">الحالة</th>
+          </tr>
+        </thead>
+        <tbody id="printOrdersTable">
+          <!-- سيتم تعبئة العناصر ديناميكياً -->
+        </tbody>
+      </table>
+      
+      <div style="margin-top: 20px; text-align: left;">
+        <p style="font-weight: bold;">إجمالي الطلبات: <span id="printTotalOrders">0</span></p>
+        <p style="font-weight: bold;">إجمالي المبيعات: <span id="printTotalSales">0</span> درهم</p>
       </div>
     </div>
   </div>
@@ -805,7 +859,7 @@
       authDomain: "fir-afb14.firebaseapp.com",
       databaseURL: "https://fir-afb14-default-rtdb.firebaseio.com",
       projectId: "fir-afb14",
-      storageBucket: "fir-afb14.appspot.com",
+      storageBucket: "fir-afb14.firebasestorage.app",
       messagingSenderId: "696865036390",
       appId: "1:696865036390:web:7299226db4346c5251f5a7",
       measurementId: "G-ENGTMMTDX4"
@@ -822,9 +876,7 @@
       closeButton: true,
       progressBar: true,
       positionClass: 'toast-top-left',
-      rtl: true,
-      timeOut: 5000,
-      extendedTimeOut: 2000
+      rtl: true
     };
 
     // متغيرات التطبيق
@@ -832,7 +884,8 @@
     let orders = [];
     let currentOrder = null;
     let currentStatusFilter = 'all';
-    let lastOrderCount = 0;
+    let lastOrderId = null;
+    let unreadNotifications = 0;
 
     // دالة تنسيق التاريخ والوقت
     function formatDateTime(timestamp) {
@@ -884,11 +937,6 @@
       
       // إظهار المودال
       orderModal.classList.add('active');
-    }
-
-    // دالة طباعة الفاتورة
-    function printOrder() {
-      window.print();
     }
 
     // دالة تحديث عرض حالة الطلب
@@ -956,6 +1004,7 @@
         let pendingOrders = 0;
         let completedOrders = 0;
         let totalSales = 0;
+        let hasNewOrders = false;
         
         snapshot.forEach((childSnapshot) => {
           const order = childSnapshot.val();
@@ -970,7 +1019,23 @@
             completedOrders++;
             totalSales += order.total || 0;
           }
+          
+          // التحقق من وجود طلبات جديدة
+          if (lastOrderId && order.id !== lastOrderId && order.status === 'pending') {
+            hasNewOrders = true;
+            unreadNotifications++;
+          }
         });
+        
+        // تحديث آخر معرف طلب
+        if (orders.length > 0) {
+          lastOrderId = orders[0].id;
+        }
+        
+        // إظهار إشعار إذا كان هناك طلبات جديدة
+        if (hasNewOrders) {
+          showNewOrderNotification();
+        }
         
         // تحديث الإحصائيات
         document.getElementById('totalOrders').textContent = totalOrders;
@@ -980,23 +1045,24 @@
         
         // عرض الطلبات في الجدول
         displayOrders(orders);
-        
-        // إظهار إشعار عند وجود طلب جديد
-        if (totalOrders > lastOrderCount && lastOrderCount > 0) {
-          const newOrders = totalOrders - lastOrderCount;
-          toastr.info(`لديك ${newOrders} طلب جديد`, 'طلب جديد', {
-            timeOut: 10000,
-            onclick: function() {
-              filterOrdersByStatus('pending');
-              document.querySelector('.status-btn[data-status="pending"]').click();
-            }
-          });
-        }
-        
-        lastOrderCount = totalOrders;
       }, (error) => {
         toastr.error('حدث خطأ أثناء تحميل الطلبات: ' + error.message);
         console.error('Error loading orders:', error);
+      });
+    }
+
+    // دالة عرض إشعار بطلبات جديدة
+    function showNewOrderNotification() {
+      // تحديث شارة الإشعارات
+      const badge = document.getElementById('notificationsBadge');
+      badge.textContent = unreadNotifications;
+      badge.style.display = 'flex';
+      
+      // إظهار إشعار
+      toastr.info('يوجد طلبات جديدة تحتاج إلى مراجعة', 'طلبات جديدة', {
+        timeOut: 5000,
+        extendedTimeOut: 2000,
+        closeButton: true
       });
     }
 
@@ -1065,9 +1131,6 @@
               <button class="action-btn delete" data-id="${order.id}" ${order.status === 'cancelled' ? 'style="display: none;"' : ''}>
                 <i class="fas fa-times"></i>
               </button>
-              <button class="action-btn print" data-id="${order.id}">
-                <i class="fas fa-print"></i>
-              </button>
             </div>
           </td>
         `;
@@ -1100,18 +1163,6 @@
           }
         });
       });
-      
-      document.querySelectorAll('.action-btn.print').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          const orderId = this.getAttribute('data-id');
-          const order = orders.find(o => o.id === orderId);
-          if (order) {
-            openOrderModal(order);
-            setTimeout(printOrder, 500);
-          }
-        });
-      });
     }
 
     // دالة تحديث حالة الطلب
@@ -1122,15 +1173,15 @@
         .then(() => {
           toastr.success('تم تحديث حالة الطلب بنجاح');
           
-          // إظهار إشعار بالتغيير
-          const statusText = {
-            'pending': 'جديد',
-            'preparing': 'قيد التحضير',
-            'completed': 'مكتمل',
-            'cancelled': 'ملغى'
-          }[newStatus] || newStatus;
-          
-          toastr.info(`تم تغيير حالة الطلب إلى "${statusText}"`, 'تحديث حالة الطلب');
+          // إظهار إشعار بتغيير الحالة
+          const order = orders.find(o => o.id === orderId);
+          if (order) {
+            toastr.info(`تم تغيير حالة الطلب #${orderId} إلى ${getStatusText(newStatus)}`, 'تحديث حالة الطلب', {
+              timeOut: 5000,
+              extendedTimeOut: 2000,
+              closeButton: true
+            });
+          }
           
           // إذا كان الطلب الحالي مفتوحًا، قم بتحديثه
           if (currentOrder && currentOrder.id === orderId) {
@@ -1141,6 +1192,17 @@
         .catch((error) => {
           toastr.error('حدث خطأ أثناء تحديث حالة الطلب: ' + error.message);
         });
+    }
+
+    // دالة للحصول على نص الحالة
+    function getStatusText(status) {
+      switch (status) {
+        case 'pending': return 'جديد';
+        case 'preparing': return 'قيد التحضير';
+        case 'completed': return 'مكتمل';
+        case 'cancelled': return 'ملغى';
+        default: return status;
+      }
     }
 
     // دالة تصفية الطلبات حسب الحالة
@@ -1172,6 +1234,66 @@
       displayOrders(filteredOrders);
     }
 
+    // دالة طباعة تاريخ 24 ساعة
+    function print24HourHistory() {
+      const now = new Date();
+      const yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+      
+      const filteredOrders = orders.filter(order => {
+        if (!order.timestamp) return false;
+        const orderDate = new Date(order.timestamp);
+        return orderDate >= yesterday;
+      });
+      
+      // ترتيب الطلبات من الأحدث إلى الأقدم
+      filteredOrders.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      
+      // تعبئة جدول الطباعة
+      const printTable = document.getElementById('printOrdersTable');
+      printTable.innerHTML = '';
+      
+      let totalSales = 0;
+      
+      filteredOrders.forEach(order => {
+        const tr = document.createElement('tr');
+        
+        let statusText = '';
+        switch (order.status) {
+          case 'pending': statusText = 'جديد'; break;
+          case 'preparing': statusText = 'قيد التحضير'; break;
+          case 'completed': 
+            statusText = 'مكتمل';
+            totalSales += order.total || 0;
+            break;
+          case 'cancelled': statusText = 'ملغى'; break;
+          default: statusText = order.status || 'غير معروف';
+        }
+        
+        tr.innerHTML = `
+          <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${order.id || '-'}</td>
+          <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${order.table || '-'}</td>
+          <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${formatDateTime(order.timestamp)}</td>
+          <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${order.total || '0'} درهم</td>
+          <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${statusText}</td>
+        `;
+        printTable.appendChild(tr);
+      });
+      
+      // تحديث الإحصائيات
+      document.getElementById('printTotalOrders').textContent = filteredOrders.length;
+      document.getElementById('printTotalSales').textContent = totalSales;
+      
+      // تحديث نطاق التاريخ
+      document.getElementById('printDateRange').textContent = 
+        `من ${formatDateTime(yesterday.getTime())} إلى ${formatDateTime(now.getTime())}`;
+      
+      // طباعة القسم
+      const printSection = document.getElementById('printSection');
+      printSection.style.display = 'block';
+      window.print();
+      printSection.style.display = 'none';
+    }
+
     // عناصر DOM
     const ordersTable = document.getElementById('ordersTable');
     const orderModal = document.getElementById('orderModal');
@@ -1187,16 +1309,17 @@
     const completeOrderBtn = document.getElementById('completeOrderBtn');
     const preparingOrderBtn = document.getElementById('preparingOrderBtn');
     const cancelOrderBtn = document.getElementById('cancelOrderBtn');
-    const printOrderBtn = document.getElementById('printOrderBtn');
     const refreshOrdersBtn = document.getElementById('refreshOrders');
     const searchOrdersInput = document.getElementById('searchOrders');
     const statusButtons = document.querySelectorAll('.status-btn');
+    const printHistoryBtn = document.getElementById('printHistoryBtn');
+    const notificationsBtn = document.getElementById('notificationsBtn');
+    const notificationsBadge = document.getElementById('notificationsBadge');
 
     // أحداث DOM
     closeModalBtn.addEventListener('click', closeOrderModal);
     cancelBtn.addEventListener('click', closeOrderModal);
     refreshOrdersBtn.addEventListener('click', loadOrders);
-    printOrderBtn.addEventListener('click', printOrder);
     
     completeOrderBtn.addEventListener('click', () => {
       if (currentOrder) {
@@ -1228,6 +1351,18 @@
       searchOrders(this.value.trim());
     });
 
+    // طباعة تاريخ 24 ساعة
+    printHistoryBtn.addEventListener('click', print24HourHistory);
+
+    // إظهار الإشعارات
+    notificationsBtn.addEventListener('click', function() {
+      unreadNotifications = 0;
+      notificationsBadge.style.display = 'none';
+      toastr.info('تم عرض جميع الإشعارات', 'الإشعارات', {
+        timeOut: 3000
+      });
+    });
+
     // تسجيل الخروج
     document.querySelector('.logout-btn').addEventListener('click', function() {
       signOut(auth).then(() => {
@@ -1243,9 +1378,6 @@
         currentUser = user;
         // تحميل الطلبات عند تسجيل الدخول
         loadOrders();
-        
-        // تحميل الطلبات كل 30 ثانية للتأكد من وجود تحديثات
-        setInterval(loadOrders, 30000);
       } else {
         // إعادة التوجيه إلى صفحة تسجيل الدخول إذا لم يكن المستخدم مسجلاً
         window.location.href = 'login.html';
