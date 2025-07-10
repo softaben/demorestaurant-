@@ -391,6 +391,14 @@
       background: #3d8b40;
     }
 
+    .action-btn.print {
+      background: var(--gold);
+    }
+
+    .action-btn.print:hover {
+      background: #e6c125;
+    }
+
     /* مودال تفاصيل الطلب */
     .modal-overlay {
       position: fixed;
@@ -567,6 +575,40 @@
       .status-filter {
         flex-wrap: wrap;
       }
+      
+      .form-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+    
+    /* طباعة الفاتورة */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .modal, .modal * {
+        visibility: visible;
+      }
+      .modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        max-height: 100%;
+        box-shadow: none;
+        transform: none !important;
+      }
+      .form-actions {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -741,6 +783,9 @@
           <button type="button" class="btn btn-danger" id="cancelOrderBtn">
             <i class="fas fa-times"></i> إلغاء الطلب
           </button>
+          <button type="button" class="btn btn-primary" id="printOrderBtn">
+            <i class="fas fa-print"></i> طباعة الفاتورة
+          </button>
         </div>
       </div>
     </div>
@@ -760,7 +805,7 @@
       authDomain: "fir-afb14.firebaseapp.com",
       databaseURL: "https://fir-afb14-default-rtdb.firebaseio.com",
       projectId: "fir-afb14",
-      storageBucket: "fir-afb14.firebasestorage.app",
+      storageBucket: "fir-afb14.appspot.com",
       messagingSenderId: "696865036390",
       appId: "1:696865036390:web:7299226db4346c5251f5a7",
       measurementId: "G-ENGTMMTDX4"
@@ -777,7 +822,9 @@
       closeButton: true,
       progressBar: true,
       positionClass: 'toast-top-left',
-      rtl: true
+      rtl: true,
+      timeOut: 5000,
+      extendedTimeOut: 2000
     };
 
     // متغيرات التطبيق
@@ -785,6 +832,7 @@
     let orders = [];
     let currentOrder = null;
     let currentStatusFilter = 'all';
+    let lastOrderCount = 0;
 
     // دالة تنسيق التاريخ والوقت
     function formatDateTime(timestamp) {
@@ -836,6 +884,11 @@
       
       // إظهار المودال
       orderModal.classList.add('active');
+    }
+
+    // دالة طباعة الفاتورة
+    function printOrder() {
+      window.print();
     }
 
     // دالة تحديث عرض حالة الطلب
@@ -927,6 +980,20 @@
         
         // عرض الطلبات في الجدول
         displayOrders(orders);
+        
+        // إظهار إشعار عند وجود طلب جديد
+        if (totalOrders > lastOrderCount && lastOrderCount > 0) {
+          const newOrders = totalOrders - lastOrderCount;
+          toastr.info(`لديك ${newOrders} طلب جديد`, 'طلب جديد', {
+            timeOut: 10000,
+            onclick: function() {
+              filterOrdersByStatus('pending');
+              document.querySelector('.status-btn[data-status="pending"]').click();
+            }
+          });
+        }
+        
+        lastOrderCount = totalOrders;
       }, (error) => {
         toastr.error('حدث خطأ أثناء تحميل الطلبات: ' + error.message);
         console.error('Error loading orders:', error);
@@ -998,6 +1065,9 @@
               <button class="action-btn delete" data-id="${order.id}" ${order.status === 'cancelled' ? 'style="display: none;"' : ''}>
                 <i class="fas fa-times"></i>
               </button>
+              <button class="action-btn print" data-id="${order.id}">
+                <i class="fas fa-print"></i>
+              </button>
             </div>
           </td>
         `;
@@ -1030,6 +1100,18 @@
           }
         });
       });
+      
+      document.querySelectorAll('.action-btn.print').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const orderId = this.getAttribute('data-id');
+          const order = orders.find(o => o.id === orderId);
+          if (order) {
+            openOrderModal(order);
+            setTimeout(printOrder, 500);
+          }
+        });
+      });
     }
 
     // دالة تحديث حالة الطلب
@@ -1039,6 +1121,16 @@
       set(orderRef, newStatus)
         .then(() => {
           toastr.success('تم تحديث حالة الطلب بنجاح');
+          
+          // إظهار إشعار بالتغيير
+          const statusText = {
+            'pending': 'جديد',
+            'preparing': 'قيد التحضير',
+            'completed': 'مكتمل',
+            'cancelled': 'ملغى'
+          }[newStatus] || newStatus;
+          
+          toastr.info(`تم تغيير حالة الطلب إلى "${statusText}"`, 'تحديث حالة الطلب');
           
           // إذا كان الطلب الحالي مفتوحًا، قم بتحديثه
           if (currentOrder && currentOrder.id === orderId) {
@@ -1095,6 +1187,7 @@
     const completeOrderBtn = document.getElementById('completeOrderBtn');
     const preparingOrderBtn = document.getElementById('preparingOrderBtn');
     const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+    const printOrderBtn = document.getElementById('printOrderBtn');
     const refreshOrdersBtn = document.getElementById('refreshOrders');
     const searchOrdersInput = document.getElementById('searchOrders');
     const statusButtons = document.querySelectorAll('.status-btn');
@@ -1103,6 +1196,7 @@
     closeModalBtn.addEventListener('click', closeOrderModal);
     cancelBtn.addEventListener('click', closeOrderModal);
     refreshOrdersBtn.addEventListener('click', loadOrders);
+    printOrderBtn.addEventListener('click', printOrder);
     
     completeOrderBtn.addEventListener('click', () => {
       if (currentOrder) {
@@ -1149,6 +1243,9 @@
         currentUser = user;
         // تحميل الطلبات عند تسجيل الدخول
         loadOrders();
+        
+        // تحميل الطلبات كل 30 ثانية للتأكد من وجود تحديثات
+        setInterval(loadOrders, 30000);
       } else {
         // إعادة التوجيه إلى صفحة تسجيل الدخول إذا لم يكن المستخدم مسجلاً
         window.location.href = 'login.html';
