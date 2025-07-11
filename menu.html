@@ -1554,14 +1554,15 @@
         return;
       }
       
-      // إنشاء كائن الطلب
+      // إنشاء كائن الطلب مع إضافة حقل guest: true
       const order = {
         table: tableNumber,
         notes: notes || '',
         items: cartItems,
         total: cartItems.reduce((sum, item) => sum + (item.prix * item.quantity), 0),
         timestamp: firebase.database.ServerValue.TIMESTAMP,
-        status: 'pending'
+        status: 'pending',
+        guest: true // هذا الحقل المهم للتمييز بين طلبات الزوار والمستخدمين المسجلين
       };
       
       // حفظ الطلب في Firebase
