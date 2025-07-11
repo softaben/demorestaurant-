@@ -718,6 +718,10 @@
             <i class="fas fa-sync-alt"></i>
             تحديث الطلبات
           </button>
+          <button class="btn btn-secondary" id="openModificationBtn">
+            <i class="fas fa-file-alt"></i>
+            فتح ملف التعديلات
+          </button>
         </div>
       </div>
 
@@ -911,11 +915,13 @@
 
     // تهيئة Toastr
     toastr.options = {
-      closeButton: true,
-      progressBar: true,
+      closeButton: false,
+      progressBar: false,
       positionClass: 'toast-top-left',
       rtl: true,
-      timeOut: 2000 // يختفي بعد ثانيتين
+      timeOut: 3000, // يختفي بعد 3 ثواني
+      extendedTimeOut: 1000,
+      preventDuplicates: true
     };
 
     // متغيرات التطبيق
@@ -938,6 +944,32 @@
       const minutes = date.getMinutes().toString().padStart(2, '0');
       
       return `${day}/${month}/${year} - ${hours}:${minutes}`;
+    }
+
+    // دالة فتح ملف modification.html
+    function openModificationFile() {
+      window.open('modification.html', '_blank');
+    }
+
+    // دالة التحقق من الطلبات الجديدة وإرسال الإشعارات
+    function checkForNewOrders(newOrdersCount, newPendingCount) {
+      // إشعار الطلبات الجديدة
+      if (newOrdersCount > lastOrdersCount && lastOrdersCount > 0) {
+        const newOrders = newOrdersCount - lastOrdersCount;
+        const newOrder = orders[0]; // أحدث طلب
+        
+        // نص الإشعار
+        const notificationText = `طلب جديد في الطاولة رقم ${newOrder.table || 'غير معروف'}`;
+        
+        // إرسال إشعار Toastr
+        toastr.info(notificationText, 'تنبيه', {
+          timeOut: 3000,
+          extendedTimeOut: 1000,
+          onclick: function() {
+            filterOrdersByStatus('pending');
+          }
+        });
+      }
     }
 
     // دالة طباعة السجل الكامل مع الإحصائيات
@@ -1447,17 +1479,8 @@
           }
         });
         
-        // إشعار الطلبات الجديدة
-        if (totalOrders > lastOrdersCount && lastOrdersCount > 0) {
-          const newOrders = totalOrders - lastOrdersCount;
-          toastr.info(`تم إضافة ${newOrders} طلب جديد`, 'طلب جديد');
-        }
-        
-        // إشعار الطلبات المعلقة الجديدة
-        if (pendingOrders > lastPendingCount && lastPendingCount > 0) {
-          const newPending = pendingOrders - lastPendingCount;
-          toastr.warning(`لديك ${newPending} طلب جديد يحتاج إلى معالجة`, 'طلبات جديدة');
-        }
+        // التحقق من الطلبات الجديدة وإظهار الإشعارات
+        checkForNewOrders(totalOrders, pendingOrders);
         
         // تحديث العدادات
         lastOrdersCount = totalOrders;
@@ -1643,6 +1666,7 @@
       const printAllBtn = document.getElementById('printAllBtn');
       const resetAllBtn = document.getElementById('resetAllBtn');
       const refreshOrdersBtn = document.getElementById('refreshOrders');
+      const openModificationBtn = document.getElementById('openModificationBtn');
       const searchOrdersInput = document.getElementById('searchOrders');
       const statusButtons = document.querySelectorAll('.status-btn');
 
@@ -1653,6 +1677,7 @@
       printAllBtn.addEventListener('click', printAllOrders);
       resetAllBtn.addEventListener('click', resetAllOrders);
       refreshOrdersBtn.addEventListener('click', loadOrders);
+      openModificationBtn.addEventListener('click', openModificationFile);
       
       completeOrderBtn.addEventListener('click', () => {
         if (currentOrder) {
