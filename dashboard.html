@@ -122,6 +122,7 @@
     .main-content {
       margin-top: 80px;
       padding: 2rem 0;
+      display: none; /* مخفي حتى يتم التحقق من المصادقة */
     }
 
     .page-title {
@@ -684,258 +685,294 @@
       animation: highlight 2s ease-out;
     }
 
-    /* شاشة التحميل */
-    .loading-screen {
+    /* رسالة تحميل المصادقة */
+    .auth-loading {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(255, 255, 255, 0.9);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      background: var(--white);
       z-index: 1000;
     }
 
-    .loading-spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid var(--gray);
-      border-top: 5px solid var(--primary);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+    .auth-loading i {
+      font-size: 3rem;
+      color: var(--secondary);
       margin-bottom: 1rem;
+      animation: spin 1s linear infinite;
+    }
+
+    .auth-loading p {
+      font-size: 1.2rem;
+      color: var(--dark);
     }
 
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    /* رسالة عدم التصريح */
+    .unauth-message {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: var(--white);
+      z-index: 1000;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .unauth-message h2 {
+      color: var(--dark);
+      margin-bottom: 1.5rem;
+    }
+
+    .unauth-message .btn {
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
   <!-- شاشة التحميل -->
-  <div class="loading-screen" id="loadingScreen">
-    <div class="loading-spinner"></div>
-    <p>جاري التحقق من المصادقة...</p>
+  <div class="auth-loading">
+    <i class="fas fa-spinner"></i>
+    <p>جاري التحقق من صلاحيات الدخول...</p>
   </div>
 
-  <!-- الهيدر -->
-  <header class="admin-header">
-    <div class="container">
-      <div class="logo">
-        <i class="fas fa-utensils"></i>
-        <span>دار حسنا | لوحة التحكم</span>
-      </div>
-      <nav class="admin-nav">
-        <a href="#">
-          <i class="fas fa-chart-line"></i>
-          <span>الإحصائيات</span>
-        </a>
-        <a href="#" class="active">
-          <i class="fas fa-shopping-cart"></i>
-          <span>الطلبات</span>
-        </a>
-        <a href="#">
-          <i class="fas fa-list"></i>
-          <span>قائمة الطعام</span>
-        </a>
-        <button class="logout-btn">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>تسجيل الخروج</span>
-        </button>
-      </nav>
-    </div>
-  </header>
+  <!-- رسالة عدم التصريح -->
+  <div class="unauth-message">
+    <h2>يجب تسجيل الدخول للوصول إلى هذه الصفحة</h2>
+    <p>لا تملك صلاحيات الوصول إلى لوحة التحكم. يرجى تسجيل الدخول بحساب مسجل.</p>
+    <a href="login.html" class="btn btn-primary">
+      <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+    </a>
+  </div>
 
-  <!-- المحتوى الرئيسي -->
-  <main class="main-content">
-    <div class="container">
-      <div class="page-title">
-        <h1>إدارة الطلبات</h1>
-        <div>
-          <button class="btn btn-danger" id="resetAllBtn">
-            <i class="fas fa-trash"></i>
-            إعادة التشغيل
-          </button>
-          <button class="btn btn-primary" id="printAllBtn">
-            <i class="fas fa-print"></i>
-            طباعة السجل
-          </button>
-          <button class="btn btn-primary" id="refreshOrders">
-            <i class="fas fa-sync-alt"></i>
-            تحديث الطلبات
-          </button>
-          <button class="btn btn-secondary" id="openModificationBtn">
-            <i class="fas fa-edit"></i>
-            تعديل على القائمة
-          </button>
-          <button class="btn btn-success" id="addOrderBtn">
-            <i class="fas fa-plus"></i>
-            إضافة طلب
-          </button>
+  <!-- المحتوى الرئيسي (سيتم إظهاره بعد التحقق من المصادقة) -->
+  <div id="auth-content" style="display: none;">
+    <!-- الهيدر -->
+    <header class="admin-header">
+      <div class="container">
+        <div class="logo">
+          <i class="fas fa-utensils"></i>
+          <span>دار حسنا | لوحة التحكم</span>
         </div>
-      </div>
-
-      <!-- كروت الإحصائيات -->
-      <div class="stats-cards">
-        <div class="stat-card">
-          <div class="stat-info">
-            <h3>إجمالي الطلبات</h3>
-            <h2 id="totalOrders">0</h2>
-          </div>
-          <div class="stat-icon primary">
+        <nav class="admin-nav">
+          <a href="#">
+            <i class="fas fa-chart-line"></i>
+            <span>الإحصائيات</span>
+          </a>
+          <a href="#" class="active">
             <i class="fas fa-shopping-cart"></i>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-info">
-            <h3>طلبات جديدة</h3>
-            <h2 id="pendingOrders">0</h2>
-          </div>
-          <div class="stat-icon warning">
-            <i class="fas fa-clock"></i>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-info">
-            <h3>طلبات مكتملة</h3>
-            <h2 id="completedOrders">0</h2>
-          </div>
-          <div class="stat-icon success">
-            <i class="fas fa-check-circle"></i>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-info">
-            <h3>إجمالي المبيعات</h3>
-            <h2 id="totalSales">0 درهم</h2>
-          </div>
-          <div class="stat-icon danger">
-            <i class="fas fa-money-bill-wave"></i>
-          </div>
-        </div>
+            <span>الطلبات</span>
+          </a>
+          <a href="#">
+            <i class="fas fa-list"></i>
+            <span>قائمة الطعام</span>
+          </a>
+          <button class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>تسجيل الخروج</span>
+          </button>
+        </nav>
       </div>
+    </header>
 
-      <!-- الإحصائيات المتقدمة -->
-      <div class="advanced-stats">
-        <h2>الإحصائيات المتقدمة</h2>
-        <div class="stats-grid">
-          <div class="stat-box">
-            <h3>الأطباق الأكثر طلباً</h3>
-            <div class="popular-items" id="popularItems">
-              <div style="text-align: center; padding: 1rem; color: var(--text); opacity: 0.6;">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>جاري تحميل البيانات...</p>
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
+      <div class="container">
+        <div class="page-title">
+          <h1>إدارة الطلبات</h1>
+          <div>
+            <button class="btn btn-danger" id="resetAllBtn">
+              <i class="fas fa-trash"></i>
+              إعادة التشغيل
+            </button>
+            <button class="btn btn-primary" id="printAllBtn">
+              <i class="fas fa-print"></i>
+              طباعة السجل
+            </button>
+            <button class="btn btn-primary" id="refreshOrders">
+              <i class="fas fa-sync-alt"></i>
+              تحديث الطلبات
+            </button>
+            <button class="btn btn-secondary" id="openModificationBtn">
+              <i class="fas fa-edit"></i>
+              تعديل على القائمة
+            </button>
+          </div>
+        </div>
+
+        <!-- كروت الإحصائيات -->
+        <div class="stats-cards">
+          <div class="stat-card">
+            <div class="stat-info">
+              <h3>إجمالي الطلبات</h3>
+              <h2 id="totalOrders">0</h2>
+            </div>
+            <div class="stat-icon primary">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <h3>طلبات جديدة</h3>
+              <h2 id="pendingOrders">0</h2>
+            </div>
+            <div class="stat-icon warning">
+              <i class="fas fa-clock"></i>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <h3>طلبات مكتملة</h3>
+              <h2 id="completedOrders">0</h2>
+            </div>
+            <div class="stat-icon success">
+              <i class="fas fa-check-circle"></i>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <h3>إجمالي المبيعات</h3>
+              <h2 id="totalSales">0 درهم</h2>
+            </div>
+            <div class="stat-icon danger">
+              <i class="fas fa-money-bill-wave"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- الإحصائيات المتقدمة -->
+        <div class="advanced-stats">
+          <h2>الإحصائيات المتقدمة</h2>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <h3>الأطباق الأكثر طلباً</h3>
+              <div class="popular-items" id="popularItems">
+                <div style="text-align: center; padding: 1rem; color: var(--text); opacity: 0.6;">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <p>جاري تحميل البيانات...</p>
+                </div>
+              </div>
+            </div>
+            <div class="stat-box">
+              <h3>إحصائيات اليوم</h3>
+              <div class="daily-stats" id="dailyStats">
+                <div style="text-align: center; padding: 1rem; color: var(--text); opacity: 0.6;">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <p>جاري تحميل البيانات...</p>
+                </div>
               </div>
             </div>
           </div>
-          <div class="stat-box">
-            <h3>إحصائيات اليوم</h3>
-            <div class="daily-stats" id="dailyStats">
-              <div style="text-align: center; padding: 1rem; color: var(--text); opacity: 0.6;">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>جاري تحميل البيانات...</p>
-              </div>
+        </div>
+
+        <!-- فلتر الحالة -->
+        <div class="status-filter">
+          <button class="status-btn active" data-status="all">الكل</button>
+          <button class="status-btn" data-status="pending">جديدة</button>
+          <button class="status-btn" data-status="preparing">قيد التحضير</button>
+          <button class="status-btn" data-status="completed">مكتملة</button>
+          <button class="status-btn" data-status="cancelled">ملغاة</button>
+        </div>
+
+        <!-- جدول الطلبات -->
+        <div class="orders-table">
+          <div class="table-header">
+            <h3>سجل الطلبات</h3>
+            <div class="search-box">
+              <input type="text" id="searchOrders" placeholder="بحث...">
+              <i class="fas fa-search"></i>
             </div>
           </div>
+          <table>
+            <thead>
+              <tr>
+                <th>رقم الطلب</th>
+                <th>رقم الطاولة</th>
+                <th>الوقت</th>
+                <th>المجموع</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTable">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
+                  <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                  <p>جاري تحميل الطلبات...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
+    </main>
 
-      <!-- فلتر الحالة -->
-      <div class="status-filter">
-        <button class="status-btn active" data-status="all">الكل</button>
-        <button class="status-btn" data-status="pending">جديدة</button>
-        <button class="status-btn" data-status="preparing">قيد التحضير</button>
-        <button class="status-btn" data-status="completed">مكتملة</button>
-        <button class="status-btn" data-status="cancelled">ملغاة</button>
-      </div>
-
-      <!-- جدول الطلبات -->
-      <div class="orders-table">
-        <div class="table-header">
-          <h3>سجل الطلبات</h3>
-          <div class="search-box">
-            <input type="text" id="searchOrders" placeholder="بحث...">
-            <i class="fas fa-search"></i>
-          </div>
+    <!-- مودال تفاصيل الطلب -->
+    <div class="modal-overlay" id="orderModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="modalTitle">تفاصيل الطلب #<span id="orderId"></span></h3>
+          <button class="close-modal" id="closeModal">&times;</button>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>رقم الطلب</th>
-              <th>رقم الطاولة</th>
-              <th>الوقت</th>
-              <th>المجموع</th>
-              <th>الحالة</th>
-              <th>الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody id="ordersTable">
-            <tr>
-              <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
-                <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
-                <p>جاري تحميل الطلبات...</p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </main>
-
-  <!-- مودال تفاصيل الطلب -->
-  <div class="modal-overlay" id="orderModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 id="modalTitle">تفاصيل الطلب #<span id="orderId"></span></h3>
-        <button class="close-modal" id="closeModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="order-details">
-          <div class="order-details-row">
-            <div class="order-details-label">رقم الطاولة:</div>
-            <div id="orderTable">-</div>
+        <div class="modal-body">
+          <div class="order-details">
+            <div class="order-details-row">
+              <div class="order-details-label">رقم الطاولة:</div>
+              <div id="orderTable">-</div>
+            </div>
+            <div class="order-details-row">
+              <div class="order-details-label">حالة الطلب:</div>
+              <div id="orderStatus"><span class="badge badge-warning">جديد</span></div>
+            </div>
+            <div class="order-details-row">
+              <div class="order-details-label">وقت الطلب:</div>
+              <div id="orderTime">-</div>
+            </div>
+            <div class="order-details-row">
+              <div class="order-details-label">ملاحظات:</div>
+              <div id="orderNotes">لا توجد ملاحظات</div>
+            </div>
           </div>
-          <div class="order-details-row">
-            <div class="order-details-label">حالة الطلب:</div>
-            <div id="orderStatus"><span class="badge badge-warning">جديد</span></div>
-          </div>
-          <div class="order-details-row">
-            <div class="order-details-label">وقت الطلب:</div>
-            <div id="orderTime">-</div>
-          </div>
-          <div class="order-details-row">
-            <div class="order-details-label">ملاحظات:</div>
-            <div id="orderNotes">لا توجد ملاحظات</div>
-          </div>
-        </div>
 
-        <h4>الأصناف المطلوبة:</h4>
-        <div class="order-items" id="orderItemsList">
-          <!-- سيتم تعبئة العناصر ديناميكياً -->
-        </div>
+          <h4>الأصناف المطلوبة:</h4>
+          <div class="order-items" id="orderItemsList">
+            <!-- سيتم تعبئة العناصر ديناميكياً -->
+          </div>
 
-        <div class="order-total">
-          المجموع: <span id="orderTotal">0</span> درهم
-        </div>
+          <div class="order-total">
+            المجموع: <span id="orderTotal">0</span> درهم
+          </div>
 
-        <div class="form-actions">
-          <button type="button" class="btn print-btn" id="printOrderBtn">
-            <i class="fas fa-print"></i> طباعة
-          </button>
-          <button type="button" class="btn" id="cancelBtn">إغلاق</button>
-          <button type="button" class="btn btn-success" id="completeOrderBtn">
-            <i class="fas fa-check"></i> تم التسليم
-          </button>
-          <button type="button" class="btn btn-secondary" id="preparingOrderBtn">
-            <i class="fas fa-utensils"></i> قيد التحضير
-          </button>
-          <button type="button" class="btn btn-danger" id="cancelOrderBtn">
-            <i class="fas fa-times"></i> إلغاء الطلب
-          </button>
+          <div class="form-actions">
+            <button type="button" class="btn print-btn" id="printOrderBtn">
+              <i class="fas fa-print"></i> طباعة
+            </button>
+            <button type="button" class="btn" id="cancelBtn">إغلاق</button>
+            <button type="button" class="btn btn-success" id="completeOrderBtn">
+              <i class="fas fa-check"></i> تم التسليم
+            </button>
+            <button type="button" class="btn btn-secondary" id="preparingOrderBtn">
+              <i class="fas fa-utensils"></i> قيد التحضير
+            </button>
+            <button type="button" class="btn btn-danger" id="cancelOrderBtn">
+              <i class="fas fa-times"></i> إلغاء الطلب
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -945,7 +982,7 @@
   <script type="module">
     // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getDatabase, ref, onValue, onChildAdded, set, remove, push } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+    import { getDatabase, ref, onValue, onChildAdded, set, remove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
     import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
 
@@ -973,399 +1010,170 @@
       progressBar: false,
       positionClass: 'toast-top-left',
       rtl: true,
-      timeOut: 3000,
+      timeOut: 3000, // يختفي بعد 3 ثواني
       extendedTimeOut: 1000,
       preventDuplicates: true
     };
 
-    // ========== نظام الحماية ==========
-    // التحقق من حالة المصادقة عند تحميل الصفحة
-    onAuthStateChanged(auth, (user) => {
-      const loadingScreen = document.getElementById('loadingScreen');
+    // متغيرات التطبيق
+    let currentUser = null;
+    let orders = [];
+    let currentOrder = null;
+    let currentStatusFilter = 'all';
+    let lastOrdersCount = 0;
+    let lastPendingCount = 0;
+
+    // دالة تنسيق التاريخ والوقت
+    function formatDateTime(timestamp) {
+      if (!timestamp) return '-';
       
-      if (!user) {
-        // المستخدم غير مسجل، توجيهه لصفحة تسجيل الدخول
-        window.location.href = 'login.html';
-      } else {
-        // المستخدم مسجل، إخفاء شاشة التحميل وتهيئة التطبيق
-        loadingScreen.style.display = 'none';
-        initApp(user);
-      }
-    });
+      const date = new Date(timestamp);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      
+      return `${day}/${month}/${year} - ${hours}:${minutes}`;
+    }
 
-    // ========== تهيئة التطبيق بعد التحقق من المصادقة ==========
-    function initApp(user) {
-      // متغيرات التطبيق
-      let orders = [];
-      let currentOrder = null;
-      let currentStatusFilter = 'all';
-      let lastOrdersCount = 0;
-      let lastPendingCount = 0;
+    // دالة فتح ملف modification.html
+    function openModificationFile() {
+      window.open('modification.html', '_blank');
+    }
 
-      // دالة تنسيق التاريخ والوقت
-      function formatDateTime(timestamp) {
-        if (!timestamp) return '-';
-        
-        const date = new Date(timestamp);
-        const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const year = date.getFullYear();
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        
-        return `${day}/${month}/${year} - ${hours}:${minutes}`;
-      }
-
-      // دالة إضافة طلب جديدة مع التحقق من المستخدم
-      function addNewOrder() {
-        const newOrder = {
-          name: "كسكس",
-          quantity: 1,
-          userId: user.uid,
-          timestamp: Date.now(),
-          status: "pending",
-          table: "1",
-          total: 25,
-          notes: "لا توجد ملاحظات",
-          items: [
-            {
-              plat: "كسكس",
-              prix: 25,
-              quantity: 1
-            }
-          ]
-        };
-
-        const ordersRef = ref(database, 'orders');
-        push(ordersRef, newOrder)
-          .then(() => toastr.success("تم إضافة الطلب بنجاح"))
-          .catch((error) => {
-            toastr.error('حدث خطأ أثناء إضافة الطلب');
-            console.error(error);
-          });
-      }
-
-      // دالة إظهار إشعار للطلب الجديد
-      function showNewOrderNotification(order) {
-        if (order.status === 'pending') {
-          toastr.info(`طلب جديد في الطاولة رقم ${order.table || 'غير معروف'}`, 'تنبيه', {
-            timeOut: 5000,
-            onclick: function() {
-              filterOrdersByStatus('pending');
-            }
-          });
-        }
-      }
-
-      // دالة طباعة السجل الكامل مع الإحصائيات
-      function printAllOrders() {
-        const printWindow = window.open('', '_blank', 'width=800,height=600');
-        
-        if (!printWindow || printWindow.closed) {
-          toastr.error('لم يتم فتح نافذة الطباعة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع');
-          return;
-        }
-
-        // حساب الإحصائيات
-        const today = new Date().toLocaleDateString('ar-EG');
-        let todayOrders = 0;
-        let todaySales = 0;
-        const popularItems = {};
-        
-        orders.forEach(order => {
-          const orderDate = new Date(order.timestamp).toLocaleDateString('ar-EG');
-          if (orderDate === today) {
-            todayOrders++;
-            todaySales += order.total || 0;
-          }
-          
-          if (order.items) {
-            order.items.forEach(item => {
-              if (popularItems[item.plat]) {
-                popularItems[item.plat] += item.quantity;
-              } else {
-                popularItems[item.plat] = item.quantity;
-              }
-            });
+    // دالة إظهار إشعار للطلب الجديد
+    function showNewOrderNotification(order) {
+      if (order.status === 'pending') {
+        toastr.info(`طلب جديد في الطاولة رقم ${order.table || 'غير معروف'}`, 'تنبيه', {
+          timeOut: 5000,
+          onclick: function() {
+            filterOrdersByStatus('pending');
           }
         });
-        
-        // تحويل الأطباق الشائعة إلى مصفوفة وترتيبها
-        const popularItemsArray = Object.entries(popularItems)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5);
-        
-        // بناء محتوى HTML للطباعة
-        let printContent = `
-          <!DOCTYPE html>
-          <html dir="rtl">
-          <head>
-            <meta charset="UTF-8">
-            <title>تقرير الطلبات - دار حسنا</title>
-            <style>
-              body { font-family: 'Tajawal', sans-serif; padding: 20px; }
-              h1, h2 { color: #0F3460; text-align: center; }
-              h1 { margin-bottom: 5px; }
-              h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; }
-              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-              th, td { padding: 10px; text-align: right; border: 1px solid #ddd; }
-              th { background-color: #f2f2f2; }
-              .badge { padding: 3px 8px; border-radius: 50px; font-size: 12px; }
-              .badge-warning { background-color: #fff3cd; color: #856404; }
-              .badge-primary { background-color: #cce5ff; color: #004085; }
-              .badge-success { background-color: #d4edda; color: #155724; }
-              .badge-danger { background-color: #f8d7da; color: #721c24; }
-              .print-date { text-align: left; margin-bottom: 20px; }
-              .stats-section { margin: 20px 0; }
-              .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
-              .stat-label { font-weight: bold; }
-              @page { size: auto; margin: 10mm; }
-            </style>
-          </head>
-          <body>
-            <div class="print-content">
-              <h1>سجل الطلبات - دار حسنا</h1>
-              <h2>تقرير شامل عن الطلبات والإحصائيات</h2>
-              <div class="print-date">تاريخ الطباعة: ${new Date().toLocaleString('ar-EG')}</div>
-             case 'pending':
-            statusText = 'جديد';
-            badgeClass = 'badge-warning';
-            break;
-          case 'preparing':
-            statusText = 'قيد التحضير';
-            badgeClass = 'badge-primary';
-            break;
-          case 'completed':
-            statusText = 'مكتمل';
-            badgeClass = 'badge-success';
-            break;
-          case 'cancelled':
-            statusText = 'ملغى';
-            badgeClass = 'badge-danger';
-            break;
-          default:
-            statusText = currentOrder.status || 'غير معروف';
-            badgeClass = 'badge-secondary';
-        }
+      }
+    }
 
-        let itemsContent = '';
-        if (currentOrder.items && currentOrder.items.length > 0) {
-          currentOrder.items.forEach(item => {
-            itemsContent += `
-              <div style="display: flex; justify-content: space-between; padding: 8px; background: #f8f9fa; border-radius: 8px; margin-bottom: 5px;">
-                <div>${item.plat} × ${item.quantity}</div>
-                <div>${item.prix * item.quantity} درهم</div>
-              </div>
-            `;
-          });
-        } else {
-          itemsContent = '<p>لا توجد أصناف في هذا الطلب</p>';
-        }
-
-        const printContent = `
-          <!DOCTYPE html>
-          <html dir="rtl">
-          <head>
-            <meta charset="UTF-8">
-            <title>تفاصيل الطلب #${currentOrder.id}</title>
-            <style>
-              body { font-family: 'Tajawal', sans-serif; padding: 20px; }
-              h1 { color: #0F3460; text-align: center; }
-              .order-details-row { display: flex; margin-bottom: 10px; }
-              .order-details-label { font-weight: bold; min-width: 120px; }
-              .badge { padding: 3px 8px; border-radius: 50px; font-size: 12px; }
-              .badge-warning { background-color: #fff3cd; color: #856404; }
-              .badge-primary { background-color: #cce5ff; color: #004085; }
-              .badge-success { background-color: #d4edda; color: #155724; }
-              .badge-danger { background-color: #f8d7da; color: #721c24; }
-              .order-total { font-weight: bold; font-size: 1.2rem; text-align: left; margin: 15px 0; padding-top: 15px; border-top: 1px solid #ddd; }
-              @page { size: auto; margin: 10mm; }
-            </style>
-          </head>
-          <body>
-            <h1>تفاصيل الطلب #${currentOrder.id}</h1>
-            
-            <div class="order-details-row">
-              <div class="order-details-label">رقم الطاولة:</div>
-              <div>${currentOrder.table || '-'}</div>
-            </div>
-            <div class="order-details-row">
-              <div class="order-details-label">حالة الطلب:</div>
-              <div><span class="badge ${badgeClass}">${statusText}</span></div>
-            </div>
-            <div class="order-details-row">
-              <div class="order-details-label">وقت الطلب:</div>
-              <div>${formatDateTime(currentOrder.timestamp)}</div>
-            </div>
-            <div class="order-details-row">
-              <div class="order-details-label">ملاحظات:</div>
-              <div>${currentOrder.notes || 'لا توجد ملاحظات'}</div>
-            </div>
-            
-            <h3>الأصناف المطلوبة:</h3>
-            ${itemsContent}
-            
-            <div class="order-total">
-              المجموع: ${currentOrder.total || '0'} درهم
-            </div>
-          </body>
-          </html>
-        `;
-
-        printWindow.document.open();
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-
-        printWindow.onload = function() {
-          setTimeout(() => {
-            try {
-              printWindow.focus();
-              printWindow.print();
-              setTimeout(() => {
-                if (!printWindow.closed) {
-                  printWindow.close();
-                }
-              }, 1000);
-            } catch (error) {
-              toastr.error('حدث خطأ أثناء الطباعة: ' + error.message);
-              if (!printWindow.closed) {
-                printWindow.close();
-              }
-            }
-          }, 1000);
-        };
+    // دالة طباعة السجل الكامل مع الإحصائيات
+    function printAllOrders() {
+      if (!currentUser) {
+        toastr.error('يجب تسجيل الدخول لاستخدام هذه الميزة');
+        return;
       }
 
-      // دالة حساب الإحصائيات المتقدمة
-      function calculateAdvancedStats() {
-        const today = new Date().toLocaleDateString('ar-EG');
-        let todayOrders = 0;
-        let todaySales = 0;
-        const popularItems = {};
-        
-        orders.forEach(order => {
-          const orderDate = new Date(order.timestamp).toLocaleDateString('ar-EG');
-          if (orderDate === today) {
-            todayOrders++;
-            todaySales += order.total || 0;
-          }
-          
-          if (order.items) {
-            order.items.forEach(item => {
-              if (popularItems[item.plat]) {
-                popularItems[item.plat] += item.quantity;
-              } else {
-                popularItems[item.plat] = item.quantity;
-              }
-            });
-          }
-        });
-        
-        // تحويل الأطباق الشائعة إلى مصفوفة وترتيبها
-        const popularItemsArray = Object.entries(popularItems)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5);
-        
-        // تحديث واجهة الأطباق الشائعة
-        const popularItemsContainer = document.getElementById('popularItems');
-        if (popularItemsArray.length > 0) {
-          popularItemsContainer.innerHTML = popularItemsArray.map(item => `
-            <div class="popular-item">
-              <span>${item[0]}</span>
-              <span>${item[1]} طلب</span>
-            </div>
-          `).join('');
-        } else {
-          popularItemsContainer.innerHTML = `
-            <div style="text-align: center; padding: 1rem; color: var(--text); opacity: 0.6;">
-              <i class="fas fa-info-circle"></i>
-              <p>لا توجد بيانات عن الأطباق المطلوبة</p>
-            </div>
-          `;
-        }
-        
-        // تحديث واجهة إحصائيات اليوم
-        const dailyStatsContainer = document.getElementById('dailyStats');
-        dailyStatsContainer.innerHTML = `
-          <div class="daily-stat">
-            <span>عدد الطلبات اليوم:</span>
-            <span>${todayOrders}</span>
-          </div>
-          <div class="daily-stat">
-            <span>إجمالي المبيعات اليوم:</span>
-            <span>${todaySales} درهم</span>
-          </div>
-        `;
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      
+      if (!printWindow || printWindow.closed) {
+        toastr.error('لم يتم فتح نافذة الطباعة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع');
+        return;
       }
 
-      // دالة إعادة تعيين جميع الطلبات
-      function resetAllOrders() {
-        if (confirm('هل أنت متأكد من أنك تريد حذف جميع الطلبات والإحصائيات؟ هذا الإجراء لا يمكن التراجع عنه!')) {
-          const ordersRef = ref(database, 'orders');
-          
-          remove(ordersRef)
-            .then(() => {
-              toastr.success('تم حذف جميع الطلبات بنجاح');
-              lastOrdersCount = 0;
-              lastPendingCount = 0;
-              orders = [];
-              updateStats();
-              displayOrders([]);
-            })
-            .catch((error) => {
-              toastr.error('حدث خطأ أثناء حذف الطلبات: ' + error.message);
-            });
+      // حساب الإحصائيات
+      const today = new Date().toLocaleDateString('ar-EG');
+      let todayOrders = 0;
+      let todaySales = 0;
+      const popularItems = {};
+      
+      orders.forEach(order => {
+        const orderDate = new Date(order.timestamp).toLocaleDateString('ar-EG');
+        if (orderDate === today) {
+          todayOrders++;
+          todaySales += order.total || 0;
         }
-      }
-
-      // دالة فتح مودال الطلب
-      function openOrderModal(order) {
-        currentOrder = order;
         
-        document.getElementById('orderId').textContent = order.id || '-';
-        document.getElementById('orderTable').textContent = order.table || '-';
-        document.getElementById('orderTime').textContent = formatDateTime(order.timestamp);
-        document.getElementById('orderNotes').textContent = order.notes || 'لا توجد ملاحظات';
-        document.getElementById('orderTotal').textContent = order.total || '0';
-        
-        // تحديث حالة الطلب
-        updateOrderStatusDisplay(order.status);
-        
-        // تعبئة قائمة العناصر
-        const orderItemsList = document.getElementById('orderItemsList');
-        orderItemsList.innerHTML = '';
-        if (order.items && order.items.length > 0) {
+        if (order.items) {
           order.items.forEach(item => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'order-item';
-            itemDiv.innerHTML = `
-              <div>${item.plat} × ${item.quantity}</div>
-              <div>${item.prix * item.quantity} درهم</div>
-            `;
-            orderItemsList.appendChild(itemDiv);
+            if (popularItems[item.plat]) {
+              popularItems[item.plat] += item.quantity;
+            } else {
+              popularItems[item.plat] = item.quantity;
+            }
           });
-        } else {
-          orderItemsList.innerHTML = `
-            <div style="text-align: center; padding: 1rem; color: var(--text); opacity: 0.6;">
-              <i class="fas fa-info-circle"></i>
-              <p>لا توجد أصناف في هذا الطلب</p>
-            </div>
-          `;
         }
-        
-        // إظهار المودال
-        document.getElementById('orderModal').classList.add('active');
-      }
+      });
+      
+      // تحويل الأطباق الشائعة إلى مصفوفة وترتيبها
+      const popularItemsArray = Object.entries(popularItems)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5); // أعلى 5 أطباق فقط
+      
+      // بناء محتوى HTML للطباعة
+      let printContent = `
+        <!DOCTYPE html>
+        <html dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>تقرير الطلبات - دار حسنا</title>
+          <style>
+            body { font-family: 'Tajawal', sans-serif; padding: 20px; }
+            h1, h2 { color: #0F3460; text-align: center; }
+            h1 { margin-bottom: 5px; }
+            h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { padding: 10px; text-align: right; border: 1px solid #ddd; }
+            th { background-color: #f2f2f2; }
+            .badge { padding: 3px 8px; border-radius: 50px; font-size: 12px; }
+            .badge-warning { background-color: #fff3cd; color: #856404; }
+            .badge-primary { background-color: #cce5ff; color: #004085; }
+            .badge-success { background-color: #d4edda; color: #155724; }
+            .badge-danger { background-color: #f8d7da; color: #721c24; }
+            .print-date { text-align: left; margin-bottom: 20px; }
+            .stats-section { margin: 20px 0; }
+            .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+            .stat-label { font-weight: bold; }
+            @page { size: auto; margin: 10mm; }
+          </style>
+        </head>
+        <body>
+          <div class="print-content">
+            <h1>سجل الطلبات - دار حسنا</h1>
+            <h2>تقرير شامل عن الطلبات والإحصائيات</h2>
+            <div class="print-date">تاريخ الطباعة: ${new Date().toLocaleString('ar-EG')}</div>
+            
+            <div class="stats-section">
+              <h3>إحصائيات اليوم (${today})</h3>
+              <div class="stat-row">
+                <span class="stat-label">عدد الطلبات اليوم:</span>
+                <span>${todayOrders}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">إجمالي المبيعات اليوم:</span>
+                <span>${todaySales} درهم</span>
+              </div>
+            </div>
+            
+            <div class="stats-section">
+              <h3>الأطباق الأكثر طلباً</h3>
+              ${popularItemsArray.length > 0 ? 
+                popularItemsArray.map(item => `
+                  <div class="stat-row">
+                    <span>${item[0]}</span>
+                    <span>${item[1]} طلب</span>
+                  </div>
+                `).join('') : 
+                '<p>لا توجد بيانات عن الأطباق المطلوبة</p>'}
+            </div>
+            
+            <h3>تفاصيل جميع الطلبات</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>رقم الطلب</th>
+                  <th>رقم الطاولة</th>
+                  <th>الوقت</th>
+                  <th>المجموع</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
 
-      // دالة تحديث عرض حالة الطلب
-      function updateOrderStatusDisplay(status) {
-        const orderStatusSpan = document.getElementById('orderStatus');
-        orderStatusSpan.innerHTML = '';
-        
+      // إضافة كل الطلبات إلى المحتوى
+      orders.forEach(order => {
         let statusText = '';
         let badgeClass = '';
         
-        switch (status) {
+        switch (order.status) {
           case 'pending':
             statusText = 'جديد';
             badgeClass = 'badge-warning';
@@ -1383,322 +1191,685 @@
             badgeClass = 'badge-danger';
             break;
           default:
-            statusText = status;
+            statusText = order.status || 'غير معروف';
             badgeClass = 'badge-secondary';
         }
         
-        const badge = document.createElement('span');
-        badge.className = `badge ${badgeClass}`;
-        badge.textContent = statusText;
-        orderStatusSpan.appendChild(badge);
+        printContent += `
+          <tr>
+            <td>${order.id || '-'}</td>
+            <td>${order.table || '-'}</td>
+            <td>${formatDateTime(order.timestamp)}</td>
+            <td>${order.total || '0'} درهم</td>
+            <td><span class="badge ${badgeClass}">${statusText}</span></td>
+          </tr>
+        `;
+      });
+
+      printContent += `
+              </tbody>
+            </table>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // كتابة المحتوى إلى نافذة الطباعة
+      printWindow.document.open();
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+
+      // تأخير الطباعة لضمان تحميل المحتوى
+      printWindow.onload = function() {
+        setTimeout(() => {
+          try {
+            printWindow.focus();
+            printWindow.print();
+            setTimeout(() => {
+              if (!printWindow.closed) {
+                printWindow.close();
+              }
+            }, 1000);
+          } catch (error) {
+            toastr.error('حدث خطأ أثناء الطباعة: ' + error.message);
+            if (!printWindow.closed) {
+              printWindow.close();
+            }
+          }
+        }, 1000);
+      };
+    }
+
+    // دالة طباعة طلب واحد
+    function printOrder() {
+      if (!currentUser) {
+        toastr.error('يجب تسجيل الدخول لاستخدام هذه الميزة');
+        return;
+      }
+
+      if (!currentOrder) return;
+
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      
+      if (!printWindow || printWindow.closed) {
+        toastr.error('لم يتم فتح نافذة الطباعة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع');
+        return;
+      }
+
+      let statusText = '';
+      let badgeClass = '';
+      
+      switch (currentOrder.status) {
+        case 'pending':
+          statusText = 'جديد';
+          badgeClass = 'badge-warning';
+          break;
+        case 'preparing':
+          statusText = 'قيد التحضير';
+          badgeClass = 'badge-primary';
+          break;
+        case 'completed':
+          statusText = 'مكتمل';
+          badgeClass = 'badge-success';
+          break;
+        case 'cancelled':
+          statusText = 'ملغى';
+          badgeClass = 'badge-danger';
+          break;
+        default:
+          statusText = currentOrder.status || 'غير معروف';
+          badgeClass = 'badge-secondary';
+      }
+
+      let itemsContent = '';
+      if (currentOrder.items && currentOrder.items.length > 0) {
+        currentOrder.items.forEach(item => {
+          itemsContent += `
+            <div style="display: flex; justify-content: space-between; padding: 8px; background: #f8f9fa; border-radius: 8px; margin-bottom: 5px;">
+              <div>${item.plat} × ${item.quantity}</div>
+              <div>${item.prix * item.quantity} درهم</div>
+            </div>
+          `;
+        });
+      } else {
+        itemsContent = '<p>لا توجد أصناف في هذا الطلب</p>';
+      }
+
+      const printContent = `
+        <!DOCTYPE html>
+        <html dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>تفاصيل الطلب #${currentOrder.id}</title>
+          <style>
+            body { font-family: 'Tajawal', sans-serif; padding: 20px; }
+            h1 { color: #0F3460; text-align: center; }
+            .order-details-row { display: flex; margin-bottom: 10px; }
+            .order-details-label { font-weight: bold; min-width: 120px; }
+            .badge { padding: 3px 8px; border-radius: 50px; font-size: 12px; }
+            .badge-warning { background-color: #fff3cd; color: #856404; }
+            .badge-primary { background-color: #cce5ff; color: #004085; }
+            .badge-success { background-color: #d4edda; color: #155724; }
+            .badge-danger { background-color: #f8d7da; color: #721c24; }
+            .order-total { font-weight: bold; font-size: 1.2rem; text-align: left; margin: 15px 0; padding-top: 15px; border-top: 1px solid #ddd; }
+            @page { size: auto; margin: 10mm; }
+          </style>
+        </head>
+        <body>
+          <h1>تفاصيل الطلب #${currentOrder.id}</h1>
+          
+          <div class="order-details-row">
+            <div class="order-details-label">رقم الطاولة:</div>
+            <div>${currentOrder.table || '-'}</div>
+          </div>
+          <div class="order-details-row">
+            <div class="order-details-label">حالة الطلب:</div>
+            <div><span class="badge ${badgeClass}">${statusText}</span></div>
+          </div>
+          <div class="order-details-row">
+            <div class="order-details-label">وقت الطلب:</div>
+            <div>${formatDateTime(currentOrder.timestamp)}</div>
+          </div>
+          <div class="order-details-row">
+            <div class="order-details-label">ملاحظات:</div>
+            <div>${currentOrder.notes || 'لا توجد ملاحظات'}</div>
+          </div>
+          
+          <h3>الأصناف المطلوبة:</h3>
+          ${itemsContent}
+          
+          <div class="order-total">
+            المجموع: ${currentOrder.total || '0'} درهم
+          </div>
+        </body>
+        </html>
+      `;
+
+      printWindow.document.open();
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+
+      printWindow.onload = function() {
+        setTimeout(() => {
+          try {
+            printWindow.focus();
+            printWindow.print();
+            setTimeout(() => {
+              if (!printWindow.closed) {
+                printWindow.close();
+              }
+            }, 1000);
+          } catch (error) {
+            toastr.error('حدث خطأ أثناء الطباعة: ' + error.message);
+            if (!printWindow.closed) {
+              printWindow.close();
+            }
+          }
+        }, 1000);
+      };
+    }
+
+    // دالة حساب الإحصائيات المتقدمة
+    function calculateAdvancedStats() {
+      const today = new Date().toLocaleDateString('ar-EG');
+      let todayOrders = 0;
+      let todaySales = 0;
+      const popularItems = {};
+      
+      orders.forEach(order => {
+        const orderDate = new Date(order.timestamp).toLocaleDateString('ar-EG');
+        if (orderDate === today) {
+          todayOrders++;
+          todaySales += order.total || 0;
+        }
         
-        // تحديث أزرار الإجراءات بناءً على الحالة
-        document.getElementById('completeOrderBtn').style.display = status === 'completed' ? 'none' : 'inline-flex';
-        document.getElementById('preparingOrderBtn').style.display = status === 'preparing' || status === 'completed' || status === 'cancelled' ? 'none' : 'inline-flex';
-        document.getElementById('cancelOrderBtn').style.display = status === 'cancelled' || status === 'completed' ? 'none' : 'inline-flex';
+        if (order.items) {
+          order.items.forEach(item => {
+            if (popularItems[item.plat]) {
+              popularItems[item.plat] += item.quantity;
+            } else {
+              popularItems[item.plat] = item.quantity;
+            }
+          });
+        }
+      });
+      
+      // تحويل الأطباق الشائعة إلى مصفوفة وترتيبها
+      const popularItemsArray = Object.entries(popularItems)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5); // أعلى 5 أطباق فقط
+      
+      // تحديث واجهة الأطباق الشائعة
+      const popularItemsContainer = document.getElementById('popularItems');
+      if (popularItemsArray.length > 0) {
+        popularItemsContainer.innerHTML = popularItemsArray.map(item => `
+          <div class="popular-item">
+            <span>${item[0]}</span>
+            <span>${item[1]} طلب</span>
+          </div>
+        `).join('');
+      } else {
+        popularItemsContainer.innerHTML = `
+          <div style="text-align: center; padding: 1rem; color: var(--text); opacity: 0.6;">
+            <i class="fas fa-info-circle"></i>
+            <p>لا توجد بيانات عن الأطباق المطلوبة</p>
+          </div>
+        `;
+      }
+      
+      // تحديث واجهة إحصائيات اليوم
+      const dailyStatsContainer = document.getElementById('dailyStats');
+      dailyStatsContainer.innerHTML = `
+        <div class="daily-stat">
+          <span>عدد الطلبات اليوم:</span>
+          <span>${todayOrders}</span>
+        </div>
+        <div class="daily-stat">
+          <span>إجمالي المبيعات اليوم:</span>
+          <span>${todaySales} درهم</span>
+        </div>
+      `;
+    }
+
+    // دالة إعادة تعيين جميع الطلبات
+    function resetAllOrders() {
+      if (!currentUser) {
+        toastr.error('يجب تسجيل الدخول لاستخدام هذه الميزة');
+        return;
       }
 
-      // دالة إغلاق المودال
-      function closeOrderModal() {
-        document.getElementById('orderModal').classList.remove('active');
-        currentOrder = null;
-      }
-
-      // دالة تحديث الإحصائيات
-      function updateStats() {
-        let totalOrders = orders.length;
-        let pendingOrders = orders.filter(o => o.status === 'pending').length;
-        let completedOrders = orders.filter(o => o.status === 'completed').length;
-        let totalSales = orders.filter(o => o.status === 'completed')
-                              .reduce((sum, o) => sum + (o.total || 0), 0);
+      if (confirm('هل أنت متأكد من أنك تريد حذف جميع الطلبات والإحصائيات؟ هذا الإجراء لا يمكن التراجع عنه!')) {
+        const ordersRef = ref(database, 'orders');
         
-        document.getElementById('totalOrders').textContent = totalOrders;
-        document.getElementById('pendingOrders').textContent = pendingOrders;
-        document.getElementById('completedOrders').textContent = completedOrders;
-        document.getElementById('totalSales').textContent = totalSales + ' درهم';
+        remove(ordersRef)
+          .then(() => {
+            toastr.success('تم حذف جميع الطلبات بنجاح');
+            lastOrdersCount = 0;
+            lastPendingCount = 0;
+            orders = [];
+            updateStats();
+            displayOrders([]);
+          })
+          .catch((error) => {
+            toastr.error('حدث خطأ أثناء حذف الطلبات: ' + error.message);
+          });
+      }
+    }
+
+    // دالة فتح مودال الطلب
+    function openOrderModal(order) {
+      if (!currentUser) {
+        toastr.error('يجب تسجيل الدخول لاستخدام هذه الميزة');
+        return;
       }
 
-      // دالة تحميل الطلبات من Firebase
-      function loadOrders() {
-        const ordersTable = document.getElementById('ordersTable');
+      currentOrder = order;
+      
+      document.getElementById('orderId').textContent = order.id || '-';
+      document.getElementById('orderTable').textContent = order.table || '-';
+      document.getElementById('orderTime').textContent = formatDateTime(order.timestamp);
+      document.getElementById('orderNotes').textContent = order.notes || 'لا توجد ملاحظات';
+      document.getElementById('orderTotal').textContent = order.total || '0';
+      
+      // تحديث حالة الطلب
+      updateOrderStatusDisplay(order.status);
+      
+      // تعبئة قائمة العناصر
+      const orderItemsList = document.getElementById('orderItemsList');
+      orderItemsList.innerHTML = '';
+      if (order.items && order.items.length > 0) {
+        order.items.forEach(item => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'order-item';
+          itemDiv.innerHTML = `
+            <div>${item.plat} × ${item.quantity}</div>
+            <div>${item.prix * item.quantity} درهم</div>
+          `;
+          orderItemsList.appendChild(itemDiv);
+        });
+      } else {
+        orderItemsList.innerHTML = `
+          <div style="text-align: center; padding: 1rem; color: var(--text); opacity: 0.6;">
+            <i class="fas fa-info-circle"></i>
+            <p>لا توجد أصناف في هذا الطلب</p>
+          </div>
+        `;
+      }
+      
+      // إظهار المودال
+      document.getElementById('orderModal').classList.add('active');
+    }
+
+    // دالة تحديث عرض حالة الطلب
+    function updateOrderStatusDisplay(status) {
+      const orderStatusSpan = document.getElementById('orderStatus');
+      orderStatusSpan.innerHTML = '';
+      
+      let statusText = '';
+      let badgeClass = '';
+      
+      switch (status) {
+        case 'pending':
+          statusText = 'جديد';
+          badgeClass = 'badge-warning';
+          break;
+        case 'preparing':
+          statusText = 'قيد التحضير';
+          badgeClass = 'badge-primary';
+          break;
+        case 'completed':
+          statusText = 'مكتمل';
+          badgeClass = 'badge-success';
+          break;
+        case 'cancelled':
+          statusText = 'ملغى';
+          badgeClass = 'badge-danger';
+          break;
+        default:
+          statusText = status;
+          badgeClass = 'badge-secondary';
+      }
+      
+      const badge = document.createElement('span');
+      badge.className = `badge ${badgeClass}`;
+      badge.textContent = statusText;
+      orderStatusSpan.appendChild(badge);
+      
+      // تحديث أزرار الإجراءات بناءً على الحالة
+      document.getElementById('completeOrderBtn').style.display = status === 'completed' ? 'none' : 'inline-flex';
+      document.getElementById('preparingOrderBtn').style.display = status === 'preparing' || status === 'completed' || status === 'cancelled' ? 'none' : 'inline-flex';
+      document.getElementById('cancelOrderBtn').style.display = status === 'cancelled' || status === 'completed' ? 'none' : 'inline-flex';
+    }
+
+    // دالة إغلاق المودال
+    function closeOrderModal() {
+      document.getElementById('orderModal').classList.remove('active');
+      currentOrder = null;
+    }
+
+    // دالة تحديث الإحصائيات
+    function updateStats() {
+      let totalOrders = orders.length;
+      let pendingOrders = orders.filter(o => o.status === 'pending').length;
+      let completedOrders = orders.filter(o => o.status === 'completed').length;
+      let totalSales = orders.filter(o => o.status === 'completed')
+                            .reduce((sum, o) => sum + (o.total || 0), 0);
+      
+      document.getElementById('totalOrders').textContent = totalOrders;
+      document.getElementById('pendingOrders').textContent = pendingOrders;
+      document.getElementById('completedOrders').textContent = completedOrders;
+      document.getElementById('totalSales').textContent = totalSales + ' درهم';
+    }
+
+    // دالة تحميل الطلبات من Firebase
+    function loadOrders() {
+      if (!currentUser) {
+        return;
+      }
+
+      const ordersTable = document.getElementById('ordersTable');
+      ordersTable.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+            <p>جاري تحميل الطلبات...</p>
+          </td>
+        </tr>
+      `;
+      
+      const ordersRef = ref(database, 'orders');
+      
+      // استماع للإضافات الجديدة فقط
+      onChildAdded(ordersRef, (snapshot) => {
+        const newOrder = snapshot.val();
+        newOrder.id = snapshot.key;
+        
+        // إضافة الطلب الجديد لمصفوفة الطلبات
+        orders.unshift(newOrder);
+        
+        // تحديث الإحصائيات
+        updateStats();
+        
+        // عرض الطلبات
+        displayOrders(orders.filter(order => 
+          currentStatusFilter === 'all' || order.status === currentStatusFilter
+        ));
+        
+        // إظهار إشعار للطلب الجديد
+        showNewOrderNotification(newOrder);
+      });
+      
+      // استماع للتغييرات الأخرى (حذف، تحديث)
+      onValue(ordersRef, (snapshot) => {
+        orders = [];
+        snapshot.forEach(childSnapshot => {
+          const order = childSnapshot.val();
+          order.id = childSnapshot.key;
+          orders.push(order);
+        });
+        
+        updateStats();
+        calculateAdvancedStats();
+      });
+    }
+
+    // دالة عرض الطلبات في الجدول
+    function displayOrders(ordersList) {
+      const ordersTable = document.getElementById('ordersTable');
+      
+      // ترتيب من الأحدث للأقدم
+      ordersList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      
+      if (ordersList.length === 0) {
         ordersTable.innerHTML = `
           <tr>
             <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
-              <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
-              <p>جاري تحميل الطلبات...</p>
+              <i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+              <p>لا توجد طلبات</p>
             </td>
           </tr>
         `;
+        return;
+      }
+      
+      ordersTable.innerHTML = ordersList.map(order => {
+        // تحديد نص الحالة
+        let statusText = '';
+        let badgeClass = '';
         
-        const ordersRef = ref(database, 'orders');
+        switch (order.status) {
+          case 'pending':
+            statusText = 'جديد';
+            badgeClass = 'badge-warning';
+            break;
+          case 'preparing':
+            statusText = 'قيد التحضير';
+            badgeClass = 'badge-primary';
+            break;
+          case 'completed':
+            statusText = 'مكتمل';
+            badgeClass = 'badge-success';
+            break;
+          case 'cancelled':
+            statusText = 'ملغى';
+            badgeClass = 'badge-danger';
+            break;
+          default:
+            statusText = order.status || 'غير معروف';
+            badgeClass = 'badge-secondary';
+        }
         
-        // استماع للإضافات الجديدة فقط
-        onChildAdded(ordersRef, (snapshot) => {
-          const newOrder = snapshot.val();
-          newOrder.id = snapshot.key;
+        return `
+          <tr class="order-row" data-id="${order.id}">
+            <td>${order.id || '-'}</td>
+            <td>${order.table || '-'}</td>
+            <td>${formatDateTime(order.timestamp)}</td>
+            <td>${order.total || '0'} درهم</td>
+            <td><span class="badge ${badgeClass}">${statusText}</span></td>
+            <td>
+              <div class="actions">
+                <button class="action-btn edit" data-id="${order.id}">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="action-btn complete" data-id="${order.id}" ${order.status === 'completed' ? 'style="display: none;"' : ''}>
+                  <i class="fas fa-check"></i>
+                </button>
+                <button class="action-btn delete" data-id="${order.id}" ${order.status === 'cancelled' ? 'style="display: none;"' : ''}>
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      
+      // إضافة تأثير للصف الجديد
+      const newRows = document.querySelectorAll('.order-row:not(.loaded)');
+      newRows.forEach(row => {
+        row.classList.add('new-order', 'loaded');
+      });
+      
+      // إضافة أحداث النقر للأزرار
+      document.querySelectorAll('.action-btn.edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const orderId = this.getAttribute('data-id');
+          const order = orders.find(o => o.id === orderId);
+          if (order) openOrderModal(order);
+        });
+      });
+      
+      document.querySelectorAll('.action-btn.complete').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const orderId = this.getAttribute('data-id');
+          updateOrderStatus(orderId, 'completed');
+        });
+      });
+      
+      document.querySelectorAll('.action-btn.delete').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const orderId = this.getAttribute('data-id');
+          if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
+            updateOrderStatus(orderId, 'cancelled');
+          }
+        });
+      });
+    }
+
+    // دالة تحديث حالة الطلب
+    function updateOrderStatus(orderId, newStatus) {
+      if (!currentUser) {
+        toastr.error('يجب تسجيل الدخول لاستخدام هذه الميزة');
+        return;
+      }
+
+      const orderRef = ref(database, `orders/${orderId}/status`);
+      
+      set(orderRef, newStatus)
+        .then(() => {
+          toastr.success('تم تحديث حالة الطلب بنجاح');
           
-          // إضافة الطلب الجديد لمصفوفة الطلبات
-          orders.unshift(newOrder);
+          // إذا كان الطلب الحالي مفتوحًا، قم بتحديثه
+          if (currentOrder && currentOrder.id === orderId) {
+            currentOrder.status = newStatus;
+            updateOrderStatusDisplay(newStatus);
+          }
           
-          // تحديث الإحصائيات
-          updateStats();
-          
-          // عرض الطلبات
+          // تحديث عرض الطلبات
           displayOrders(orders.filter(order => 
             currentStatusFilter === 'all' || order.status === currentStatusFilter
           ));
           
-          // إظهار إشعار للطلب الجديد
-          showNewOrderNotification(newOrder);
-        });
-        
-        // استماع للتغييرات الأخرى (حذف، تحديث)
-        onValue(ordersRef, (snapshot) => {
-          orders = [];
-          snapshot.forEach(childSnapshot => {
-            const order = childSnapshot.val();
-            order.id = childSnapshot.key;
-            orders.push(order);
-          });
-          
+          // تحديث الإحصائيات
           updateStats();
-          calculateAdvancedStats();
+        })
+        .catch((error) => {
+          toastr.error('حدث خطأ أثناء تحديث حالة الطلب: ' + error.message);
         });
-      }
-
-      // دالة عرض الطلبات في الجدول
-      function displayOrders(ordersList) {
-        const ordersTable = document.getElementById('ordersTable');
-        
-        // ترتيب من الأحدث للأقدم
-        ordersList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        
-        if (ordersList.length === 0) {
-          ordersTable.innerHTML = `
-            <tr>
-              <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
-                <i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
-                <p>لا توجد طلبات</p>
-              </td>
-            </tr>
-          `;
-          return;
-        }
-        
-        ordersTable.innerHTML = ordersList.map(order => {
-          // تحديد نص الحالة
-          let statusText = '';
-          let badgeClass = '';
-          
-          switch (order.status) {
-            case 'pending':
-              statusText = 'جديد';
-              badgeClass = 'badge-warning';
-              break;
-            case 'preparing':
-              statusText = 'قيد التحضير';
-              badgeClass = 'badge-primary';
-              break;
-            case 'completed':
-              statusText = 'مكتمل';
-              badgeClass = 'badge-success';
-              break;
-            case 'cancelled':
-              statusText = 'ملغى';
-              badgeClass = 'badge-danger';
-              break;
-            default:
-              statusText = order.status || 'غير معروف';
-              badgeClass = 'badge-secondary';
-          }
-          
-          return `
-            <tr class="order-row" data-id="${order.id}">
-              <td>${order.id || '-'}</td>
-              <td>${order.table || '-'}</td>
-              <td>${formatDateTime(order.timestamp)}</td>
-              <td>${order.total || '0'} درهم</td>
-              <td><span class="badge ${badgeClass}">${statusText}</span></td>
-              <td>
-                <div class="actions">
-                  <button class="action-btn edit" data-id="${order.id}">
-                    <i class="fas fa-eye"></i>
-                  </button>
-                  <button class="action-btn complete" data-id="${order.id}" ${order.status === 'completed' ? 'style="display: none;"' : ''}>
-                    <i class="fas fa-check"></i>
-                  </button>
-                  <button class="action-btn delete" data-id="${order.id}" ${order.status === 'cancelled' ? 'style="display: none;"' : ''}>
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join('');
-        
-        // إضافة تأثير للصف الجديد
-        const newRows = document.querySelectorAll('.order-row:not(.loaded)');
-        newRows.forEach(row => {
-          row.classList.add('new-order', 'loaded');
-        });
-        
-        // إضافة أحداث النقر للأزرار
-        document.querySelectorAll('.action-btn.edit').forEach(btn => {
-          btn.addEventListener('click', function() {
-            const orderId = this.getAttribute('data-id');
-            const order = orders.find(o => o.id === orderId);
-            if (order) openOrderModal(order);
-          });
-        });
-        
-        document.querySelectorAll('.action-btn.complete').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const orderId = this.getAttribute('data-id');
-            updateOrderStatus(orderId, 'completed');
-          });
-        });
-        
-        document.querySelectorAll('.action-btn.delete').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const orderId = this.getAttribute('data-id');
-            if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
-              updateOrderStatus(orderId, 'cancelled');
-            }
-          });
-        });
-      }
-
-      // دالة تحديث حالة الطلب
-      function updateOrderStatus(orderId, newStatus) {
-        const orderRef = ref(database, `orders/${orderId}/status`);
-        
-        set(orderRef, newStatus)
-          .then(() => {
-            toastr.success('تم تحديث حالة الطلب بنجاح');
-            
-            // إذا كان الطلب الحالي مفتوحًا، قم بتحديثه
-            if (currentOrder && currentOrder.id === orderId) {
-              currentOrder.status = newStatus;
-              updateOrderStatusDisplay(newStatus);
-            }
-            
-            // تحديث عرض الطلبات
-            displayOrders(orders.filter(order => 
-              currentStatusFilter === 'all' || order.status === currentStatusFilter
-            ));
-            
-            // تحديث الإحصائيات
-            updateStats();
-          })
-          .catch((error) => {
-            toastr.error('حدث خطأ أثناء تحديث حالة الطلب: ' + error.message);
-          });
-      }
-
-      // دالة تصفية الطلبات حسب الحالة
-      function filterOrdersByStatus(status) {
-        currentStatusFilter = status;
-        
-        if (status === 'all') {
-          displayOrders(orders);
-          return;
-        }
-        
-        const filteredOrders = orders.filter(order => order.status === status);
-        displayOrders(filteredOrders);
-      }
-
-      // دالة البحث في الطلبات
-      function searchOrders(query) {
-        if (!query) {
-          filterOrdersByStatus(currentStatusFilter);
-          return;
-        }
-        
-        const filteredOrders = orders.filter(order => 
-          (order.id && order.id.includes(query)) ||
-          (order.table && order.table.toString().includes(query)) ||
-          (order.notes && order.notes.includes(query))
-        );
-        
-        displayOrders(filteredOrders);
-      }
-
-      // دالة فتح ملف modification.html
-      function openModificationFile() {
-        window.open('modification.html', '_blank');
-      }
-
-      // ========== أحداث DOM ==========
-      // عناصر DOM
-      const closeModalBtn = document.getElementById('closeModal');
-      const cancelBtn = document.getElementById('cancelBtn');
-      const completeOrderBtn = document.getElementById('completeOrderBtn');
-      const preparingOrderBtn = document.getElementById('preparingOrderBtn');
-      const cancelOrderBtn = document.getElementById('cancelOrderBtn');
-      const printOrderBtn = document.getElementById('printOrderBtn');
-      const printAllBtn = document.getElementById('printAllBtn');
-      const resetAllBtn = document.getElementById('resetAllBtn');
-      const refreshOrdersBtn = document.getElementById('refreshOrders');
-      const openModificationBtn = document.getElementById('openModificationBtn');
-      const addOrderBtn = document.getElementById('addOrderBtn');
-      const searchOrdersInput = document.getElementById('searchOrders');
-      const statusButtons = document.querySelectorAll('.status-btn');
-
-      // أحداث النقر
-      closeModalBtn.addEventListener('click', closeOrderModal);
-      cancelBtn.addEventListener('click', closeOrderModal);
-      printOrderBtn.addEventListener('click', printOrder);
-      printAllBtn.addEventListener('click', printAllOrders);
-      resetAllBtn.addEventListener('click', resetAllOrders);
-      refreshOrdersBtn.addEventListener('click', loadOrders);
-      openModificationBtn.addEventListener('click', openModificationFile);
-      addOrderBtn.addEventListener('click', addNewOrder);
-      
-      completeOrderBtn.addEventListener('click', () => {
-        if (currentOrder) {
-          updateOrderStatus(currentOrder.id, 'completed');
-        }
-      });
-      
-      preparingOrderBtn.addEventListener('click', () => {
-        if (currentOrder) {
-          updateOrderStatus(currentOrder.id, 'preparing');
-        }
-      });
-      
-      cancelOrderBtn.addEventListener('click', () => {
-        if (currentOrder && confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
-          updateOrderStatus(currentOrder.id, 'cancelled');
-        }
-      });
-      
-      statusButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-          statusButtons.forEach(b => b.classList.remove('active'));
-          this.classList.add('active');
-          filterOrdersByStatus(this.dataset.status);
-        });
-      });
-      
-      searchOrdersInput.addEventListener('input', function() {
-        searchOrders(this.value.trim());
-      });
-
-      // تسجيل الخروج
-      document.querySelector('.logout-btn').addEventListener('click', function() {
-        signOut(auth).then(() => {
-          window.location.href = 'login.html';
-        }).catch((error) => {
-          toastr.error('حدث خطأ أثناء تسجيل الخروج: ' + error.message);
-        });
-      });
-
-      // بدء تحميل الطلبات بعد التحقق من المصادقة
-      loadOrders();
     }
+
+    // دالة تصفية الطلبات حسب الحالة
+    function filterOrdersByStatus(status) {
+      currentStatusFilter = status;
+      
+      if (status === 'all') {
+        displayOrders(orders);
+        return;
+      }
+      
+      const filteredOrders = orders.filter(order => order.status === status);
+      displayOrders(filteredOrders);
+    }
+
+    // دالة البحث في الطلبات
+    function searchOrders(query) {
+      if (!query) {
+        filterOrdersByStatus(currentStatusFilter);
+        return;
+      }
+      
+      const filteredOrders = orders.filter(order => 
+        (order.id && order.id.includes(query)) ||
+        (order.table && order.table.toString().includes(query)) ||
+        (order.notes && order.notes.includes(query))
+      );
+      
+      displayOrders(filteredOrders);
+    }
+
+    // أحداث DOM
+    document.addEventListener('DOMContentLoaded', function() {
+      // التحقق من حالة المصادقة
+      onAuthStateChanged(auth, (user) => {
+        const authLoading = document.querySelector('.auth-loading');
+        const unauthMessage = document.querySelector('.unauth-message');
+        const authContent = document.getElementById('auth-content');
+        
+        if (user) {
+          // المستخدم مسجل الدخول
+          currentUser = user;
+          
+          // إخفاء شاشة التحميل ورسالة عدم التصريح
+          authLoading.style.display = 'none';
+          unauthMessage.style.display = 'none';
+          
+          // إظهار المحتوى الرئيسي
+          authContent.style.display = 'block';
+          document.querySelector('.main-content').style.display = 'block';
+          
+          // تحميل الطلبات
+          loadOrders();
+          
+          // عناصر DOM
+          const closeModalBtn = document.getElementById('closeModal');
+          const cancelBtn = document.getElementById('cancelBtn');
+          const completeOrderBtn = document.getElementById('completeOrderBtn');
+          const preparingOrderBtn = document.getElementById('preparingOrderBtn');
+          const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+          const printOrderBtn = document.getElementById('printOrderBtn');
+          const printAllBtn = document.getElementById('printAllBtn');
+          const resetAllBtn = document.getElementById('resetAllBtn');
+          const refreshOrdersBtn = document.getElementById('refreshOrders');
+          const openModificationBtn = document.getElementById('openModificationBtn');
+          const searchOrdersInput = document.getElementById('searchOrders');
+          const statusButtons = document.querySelectorAll('.status-btn');
+
+          // أحداث النقر
+          closeModalBtn.addEventListener('click', closeOrderModal);
+          cancelBtn.addEventListener('click', closeOrderModal);
+          printOrderBtn.addEventListener('click', printOrder);
+          printAllBtn.addEventListener('click', printAllOrders);
+          resetAllBtn.addEventListener('click', resetAllOrders);
+          refreshOrdersBtn.addEventListener('click', loadOrders);
+          openModificationBtn.addEventListener('click', openModificationFile);
+          
+          completeOrderBtn.addEventListener('click', () => {
+            if (currentOrder) {
+              updateOrderStatus(currentOrder.id, 'completed');
+            }
+          });
+          
+          preparingOrderBtn.addEventListener('click', () => {
+            if (currentOrder) {
+              updateOrderStatus(currentOrder.id, 'preparing');
+            }
+          });
+          
+          cancelOrderBtn.addEventListener('click', () => {
+            if (currentOrder && confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
+              updateOrderStatus(currentOrder.id, 'cancelled');
+            }
+          });
+          
+          statusButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+              statusButtons.forEach(b => b.classList.remove('active'));
+              this.classList.add('active');
+              filterOrdersByStatus(this.dataset.status);
+            });
+          });
+          
+          searchOrdersInput.addEventListener('input', function() {
+            searchOrders(this.value.trim());
+          });
+
+          // تسجيل الخروج
+          document.querySelector('.logout-btn').addEventListener('click', function() {
+            signOut(auth).then(() => {
+              window.location.href = 'login.html';
+            }).catch((error) => {
+              toastr.error('حدث خطأ أثناء تسجيل الخروج: ' + error.message);
+            });
+          });
+        } else {
+          // المستخدم غير مسجل الدخول
+          authLoading.style.display = 'none';
+          unauthMessage.style.display = 'flex';
+          authContent.style.display = 'none';
+        }
+      });
+    });
   </script>
   
   <!-- Toastr للإشعارات -->
