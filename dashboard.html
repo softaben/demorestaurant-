@@ -640,6 +640,10 @@
       <div class="page-title">
         <h1>إدارة الطلبات</h1>
         <div>
+          <button class="btn btn-primary" id="printAllBtn">
+            <i class="fas fa-print"></i>
+            طباعة السجل
+          </button>
           <button class="btn btn-primary" id="refreshOrders">
             <i class="fas fa-sync-alt"></i>
             تحديث الطلبات
@@ -798,7 +802,7 @@
       authDomain: "fir-afb14.firebaseapp.com",
       databaseURL: "https://fir-afb14-default-rtdb.firebaseio.com",
       projectId: "fir-afb14",
-      storageBucket: "fir-afb14.firebasestorage.app",
+      storageBucket: "fir-afb14.appspot.com",
       messagingSenderId: "696865036390",
       appId: "1:696865036390:web:7299226db4346c5251f5a7",
       measurementId: "G-ENGTMMTDX4"
@@ -815,7 +819,8 @@
       closeButton: true,
       progressBar: true,
       positionClass: 'toast-top-left',
-      rtl: true
+      rtl: true,
+      timeOut: 2000 // يختفي بعد ثانيتين
     };
 
     // متغيرات التطبيق
@@ -823,6 +828,8 @@
     let orders = [];
     let currentOrder = null;
     let currentStatusFilter = 'all';
+    let lastOrdersCount = 0;
+    let lastPendingCount = 0;
 
     // دالة تنسيق التاريخ والوقت
     function formatDateTime(timestamp) {
@@ -838,20 +845,118 @@
       return `${day}/${month}/${year} - ${hours}:${minutes}`;
     }
 
+    // دالة طباعة السجل الكامل
+    function printAllOrders() {
+      // إنشاء نافذة طباعة
+      const printWindow = window.open('', '_blank');
+      
+      // بناء محتوى HTML للطباعة
+      let printContent = `
+        <html>
+          <head>
+            <title>سجل الطلبات - دار حسنا</title>
+            <style>
+              body { font-family: 'Tajawal', sans-serif; direction: rtl; padding: 20px; }
+              h1 { color: #0F3460; text-align: center; margin-bottom: 20px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { padding: 10px; text-align: right; border: 1px solid #ddd; }
+              th { background-color: #f2f2f2; }
+              .badge { padding: 3px 8px; border-radius: 50px; font-size: 12px; }
+              .badge-warning { background-color: #fff3cd; color: #856404; }
+              .badge-primary { background-color: #cce5ff; color: #004085; }
+              .badge-success { background-color: #d4edda; color: #155724; }
+              .badge-danger { background-color: #f8d7da; color: #721c24; }
+              .print-date { text-align: left; margin-bottom: 20px; }
+            </style>
+          </head>
+          <body>
+            <h1>سجل الطلبات - دار حسنا</h1>
+            <div class="print-date">تاريخ الطباعة: ${new Date().toLocaleString('ar-EG')}</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>رقم الطلب</th>
+                  <th>رقم الطاولة</th>
+                  <th>الوقت</th>
+                  <th>المجموع</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+
+      // إضافة كل الطلبات إلى المحتوى
+      orders.forEach(order => {
+        let statusText = '';
+        let badgeClass = '';
+        
+        switch (order.status) {
+          case 'pending':
+            statusText = 'جديد';
+            badgeClass = 'badge-warning';
+            break;
+          case 'preparing':
+            statusText = 'قيد التحضير';
+            badgeClass = 'badge-primary';
+            break;
+          case 'completed':
+            statusText = 'مكتمل';
+            badgeClass = 'badge-success';
+            break;
+          case 'cancelled':
+            statusText = 'ملغى';
+            badgeClass = 'badge-danger';
+            break;
+          default:
+            statusText = order.status || 'غير معروف';
+            badgeClass = 'badge-secondary';
+        }
+        
+        printContent += `
+          <tr>
+            <td>${order.id || '-'}</td>
+            <td>${order.table || '-'}</td>
+            <td>${formatDateTime(order.timestamp)}</td>
+            <td>${order.total || '0'} درهم</td>
+            <td><span class="badge ${badgeClass}">${statusText}</span></td>
+          </tr>
+        `;
+      });
+
+      printContent += `
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `;
+
+      // كتابة المحتوى إلى نافذة الطباعة وإغلاقها بعد الطباعة
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.focus();
+      
+      // الانتظار قليلاً لتحميل المحتوى قبل الطباعة
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    }
+
     // دالة فتح مودال الطلب
     function openOrderModal(order) {
       currentOrder = order;
       
-      orderIdSpan.textContent = order.id || '-';
-      orderTableSpan.textContent = order.table || '-';
-      orderTimeSpan.textContent = formatDateTime(order.timestamp);
-      orderNotesSpan.textContent = order.notes || 'لا توجد ملاحظات';
-      orderTotalSpan.textContent = order.total || '0';
+      document.getElementById('orderId').textContent = order.id || '-';
+      document.getElementById('orderTable').textContent = order.table || '-';
+      document.getElementById('orderTime').textContent = formatDateTime(order.timestamp);
+      document.getElementById('orderNotes').textContent = order.notes || 'لا توجد ملاحظات';
+      document.getElementById('orderTotal').textContent = order.total || '0';
       
       // تحديث حالة الطلب
       updateOrderStatusDisplay(order.status);
       
       // تعبئة قائمة العناصر
+      const orderItemsList = document.getElementById('orderItemsList');
       orderItemsList.innerHTML = '';
       if (order.items && order.items.length > 0) {
         order.items.forEach(item => {
@@ -873,11 +978,12 @@
       }
       
       // إظهار المودال
-      orderModal.classList.add('active');
+      document.getElementById('orderModal').classList.add('active');
     }
 
     // دالة تحديث عرض حالة الطلب
     function updateOrderStatusDisplay(status) {
+      const orderStatusSpan = document.getElementById('orderStatus');
       orderStatusSpan.innerHTML = '';
       
       let statusText = '';
@@ -911,14 +1017,14 @@
       orderStatusSpan.appendChild(badge);
       
       // تحديث أزرار الإجراءات بناءً على الحالة
-      completeOrderBtn.style.display = status === 'completed' ? 'none' : 'inline-flex';
-      preparingOrderBtn.style.display = status === 'preparing' || status === 'completed' || status === 'cancelled' ? 'none' : 'inline-flex';
-      cancelOrderBtn.style.display = status === 'cancelled' || status === 'completed' ? 'none' : 'inline-flex';
+      document.getElementById('completeOrderBtn').style.display = status === 'completed' ? 'none' : 'inline-flex';
+      document.getElementById('preparingOrderBtn').style.display = status === 'preparing' || status === 'completed' || status === 'cancelled' ? 'none' : 'inline-flex';
+      document.getElementById('cancelOrderBtn').style.display = status === 'cancelled' || status === 'completed' ? 'none' : 'inline-flex';
     }
 
     // دالة إغلاق المودال
     function closeOrderModal() {
-      orderModal.classList.remove('active');
+      document.getElementById('orderModal').classList.remove('active');
       currentOrder = null;
     }
 
@@ -929,6 +1035,7 @@
 
     // دالة تحميل الطلبات من Firebase
     function loadOrders() {
+      const ordersTable = document.getElementById('ordersTable');
       ordersTable.innerHTML = `
         <tr>
           <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
@@ -962,6 +1069,22 @@
           }
         });
         
+        // إشعار الطلبات الجديدة
+        if (totalOrders > lastOrdersCount && lastOrdersCount > 0) {
+          const newOrders = totalOrders - lastOrdersCount;
+          toastr.info(`تم إضافة ${newOrders} طلب جديد`, 'طلب جديد');
+        }
+        
+        // إشعار الطلبات المعلقة الجديدة
+        if (pendingOrders > lastPendingCount && lastPendingCount > 0) {
+          const newPending = pendingOrders - lastPendingCount;
+          toastr.warning(`لديك ${newPending} طلب جديد يحتاج إلى معالجة`, 'طلبات جديدة');
+        }
+        
+        // تحديث العدادات
+        lastOrdersCount = totalOrders;
+        lastPendingCount = pendingOrders;
+        
         // تحديث الإحصائيات
         document.getElementById('totalOrders').textContent = totalOrders;
         document.getElementById('pendingOrders').textContent = pendingOrders;
@@ -978,6 +1101,7 @@
 
     // دالة عرض الطلبات في الجدول
     function displayOrders(ordersList) {
+      const ordersTable = document.getElementById('ordersTable');
       ordersTable.innerHTML = '';
       
       if (ordersList.length === 0) {
@@ -1123,86 +1247,77 @@
       displayOrders(filteredOrders);
     }
 
-    // عناصر DOM
-    const ordersTable = document.getElementById('ordersTable');
-    const orderModal = document.getElementById('orderModal');
-    const orderIdSpan = document.getElementById('orderId');
-    const orderTableSpan = document.getElementById('orderTable');
-    const orderStatusSpan = document.getElementById('orderStatus');
-    const orderTimeSpan = document.getElementById('orderTime');
-    const orderNotesSpan = document.getElementById('orderNotes');
-    const orderItemsList = document.getElementById('orderItemsList');
-    const orderTotalSpan = document.getElementById('orderTotal');
-    const closeModalBtn = document.getElementById('closeModal');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const completeOrderBtn = document.getElementById('completeOrderBtn');
-    const preparingOrderBtn = document.getElementById('preparingOrderBtn');
-    const cancelOrderBtn = document.getElementById('cancelOrderBtn');
-    const printOrderBtn = document.getElementById('printOrderBtn');
-    const refreshOrdersBtn = document.getElementById('refreshOrders');
-    const searchOrdersInput = document.getElementById('searchOrders');
-    const statusButtons = document.querySelectorAll('.status-btn');
-
     // أحداث DOM
-    closeModalBtn.addEventListener('click', closeOrderModal);
-    cancelBtn.addEventListener('click', closeOrderModal);
-    refreshOrdersBtn.addEventListener('click', loadOrders);
-    printOrderBtn.addEventListener('click', printOrder);
-    
-    completeOrderBtn.addEventListener('click', () => {
-      if (currentOrder) {
-        updateOrderStatus(currentOrder.id, 'completed');
-      }
-    });
-    
-    preparingOrderBtn.addEventListener('click', () => {
-      if (currentOrder) {
-        updateOrderStatus(currentOrder.id, 'preparing');
-      }
-    });
-    
-    cancelOrderBtn.addEventListener('click', () => {
-      if (currentOrder && confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
-        updateOrderStatus(currentOrder.id, 'cancelled');
-      }
-    });
-    
-    statusButtons.forEach(btn => {
-      btn.addEventListener('click', function() {
-        statusButtons.forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        filterOrdersByStatus(this.dataset.status);
-      });
-    });
-    
-    searchOrdersInput.addEventListener('input', function() {
-      searchOrders(this.value.trim());
-    });
-
-    // تسجيل الخروج
-    document.querySelector('.logout-btn').addEventListener('click', function() {
-      signOut(auth).then(() => {
-        window.location.href = 'login.html';
-      }).catch((error) => {
-        toastr.error('حدث خطأ أثناء تسجيل الخروج: ' + error.message);
-      });
-    });
-
-    // التحقق من حالة المصادقة
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        // تحميل الطلبات عند تسجيل الدخول
-        loadOrders();
-      } else {
-        // إعادة التوجيه إلى صفحة تسجيل الدخول إذا لم يكن المستخدم مسجلاً
-        window.location.href = 'login.html';
-      }
-    });
-
-    // تهيئة التطبيق عند تحميل الصفحة
     document.addEventListener('DOMContentLoaded', function() {
-      // يمكنك إضافة أي تهيئة إضافية هنا إذا لزم الأمر
+      // عناصر DOM
+      const closeModalBtn = document.getElementById('closeModal');
+      const cancelBtn = document.getElementById('cancelBtn');
+      const completeOrderBtn = document.getElementById('completeOrderBtn');
+      const preparingOrderBtn = document.getElementById('preparingOrderBtn');
+      const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+      const printOrderBtn = document.getElementById('printOrderBtn');
+      const printAllBtn = document.getElementById('printAllBtn');
+      const refreshOrdersBtn = document.getElementById('refreshOrders');
+      const searchOrdersInput = document.getElementById('searchOrders');
+      const statusButtons = document.querySelectorAll('.status-btn');
+
+      // أحداث النقر
+      closeModalBtn.addEventListener('click', closeOrderModal);
+      cancelBtn.addEventListener('click', closeOrderModal);
+      printOrderBtn.addEventListener('click', printOrder);
+      printAllBtn.addEventListener('click', printAllOrders);
+      refreshOrdersBtn.addEventListener('click', loadOrders);
+      
+      completeOrderBtn.addEventListener('click', () => {
+        if (currentOrder) {
+          updateOrderStatus(currentOrder.id, 'completed');
+        }
+      });
+      
+      preparingOrderBtn.addEventListener('click', () => {
+        if (currentOrder) {
+          updateOrderStatus(currentOrder.id, 'preparing');
+        }
+      });
+      
+      cancelOrderBtn.addEventListener('click', () => {
+        if (currentOrder && confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
+          updateOrderStatus(currentOrder.id, 'cancelled');
+        }
+      });
+      
+      statusButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          statusButtons.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          filterOrdersByStatus(this.dataset.status);
+        });
+      });
+      
+      searchOrdersInput.addEventListener('input', function() {
+        searchOrders(this.value.trim());
+      });
+
+      // تسجيل الخروج
+      document.querySelector('.logout-btn').addEventListener('click', function() {
+        signOut(auth).then(() => {
+          window.location.href = 'login.html';
+        }).catch((error) => {
+          toastr.error('حدث خطأ أثناء تسجيل الخروج: ' + error.message);
+        });
+      });
+
+      // التحقق من حالة المصادقة
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          currentUser = user;
+          // تحميل الطلبات عند تسجيل الدخول
+          loadOrders();
+        } else {
+          // إعادة التوجيه إلى صفحة تسجيل الدخول إذا لم يكن المستخدم مسجلاً
+          window.location.href = 'login.html';
+        }
+      });
     });
   </script>
   
