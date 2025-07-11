@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <style>
     :root {
       --primary: #E94560;
@@ -54,6 +55,7 @@
       margin-bottom: 30px;
       padding-bottom: 20px;
       border-bottom: 1px solid var(--gray);
+      position: relative;
     }
 
     .logo {
@@ -66,6 +68,19 @@
     .subtitle {
       font-size: 1.1rem;
       color: var(--primary);
+    }
+
+    .logout-btn {
+      position: absolute;
+      left: 15px;
+      top: 20px;
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: 'Tajawal', sans-serif;
     }
 
     .tabs {
@@ -414,6 +429,17 @@
       color: var(--danger);
     }
 
+    /* تنسيقات نافذة تسجيل الدخول */
+    #loginModal .modal-content {
+      max-width: 400px;
+    }
+
+    #loginBtn {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: 0 10px;
@@ -428,12 +454,46 @@
         padding: 6px 12px;
         font-size: 0.9rem;
       }
+
+      .logout-btn {
+        position: static;
+        margin-top: 10px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <!-- نافذة تسجيل الدخول -->
+  <div class="modal" id="loginModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">تسجيل الدخول</h3>
+        <button class="close" id="closeLoginModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="email" class="form-label">البريد الإلكتروني</label>
+            <input type="email" class="form-control" id="email" required>
+          </div>
+          <div class="form-group">
+            <label for="password" class="form-label">كلمة المرور</label>
+            <input type="password" class="form-control" id="password" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="loginBtn">تسجيل الدخول</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- المحتوى الرئيسي (يظهر بعد تسجيل الدخول) -->
+  <div class="container" id="mainContent" style="display: none;">
     <div class="header">
+      <button class="logout-btn" id="logoutBtn">
+        <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+      </button>
       <h1 class="logo">Demo</h1>
       <p class="subtitle">نظام إدارة القائمة</p>
       <button class="btn btn-success" onclick="window.open('menu.html', '_self')">
@@ -653,6 +713,7 @@
     // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
+    const auth = firebase.auth();
 
     // مراجع Firebase
     const menuRef = database.ref('menu');
@@ -661,6 +722,11 @@
     const tabs = document.querySelectorAll('.tab');
     const tabContents = document.querySelectorAll('.tab-content');
     const alertContainer = document.getElementById('alertContainer');
+    const mainContent = document.getElementById('mainContent');
+    const loginModal = document.getElementById('loginModal');
+    const loginBtn = document.getElementById('loginBtn');
+    const closeLoginModal = document.getElementById('closeLoginModal');
+    const logoutBtn = document.getElementById('logoutBtn');
     
     // عناصر إدارة الأقسام
     const categoriesList = document.getElementById('categoriesList');
@@ -706,7 +772,21 @@
     // تهيئة التطبيق
     function init() {
       setupEventListeners();
-      loadMenuData();
+      
+      // مراقبة حالة المصادقة
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          // المستخدم مسجل الدخول
+          mainContent.style.display = 'block';
+          loginModal.classList.remove('active');
+          loadMenuData();
+        } else {
+          // لا يوجد مستخدم مسجل الدخول
+          mainContent.style.display = 'none';
+          loginModal.classList.add('active');
+        }
+      });
+      
       setupTabs();
     }
 
@@ -719,6 +799,11 @@
           switchTab(tabId);
         });
       });
+      
+      // أحداث تسجيل الدخول والخروج
+      loginBtn.addEventListener('click', loginUser);
+      closeLoginModal.addEventListener('click', () => loginModal.classList.remove('active'));
+      logoutBtn.addEventListener('click', logoutUser);
       
       // أحداث إدارة الأقسام
       addCategoryBtn.addEventListener('click', openCategoryModal);
@@ -738,6 +823,32 @@
       
       // تحديث قائمة الأقسام عند تغيير نوع الوجبة
       itemMealTypeSelect.addEventListener('change', updateCategoryDropdown);
+    }
+
+    // تسجيل الدخول
+    function loginUser(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          showAlert('تم تسجيل الدخول بنجاح!', 'success');
+        })
+        .catch((error) => {
+          showAlert('خطأ في تسجيل الدخول: ' + error.message, 'danger');
+        });
+    }
+
+    // تسجيل الخروج
+    function logoutUser() {
+      auth.signOut()
+        .then(() => {
+          showAlert('تم تسجيل الخروج بنجاح', 'success');
+        })
+        .catch((error) => {
+          showAlert('خطأ في تسجيل الخروج: ' + error.message, 'danger');
+        });
     }
 
     // تحميل بيانات القائمة من Firebase
@@ -1123,8 +1234,6 @@
       
       // حذف الصنف من البيانات المحلية
       menuData[mealType][sectionIndex].items.splice(itemIndex, 1);
-      
-      // إذا لم يعد هناك أصناف في القسم، يمكن حذف القسم (اختياري)
       
       // حفظ التغييرات في Firebase
       menuRef.set(menuData)
