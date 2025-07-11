@@ -3,17 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>دار حسنا | لوحة التحكم - إدارة القائمة</title>
+  <title>دار حسنا | لوحة التحكم</title>
   <!-- خطوط Google -->
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
   <!-- أيقونات Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <!-- Toastr للإشعارات -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css">
   <style>
     :root {
       --primary: #E94560;
-      --primary-light: #ff6b81;
       --secondary: #0F3460;
       --light: #F8F5F2;
       --dark: #16213E;
@@ -21,15 +20,12 @@
       --text: #2D3748;
       --white: #FFFFFF;
       --gray: #EDF2F7;
-      --light-gray: #f5f5f5;
       --success: #4CAF50;
       --warning: #FF9800;
       --danger: #F44336;
-      --info: #2196F3;
       --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       --transition: all 0.3s ease;
       --radius: 12px;
-      --radius-sm: 8px;
     }
 
     * {
@@ -119,7 +115,7 @@
     }
 
     .logout-btn:hover {
-      background: var(--primary-light);
+      background: #d13354;
     }
 
     /* المحتوى الرئيسي */
@@ -176,7 +172,7 @@
     }
 
     .btn-primary:hover {
-      background: var(--primary-light);
+      background: #d13354;
     }
 
     .btn-success {
@@ -195,24 +191,6 @@
 
     .btn-secondary:hover {
       background: #0d2b4f;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: var(--white);
-    }
-
-    .btn-danger:hover {
-      background: #d32f2f;
-    }
-
-    .btn-info {
-      background: var(--info);
-      color: var(--white);
-    }
-
-    .btn-info:hover {
-      background: #0b7dda;
     }
 
     /* كروت الإحصائيات */
@@ -275,13 +253,8 @@
       color: var(--danger);
     }
 
-    .stat-icon.info {
-      background: rgba(33, 150, 243, 0.1);
-      color: var(--info);
-    }
-
-    /* جدول القائمة */
-    .menu-table {
+    /* جدول الطلبات */
+    .orders-table {
       width: 100%;
       background: var(--white);
       border-radius: var(--radius);
@@ -371,9 +344,9 @@
       color: var(--danger);
     }
 
-    .badge-info {
-      background: rgba(33, 150, 243, 0.1);
-      color: var(--info);
+    .badge-primary {
+      background: rgba(233, 69, 96, 0.1);
+      color: var(--primary);
     }
 
     .actions {
@@ -410,83 +383,15 @@
       background: #d32f2f;
     }
 
-    .action-btn.visibility {
-      background: var(--warning);
+    .action-btn.complete {
+      background: var(--success);
     }
 
-    .action-btn.visibility:hover {
-      background: #e68a00;
+    .action-btn.complete:hover {
+      background: #3d8b40;
     }
 
-    .action-btn.info {
-      background: var(--info);
-    }
-
-    .action-btn.info:hover {
-      background: #0b7dda;
-    }
-
-    /* أقسام القائمة */
-    .sections-container {
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      margin-bottom: 2rem;
-      overflow: hidden;
-    }
-
-    .sections-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 1.5rem;
-      background: var(--dark);
-      color: var(--white);
-    }
-
-    .sections-header h3 {
-      font-size: 1.2rem;
-    }
-
-    .sections-list {
-      padding: 1rem;
-    }
-
-    .section-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem;
-      border-bottom: 1px solid var(--gray);
-      transition: var(--transition);
-    }
-
-    .section-item:last-child {
-      border-bottom: none;
-    }
-
-    .section-item:hover {
-      background: rgba(0, 0, 0, 0.02);
-    }
-
-    .section-info {
-      display: flex;
-      align-items: center;
-    }
-
-    .section-info i {
-      margin-left: 0.5rem;
-      color: var(--gold);
-      font-size: 1.2rem;
-    }
-
-    .section-stats {
-      font-size: 0.9rem;
-      color: var(--text);
-      opacity: 0.7;
-    }
-
-    /* نموذج إضافة/تعديل عنصر */
+    /* مودال تفاصيل الطلب */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -514,7 +419,7 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       width: 100%;
-      max-width: 600px;
+      max-width: 800px;
       max-height: 90vh;
       overflow-y: auto;
       transform: translateY(20px);
@@ -557,41 +462,41 @@
       padding: 1.5rem;
     }
 
-    .form-group {
+    .order-details {
       margin-bottom: 1.5rem;
     }
 
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
+    .order-details-row {
+      display: flex;
+      margin-bottom: 1rem;
+    }
+
+    .order-details-label {
+      font-weight: 600;
       color: var(--dark);
+      min-width: 120px;
     }
 
-    .form-control {
-      width: 100%;
-      padding: 0.8rem 1rem;
-      border: 1px solid var(--gray);
-      border-radius: var(--radius-sm);
-      font-family: 'Tajawal', sans-serif;
-      transition: var(--transition);
+    .order-items {
+      margin: 1.5rem 0;
     }
 
-    .form-control:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2);
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.8rem;
+      background: var(--light);
+      border-radius: var(--radius);
+      margin-bottom: 0.5rem;
     }
 
-    textarea.form-control {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+    .order-total {
+      font-weight: 700;
+      font-size: 1.2rem;
+      text-align: left;
+      margin: 1.5rem 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--gray);
     }
 
     .form-actions {
@@ -603,77 +508,62 @@
       border-top: 1px solid var(--gray);
     }
 
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 24px;
+    /* فلتر الحالة */
+    .status-filter {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
     }
 
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
+    .status-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
       cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: var(--transition);
-      border-radius: 34px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 16px;
-      width: 16px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: var(--transition);
-      border-radius: 50%;
-    }
-
-    input:checked + .slider {
-      background-color: var(--success);
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
-
-    .switch-label {
-      margin-right: 0.5rem;
-      font-weight: 500;
-    }
-
-    .switch-container {
-      display: flex;
-      align-items: center;
-    }
-
-    /* مودال تأكيد الحذف */
-    .confirm-modal {
+      border: 1px solid var(--gray);
       background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      width: 100%;
-      max-width: 400px;
-      overflow: hidden;
+      transition: var(--transition);
     }
 
-    .confirm-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      padding: 1.5rem;
-      border-top: 1px solid var(--gray);
+    .status-btn.active {
+      background: var(--secondary);
+      color: var(--white);
+      border-color: var(--secondary);
+    }
+
+    /* زر الطباعة */
+    .print-btn {
+      background: var(--dark);
+      color: var(--white);
+      margin-left: 10px;
+    }
+
+    .print-btn:hover {
+      background: #0d2b4f;
+    }
+
+    /* تنسيقات الطباعة */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .modal, .modal * {
+        visibility: visible;
+      }
+      .modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        max-height: 100%;
+        box-shadow: none;
+        transform: none !important;
+      }
+      .form-actions, .close-modal {
+        display: none !important;
+      }
     }
 
     /* تنسيقات للجوال */
@@ -696,10 +586,6 @@
         grid-template-columns: 1fr;
       }
 
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-
       .search-box input {
         width: 180px;
       }
@@ -709,14 +595,12 @@
         overflow-x: auto;
       }
 
-      .page-title {
+      .order-details-row {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
       }
 
-      .page-title .btn {
-        width: 100%;
+      .status-filter {
+        flex-wrap: wrap;
       }
     }
   </style>
@@ -735,12 +619,12 @@
           <span>الإحصائيات</span>
         </a>
         <a href="#" class="active">
-          <i class="fas fa-list"></i>
-          <span>قائمة الطعام</span>
-        </a>
-        <a href="#">
           <i class="fas fa-shopping-cart"></i>
           <span>الطلبات</span>
+        </a>
+        <a href="#">
+          <i class="fas fa-list"></i>
+          <span>قائمة الطعام</span>
         </a>
         <button class="logout-btn">
           <i class="fas fa-sign-out-alt"></i>
@@ -754,15 +638,11 @@
   <main class="main-content">
     <div class="container">
       <div class="page-title">
-        <h1>إدارة قائمة الطعام</h1>
+        <h1>إدارة الطلبات</h1>
         <div>
-          <button class="btn btn-secondary" id="addSectionBtn" style="margin-left: 1rem;">
-            <i class="fas fa-layer-group"></i>
-            إضافة قسم جديد
-          </button>
-          <button class="btn btn-primary" id="addMenuItem">
-            <i class="fas fa-plus"></i>
-            إضافة عنصر جديد
+          <button class="btn btn-primary" id="refreshOrders">
+            <i class="fas fa-sync-alt"></i>
+            تحديث الطلبات
           </button>
         </div>
       </div>
@@ -771,17 +651,26 @@
       <div class="stats-cards">
         <div class="stat-card">
           <div class="stat-info">
-            <h3>إجمالي الأصناف</h3>
-            <h2 id="totalItems">0</h2>
+            <h3>إجمالي الطلبات</h3>
+            <h2 id="totalOrders">0</h2>
           </div>
           <div class="stat-icon primary">
-            <i class="fas fa-list"></i>
+            <i class="fas fa-shopping-cart"></i>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-info">
-            <h3>الأصناف النشطة</h3>
-            <h2 id="activeItems">0</h2>
+            <h3>طلبات جديدة</h3>
+            <h2 id="pendingOrders">0</h2>
+          </div>
+          <div class="stat-icon warning">
+            <i class="fas fa-clock"></i>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>طلبات مكتملة</h3>
+            <h2 id="completedOrders">0</h2>
           </div>
           <div class="stat-icon success">
             <i class="fas fa-check-circle"></i>
@@ -789,69 +678,49 @@
         </div>
         <div class="stat-card">
           <div class="stat-info">
-            <h3>الأصناف المخفية</h3>
-            <h2 id="hiddenItems">0</h2>
+            <h3>إجمالي المبيعات</h3>
+            <h2 id="totalSales">0 درهم</h2>
           </div>
-          <div class="stat-icon warning">
-            <i class="fas fa-eye-slash"></i>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-info">
-            <h3>الأقسام</h3>
-            <h2 id="totalSections">0</h2>
-          </div>
-          <div class="stat-icon info">
-            <i class="fas fa-layer-group"></i>
+          <div class="stat-icon danger">
+            <i class="fas fa-money-bill-wave"></i>
           </div>
         </div>
       </div>
 
-      <!-- قسم إدارة الأقسام -->
-      <div class="sections-container">
-        <div class="sections-header">
-          <h3>إدارة الأقسام</h3>
-          <button class="btn btn-info btn-sm" id="refreshSectionsBtn">
-            <i class="fas fa-sync-alt"></i>
-            تحديث
-          </button>
-        </div>
-        <div class="sections-list" id="sectionsList">
-          <!-- سيتم تعبئة الأقسام هنا -->
-          <div style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
-            <i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
-            <p>لا توجد أقسام متاحة</p>
-          </div>
-        </div>
+      <!-- فلتر الحالة -->
+      <div class="status-filter">
+        <button class="status-btn active" data-status="all">الكل</button>
+        <button class="status-btn" data-status="pending">جديدة</button>
+        <button class="status-btn" data-status="preparing">قيد التحضير</button>
+        <button class="status-btn" data-status="completed">مكتملة</button>
+        <button class="status-btn" data-status="cancelled">ملغاة</button>
       </div>
 
-      <!-- جدول القائمة -->
-      <div class="menu-table">
+      <!-- جدول الطلبات -->
+      <div class="orders-table">
         <div class="table-header">
-          <h3>جميع أصناف القائمة</h3>
+          <h3>سجل الطلبات</h3>
           <div class="search-box">
-            <input type="text" id="searchMenu" placeholder="بحث...">
+            <input type="text" id="searchOrders" placeholder="بحث...">
             <i class="fas fa-search"></i>
           </div>
         </div>
         <table>
           <thead>
             <tr>
-              <th>#</th>
-              <th>الصنف</th>
-              <th>القسم</th>
-              <th>الوصف</th>
-              <th>السعر</th>
+              <th>رقم الطلب</th>
+              <th>رقم الطاولة</th>
+              <th>الوقت</th>
+              <th>المجموع</th>
               <th>الحالة</th>
               <th>الإجراءات</th>
             </tr>
           </thead>
-          <tbody id="menuItemsTable">
-            <!-- سيتم تعبئة الجدول ديناميكياً -->
+          <tbody id="ordersTable">
             <tr>
-              <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
-                <i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
-                <p>لا توجد عناصر في القائمة</p>
+              <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                <p>جاري تحميل الطلبات...</p>
               </td>
             </tr>
           </tbody>
@@ -860,773 +729,471 @@
     </div>
   </main>
 
-  <!-- مودال إضافة/تعديل عنصر -->
-  <div class="modal-overlay" id="itemModal">
+  <!-- مودال تفاصيل الطلب -->
+  <div class="modal-overlay" id="orderModal">
     <div class="modal">
       <div class="modal-header">
-        <h3 id="modalTitle">إضافة عنصر جديد</h3>
+        <h3 id="modalTitle">تفاصيل الطلب #<span id="orderId"></span></h3>
         <button class="close-modal" id="closeModal">&times;</button>
       </div>
       <div class="modal-body">
-        <form id="menuItemForm">
-          <input type="hidden" id="itemId">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="itemName">اسم الصنف</label>
-              <input type="text" id="itemName" class="form-control" required>
-            </div>
-            <div class="form-group">
-              <label for="itemPrice">السعر (درهم)</label>
-              <input type="number" id="itemPrice" class="form-control" min="0" required>
-            </div>
+        <div class="order-details">
+          <div class="order-details-row">
+            <div class="order-details-label">رقم الطاولة:</div>
+            <div id="orderTable">-</div>
           </div>
-          <div class="form-group">
-            <label for="itemSection">القسم</label>
-            <select id="itemSection" class="form-control" required>
-              <option value="">اختر قسمًا</option>
-              <!-- سيتم تعبئة الأقسام ديناميكياً -->
-            </select>
+          <div class="order-details-row">
+            <div class="order-details-label">حالة الطلب:</div>
+            <div id="orderStatus"><span class="badge badge-warning">جديد</span></div>
           </div>
-          <div class="form-group">
-            <label for="itemIcon">أيقونة الصنف (اختياري)</label>
-            <input type="text" id="itemIcon" class="form-control" placeholder="مثال: fa-utensils">
-            <small class="text-muted">يمكنك اختيار أيقونة من <a href="https://fontawesome.com/icons" target="_blank">Font Awesome</a></small>
+          <div class="order-details-row">
+            <div class="order-details-label">وقت الطلب:</div>
+            <div id="orderTime">-</div>
           </div>
-          <div class="form-group">
-            <label for="itemDescription">الوصف (اختياري)</label>
-            <textarea id="itemDescription" class="form-control"></textarea>
+          <div class="order-details-row">
+            <div class="order-details-label">ملاحظات:</div>
+            <div id="orderNotes">لا توجد ملاحظات</div>
           </div>
-          <div class="form-group">
-            <div class="switch-container">
-              <span class="switch-label">الحالة:</span>
-              <label class="switch">
-                <input type="checkbox" id="itemStatus" checked>
-                <span class="slider"></span>
-              </label>
-              <span id="statusText" style="margin-right: 0.5rem;">نشط</span>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn" id="cancelBtn">إلغاء</button>
-            <button type="submit" class="btn btn-primary" id="saveBtn">حفظ</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+        </div>
 
-  <!-- مودال إضافة قسم جديد -->
-  <div class="modal-overlay" id="sectionModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 id="sectionModalTitle">إضافة قسم جديد</h3>
-        <button class="close-modal" id="closeSectionModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="sectionForm">
-          <div class="form-group">
-            <label for="sectionName">اسم القسم</label>
-            <input type="text" id="sectionName" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="sectionIcon">أيقونة القسم (اختياري)</label>
-            <input type="text" id="sectionIcon" class="form-control" placeholder="مثال: fa-utensils">
-            <small class="text-muted">يمكنك اختيار أيقونة من <a href="https://fontawesome.com/icons" target="_blank">Font Awesome</a></small>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn" id="cancelSectionBtn">إلغاء</button>
-            <button type="submit" class="btn btn-primary" id="saveSectionBtn">حفظ</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+        <h4>الأصناف المطلوبة:</h4>
+        <div class="order-items" id="orderItemsList">
+          <!-- سيتم تعبئة العناصر ديناميكياً -->
+        </div>
 
-  <!-- مودال تأكيد الحذف -->
-  <div class="modal-overlay" id="confirmDeleteModal">
-    <div class="confirm-modal">
-      <div class="modal-header">
-        <h3>تأكيد الحذف</h3>
-        <button class="close-modal" id="closeConfirmModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p id="confirmDeleteText">هل أنت متأكد من أنك تريد حذف هذا العنصر؟</p>
-      </div>
-      <div class="confirm-actions">
-        <button type="button" class="btn" id="cancelDeleteBtn">إلغاء</button>
-        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-          <i class="fas fa-trash"></i> حذف
-        </button>
+        <div class="order-total">
+          المجموع: <span id="orderTotal">0</span> درهم
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn print-btn" id="printOrderBtn">
+            <i class="fas fa-print"></i> طباعة
+          </button>
+          <button type="button" class="btn" id="cancelBtn">إغلاق</button>
+          <button type="button" class="btn btn-success" id="completeOrderBtn">
+            <i class="fas fa-check"></i> تم التسليم
+          </button>
+          <button type="button" class="btn btn-secondary" id="preparingOrderBtn">
+            <i class="fas fa-utensils"></i> قيد التحضير
+          </button>
+          <button type="button" class="btn btn-danger" id="cancelOrderBtn">
+            <i class="fas fa-times"></i> إلغاء الطلب
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <!-- Toastr للإشعارات -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
 
-  <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyB8t7aItx10OgZhOn4vkuiDzHYchh63cKo",
+      authDomain: "fir-afb14.firebaseapp.com",
+      databaseURL: "https://fir-afb14-default-rtdb.firebaseio.com",
+      projectId: "fir-afb14",
+      storageBucket: "fir-afb14.firebasestorage.app",
+      messagingSenderId: "696865036390",
+      appId: "1:696865036390:web:7299226db4346c5251f5a7",
+      measurementId: "G-ENGTMMTDX4"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const database = getDatabase(app);
+    const auth = getAuth(app);
+
     // تهيئة Toastr
     toastr.options = {
       closeButton: true,
       progressBar: true,
       positionClass: 'toast-top-left',
-      rtl: true,
-      timeOut: 3000,
-      extendedTimeOut: 2000
+      rtl: true
     };
-
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyDpSF4J0bsd6T0ImMpse0KQQRADaxiYUQw",
-      authDomain: "darhassna-484c3.firebaseapp.com",
-      databaseURL: "https://darhassna-484c3-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "darhassna-484c3",
-      storageBucket: "darhassna-484c3.firebasestorage.app",
-      messagingSenderId: "141393162149",
-      appId: "1:141393162149:web:0717227eac221f5ddfc24c"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const auth = firebase.auth();
 
     // متغيرات التطبيق
     let currentUser = null;
-    let menuItems = [];
-    let menuSections = [];
-    let currentEditingItem = null;
-    let itemToDelete = null;
-    let isDeletingSection = false;
+    let orders = [];
+    let currentOrder = null;
+    let currentStatusFilter = 'all';
 
-    // عناصر DOM
-    const menuItemsTable = document.getElementById('menuItemsTable');
-    const sectionsList = document.getElementById('sectionsList');
-    const itemModal = document.getElementById('itemModal');
-    const sectionModal = document.getElementById('sectionModal');
-    const confirmDeleteModal = document.getElementById('confirmDeleteModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const sectionModalTitle = document.getElementById('sectionModalTitle');
-    const menuItemForm = document.getElementById('menuItemForm');
-    const sectionForm = document.getElementById('sectionForm');
-    const confirmDeleteText = document.getElementById('confirmDeleteText');
-    const itemIdInput = document.getElementById('itemId');
-    const itemNameInput = document.getElementById('itemName');
-    const itemPriceInput = document.getElementById('itemPrice');
-    const itemSectionInput = document.getElementById('itemSection');
-    const itemIconInput = document.getElementById('itemIcon');
-    const itemDescriptionInput = document.getElementById('itemDescription');
-    const itemStatusInput = document.getElementById('itemStatus');
-    const statusText = document.getElementById('statusText');
-    const sectionNameInput = document.getElementById('sectionName');
-    const sectionIconInput = document.getElementById('sectionIcon');
-    const closeModalBtn = document.getElementById('closeModal');
-    const closeSectionModalBtn = document.getElementById('closeSectionModal');
-    const closeConfirmModal = document.getElementById('closeConfirmModal');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const cancelSectionBtn = document.getElementById('cancelSectionBtn');
-    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-    const saveBtn = document.getElementById('saveBtn');
-    const saveSectionBtn = document.getElementById('saveSectionBtn');
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    const addMenuItemBtn = document.getElementById('addMenuItem');
-    const addSectionBtn = document.getElementById('addSectionBtn');
-    const refreshSectionsBtn = document.getElementById('refreshSectionsBtn');
-    const searchMenuInput = document.getElementById('searchMenu');
-    const totalItemsSpan = document.getElementById('totalItems');
-    const activeItemsSpan = document.getElementById('activeItems');
-    const hiddenItemsSpan = document.getElementById('hiddenItems');
-    const totalSectionsSpan = document.getElementById('totalSections');
-
-    // أحداث التبديل للحالة
-    itemStatusInput.addEventListener('change', function() {
-      statusText.textContent = this.checked ? 'نشط' : 'مخفي';
-    });
-
-    // فتح وإغلاق المودال
-    function openModal(item = null) {
-      currentEditingItem = item;
+    // دالة تنسيق التاريخ والوقت
+    function formatDateTime(timestamp) {
+      if (!timestamp) return '-';
       
-      if (item) {
-        // وضع التعديل
-        modalTitle.textContent = 'تعديل الصنف';
-        itemIdInput.value = item.id;
-        itemNameInput.value = item.plat;
-        itemPriceInput.value = item.prix;
-        itemSectionInput.value = item.sectionId;
-        itemIconInput.value = item.icon || '';
-        itemDescriptionInput.value = item.description || '';
-        itemStatusInput.checked = !item.hidden;
-        statusText.textContent = !item.hidden ? 'نشط' : 'مخفي';
-        
-        // حفظ الفهرس الأصلي للقسم لتجنب مشكلة تغيير القسم
-        itemSectionInput.setAttribute('data-original-section', item.sectionId);
-      } else {
-        // وضع الإضافة
-        modalTitle.textContent = 'إضافة عنصر جديد';
-        menuItemForm.reset();
-        itemStatusInput.checked = true;
-        statusText.textContent = 'نشط';
-        itemSectionInput.removeAttribute('data-original-section');
-      }
+      const date = new Date(timestamp);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
       
-      itemModal.classList.add('active');
+      return `${day}/${month}/${year} - ${hours}:${minutes}`;
     }
 
-    function openSectionModal() {
-      sectionForm.reset();
-      sectionModalTitle.textContent = 'إضافة قسم جديد';
-      sectionModal.classList.add('active');
-    }
-
-    function closeModal() {
-      itemModal.classList.remove('active');
-      currentEditingItem = null;
-    }
-
-    function closeSectionModal() {
-      sectionModal.classList.remove('active');
-    }
-
-    function closeConfirmDeleteModal() {
-      confirmDeleteModal.classList.remove('active');
-      itemToDelete = null;
-      isDeletingSection = false;
-    }
-
-    addMenuItemBtn.addEventListener('click', () => openModal());
-    addSectionBtn.addEventListener('click', openSectionModal);
-    refreshSectionsBtn.addEventListener('click', () => {
-      loadSections();
-      loadMenuItems();
-      toastr.info('تم تحديث البيانات بنجاح');
-    });
-    closeModalBtn.addEventListener('click', closeModal);
-    closeSectionModalBtn.addEventListener('click', closeSectionModal);
-    closeConfirmModal.addEventListener('click', closeConfirmDeleteModal);
-    cancelBtn.addEventListener('click', closeModal);
-    cancelSectionBtn.addEventListener('click', closeSectionModal);
-    cancelDeleteBtn.addEventListener('click', closeConfirmDeleteModal);
-
-    // دالة عرض تأكيد الحذف
-    function showDeleteConfirmation(itemId, isSection = false) {
-      itemToDelete = itemId;
-      isDeletingSection = isSection;
+    // دالة فتح مودال الطلب
+    function openOrderModal(order) {
+      currentOrder = order;
       
-      if (isSection) {
-        const section = menuSections.find(s => s.id == itemId);
-        confirmDeleteText.textContent = `هل أنت متأكد من أنك تريد حذف قسم "${section.name}"؟ سيتم حذف جميع العناصر التابعة لهذا القسم!`;
-      } else {
-        const item = menuItems.find(i => i.id === itemId);
-        confirmDeleteText.textContent = `هل أنت متأكد من أنك تريد حذف "${item.plat}"؟`;
-      }
+      orderIdSpan.textContent = order.id || '-';
+      orderTableSpan.textContent = order.table || '-';
+      orderTimeSpan.textContent = formatDateTime(order.timestamp);
+      orderNotesSpan.textContent = order.notes || 'لا توجد ملاحظات';
+      orderTotalSpan.textContent = order.total || '0';
       
-      confirmDeleteModal.classList.add('active');
-    }
-
-    // دالة حذف العنصر بعد التأكيد
-    function performDelete() {
-      if (!itemToDelete) return;
+      // تحديث حالة الطلب
+      updateOrderStatusDisplay(order.status);
       
-      confirmDeleteBtn.disabled = true;
-      confirmDeleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
-      
-      if (isDeletingSection) {
-        // حذف قسم كامل
-        const sectionId = parseInt(itemToDelete);
-        
-        database.ref('menu').once('value').then(snapshot => {
-          const sections = snapshot.val() || [];
-          
-          if (sectionId >= 0 && sectionId < sections.length) {
-            // حذف القسم من المصفوفة
-            sections.splice(sectionId, 1);
-            
-            // حفظ المصفوفة المحدثة
-            database.ref('menu').set(sections)
-              .then(() => {
-                refreshAfterUpdate('تم حذف القسم وجميع عناصره بنجاح');
-                closeConfirmDeleteModal();
-              })
-              .catch(error => {
-                toastr.error('حدث خطأ أثناء حذف القسم: ' + error.message);
-              })
-              .finally(() => {
-                confirmDeleteBtn.disabled = false;
-                confirmDeleteBtn.innerHTML = '<i class="fas fa-trash"></i> حذف';
-              });
-          }
-        });
-      } else {
-        // حذف عنصر فردي
-        const [sectionIndex, itemIndex] = itemToDelete.split('-').map(Number);
-        
-        // الحل الجديد لحذف العنصر بشكل صحيح
-        database.ref('menu').once('value').then(snapshot => {
-          const menuData = snapshot.val();
-          
-          if (!menuData || !menuData[sectionIndex] || !menuData[sectionIndex].items) {
-            throw new Error('هيكل البيانات غير صحيح');
-          }
-          
-          // إذا كانت items كائنًا وليس مصفوفة
-          if (typeof menuData[sectionIndex].items === 'object' && !Array.isArray(menuData[sectionIndex].items)) {
-            const itemsKeys = Object.keys(menuData[sectionIndex].items);
-            if (itemIndex >= itemsKeys.length) {
-              throw new Error('فهرس العنصر غير صحيح');
-            }
-            const keyToDelete = itemsKeys[itemIndex];
-            return database.ref(`menu/${sectionIndex}/items/${keyToDelete}`).remove();
-          }
-          // إذا كانت items مصفوفة
-          else if (Array.isArray(menuData[sectionIndex].items)) {
-            if (itemIndex >= menuData[sectionIndex].items.length) {
-              throw new Error('فهرس العنصر غير صحيح');
-            }
-            menuData[sectionIndex].items.splice(itemIndex, 1);
-            return database.ref('menu').set(menuData);
-          }
-          else {
-            throw new Error('هيكل العناصر غير معروف');
-          }
-        })
-        .then(() => {
-          refreshAfterUpdate('تم حذف العنصر بنجاح');
-          closeConfirmDeleteModal();
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          toastr.error('حدث خطأ أثناء حذف العنصر: ' + error.message);
-        })
-        .finally(() => {
-          confirmDeleteBtn.disabled = false;
-          confirmDeleteBtn.innerHTML = '<i class="fas fa-trash"></i> حذف';
-        });
-      }
-    }
-
-    confirmDeleteBtn.addEventListener('click', performDelete);
-
-    // دالة لتحديث الصفحة بعد كل تغيير
-    function refreshAfterUpdate(message) {
-      toastr.success(message);
-      
-      // إعادة تحميل البيانات بعد ثانيتين
-      setTimeout(() => {
-        loadSections();
-        loadMenuItems();
-      }, 2000);
-    }
-
-    // تحميل الأقسام من Firebase
-    function loadSections() {
-      database.ref('menu').once('value').then(snapshot => {
-        menuSections = [];
-        itemSectionInput.innerHTML = '<option value="">اختر قسمًا</option>';
-        
-        const sectionsData = snapshot.val();
-        if (sectionsData && sectionsData.length > 0) {
-          sectionsData.forEach((section, index) => {
-            // حساب عدد العناصر في القسم
-            let itemCount = 0;
-            if (section.items) {
-              itemCount = Array.isArray(section.items) ? 
-                section.items.length : 
-                Object.keys(section.items).length;
-            }
-            
-            menuSections.push({
-              id: index,
-              name: section.section,
-              icon: section.icon || 'fa-utensils',
-              itemCount: itemCount
-            });
-            
-            // إضافة الأقسام إلى القائمة المنسدلة
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = section.section;
-            itemSectionInput.appendChild(option);
-          });
-          
-          totalSectionsSpan.textContent = sectionsData.length;
-          
-          // عرض الأقسام في قائمة الأقسام
-          displaySectionsList(menuSections);
-        } else {
-          sectionsList.innerHTML = `
-            <div style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
-              <i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
-              <p>لا توجد أقسام متاحة</p>
-            </div>
+      // تعبئة قائمة العناصر
+      orderItemsList.innerHTML = '';
+      if (order.items && order.items.length > 0) {
+        order.items.forEach(item => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'order-item';
+          itemDiv.innerHTML = `
+            <div>${item.plat} × ${item.quantity}</div>
+            <div>${item.prix * item.quantity} درهم</div>
           `;
-          totalSectionsSpan.textContent = '0';
-        }
-      }).catch(error => {
-        toastr.error('حدث خطأ أثناء تحميل الأقسام: ' + error.message);
-      });
-    }
-
-    // عرض الأقسام في قائمة الأقسام
-    function displaySectionsList(sections) {
-      if (sections.length === 0) {
-        sectionsList.innerHTML = `
-          <div style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
-            <i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
-            <p>لا توجد أقسام متاحة</p>
+          orderItemsList.appendChild(itemDiv);
+        });
+      } else {
+        orderItemsList.innerHTML = `
+          <div style="text-align: center; padding: 1rem; color: var(--text); opacity: 0.6;">
+            <i class="fas fa-info-circle"></i>
+            <p>لا توجد أصناف في هذا الطلب</p>
           </div>
         `;
-        return;
       }
       
-      sectionsList.innerHTML = '';
-      
-      sections.forEach(section => {
-        const sectionItem = document.createElement('div');
-        sectionItem.className = 'section-item';
-        sectionItem.innerHTML = `
-          <div class="section-info">
-            <i class="fas ${section.icon}"></i>
-            <div>
-              <h4>${section.name}</h4>
-              <div class="section-stats">${section.itemCount} عنصر</div>
-            </div>
-          </div>
-          <div class="actions">
-            <button class="action-btn delete" data-id="${section.id}" data-section="true">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        `;
-        sectionsList.appendChild(sectionItem);
-      });
-      
-      // إضافة أحداث النقر لأزرار حذف الأقسام
-      document.querySelectorAll('.action-btn.delete[data-section="true"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const sectionId = this.getAttribute('data-id');
-          showDeleteConfirmation(sectionId, true);
-        });
-      });
+      // إظهار المودال
+      orderModal.classList.add('active');
     }
 
-    // تحميل وعرض عناصر القائمة
-    function loadMenuItems() {
-      database.ref('menu').once('value').then(snapshot => {
-        menuItems = [];
-        let totalItems = 0;
-        let activeItems = 0;
-        let hiddenItems = 0;
+    // دالة تحديث عرض حالة الطلب
+    function updateOrderStatusDisplay(status) {
+      orderStatusSpan.innerHTML = '';
+      
+      let statusText = '';
+      let badgeClass = '';
+      
+      switch (status) {
+        case 'pending':
+          statusText = 'جديد';
+          badgeClass = 'badge-warning';
+          break;
+        case 'preparing':
+          statusText = 'قيد التحضير';
+          badgeClass = 'badge-primary';
+          break;
+        case 'completed':
+          statusText = 'مكتمل';
+          badgeClass = 'badge-success';
+          break;
+        case 'cancelled':
+          statusText = 'ملغى';
+          badgeClass = 'badge-danger';
+          break;
+        default:
+          statusText = status;
+          badgeClass = 'badge-secondary';
+      }
+      
+      const badge = document.createElement('span');
+      badge.className = `badge ${badgeClass}`;
+      badge.textContent = statusText;
+      orderStatusSpan.appendChild(badge);
+      
+      // تحديث أزرار الإجراءات بناءً على الحالة
+      completeOrderBtn.style.display = status === 'completed' ? 'none' : 'inline-flex';
+      preparingOrderBtn.style.display = status === 'preparing' || status === 'completed' || status === 'cancelled' ? 'none' : 'inline-flex';
+      cancelOrderBtn.style.display = status === 'cancelled' || status === 'completed' ? 'none' : 'inline-flex';
+    }
+
+    // دالة إغلاق المودال
+    function closeOrderModal() {
+      orderModal.classList.remove('active');
+      currentOrder = null;
+    }
+
+    // دالة طباعة الطلب
+    function printOrder() {
+      window.print();
+    }
+
+    // دالة تحميل الطلبات من Firebase
+    function loadOrders() {
+      ordersTable.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+            <p>جاري تحميل الطلبات...</p>
+          </td>
+        </tr>
+      `;
+      
+      const ordersRef = ref(database, 'orders');
+      
+      onValue(ordersRef, (snapshot) => {
+        orders = [];
+        let totalOrders = 0;
+        let pendingOrders = 0;
+        let completedOrders = 0;
+        let totalSales = 0;
         
-        const sectionsData = snapshot.val();
-        if (sectionsData && sectionsData.length > 0) {
-          sectionsData.forEach((section, sectionIndex) => {
-            if (section.items) {
-              // تحويل items من object إلى array إذا لزم الأمر
-              const itemsArray = section.items && typeof section.items === 'object' && !Array.isArray(section.items) ?
-                Object.values(section.items) : 
-                (section.items || []);
-                
-              itemsArray.forEach((item, itemIndex) => {
-                const menuItem = {
-                  id: `${sectionIndex}-${itemIndex}`,
-                  plat: item.plat,
-                  prix: item.prix,
-                  description: item.description || '',
-                  icon: item.icon || 'fa-circle',
-                  hidden: item.hidden || false,
-                  sectionId: sectionIndex,
-                  sectionName: section.section
-                };
-                
-                menuItems.push(menuItem);
-                totalItems++;
-                
-                if (item.hidden) {
-                  hiddenItems++;
-                } else {
-                  activeItems++;
-                }
-              });
-            }
-          });
+        snapshot.forEach((childSnapshot) => {
+          const order = childSnapshot.val();
+          order.id = childSnapshot.key;
           
-          // تحديث الإحصائيات
-          totalItemsSpan.textContent = totalItems;
-          activeItemsSpan.textContent = activeItems;
-          hiddenItemsSpan.textContent = hiddenItems;
+          orders.push(order);
+          totalOrders++;
           
-          // عرض العناصر في الجدول
-          displayMenuItems(menuItems);
-        } else {
-          menuItemsTable.innerHTML = `
-            <tr>
-              <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
-                <i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
-                <p>لا توجد عناصر في القائمة</p>
-              </td>
-            </tr>
-          `;
-          totalItemsSpan.textContent = '0';
-          activeItemsSpan.textContent = '0';
-          hiddenItemsSpan.textContent = '0';
-        }
-      }).catch(error => {
-        toastr.error('حدث خطأ أثناء تحميل القائمة: ' + error.message);
+          if (order.status === 'pending') {
+            pendingOrders++;
+          } else if (order.status === 'completed') {
+            completedOrders++;
+            totalSales += order.total || 0;
+          }
+        });
+        
+        // تحديث الإحصائيات
+        document.getElementById('totalOrders').textContent = totalOrders;
+        document.getElementById('pendingOrders').textContent = pendingOrders;
+        document.getElementById('completedOrders').textContent = completedOrders;
+        document.getElementById('totalSales').textContent = totalSales + ' درهم';
+        
+        // عرض الطلبات في الجدول
+        displayOrders(orders);
+      }, (error) => {
+        toastr.error('حدث خطأ أثناء تحميل الطلبات: ' + error.message);
+        console.error('Error loading orders:', error);
       });
     }
 
-    // عرض العناصر في الجدول
-    function displayMenuItems(items) {
-      menuItemsTable.innerHTML = '';
+    // دالة عرض الطلبات في الجدول
+    function displayOrders(ordersList) {
+      ordersTable.innerHTML = '';
       
-      if (items.length === 0) {
-        menuItemsTable.innerHTML = `
+      if (ordersList.length === 0) {
+        ordersTable.innerHTML = `
           <tr>
-            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
+            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.6;">
               <i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
-              <p>لا توجد عناصر في القائمة</p>
+              <p>لا توجد طلبات</p>
             </td>
           </tr>
         `;
         return;
       }
       
-      items.forEach((item, index) => {
+      // ترتيب الطلبات من الأحدث إلى الأقدم
+      ordersList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      
+      ordersList.forEach(order => {
         const tr = document.createElement('tr');
+        
+        // تحديد نص الحالة
+        let statusText = '';
+        let badgeClass = '';
+        
+        switch (order.status) {
+          case 'pending':
+            statusText = 'جديد';
+            badgeClass = 'badge-warning';
+            break;
+          case 'preparing':
+            statusText = 'قيد التحضير';
+            badgeClass = 'badge-primary';
+            break;
+          case 'completed':
+            statusText = 'مكتمل';
+            badgeClass = 'badge-success';
+            break;
+          case 'cancelled':
+            statusText = 'ملغى';
+            badgeClass = 'badge-danger';
+            break;
+          default:
+            statusText = order.status || 'غير معروف';
+            badgeClass = 'badge-secondary';
+        }
+        
         tr.innerHTML = `
-          <td>${index + 1}</td>
-          <td>
-            <i class="fas ${item.icon || 'fa-circle'}" style="margin-left: 0.5rem; color: var(--gold);"></i>
-            ${item.plat}
-          </td>
-          <td>${item.sectionName}</td>
-          <td>${item.description || '-'}</td>
-          <td>${item.prix} درهم</td>
-          <td>
-            <span class="badge ${item.hidden ? 'badge-warning' : 'badge-success'}">
-              ${item.hidden ? 'مخفي' : 'نشط'}
-            </span>
-          </td>
+          <td>${order.id || '-'}</td>
+          <td>${order.table || '-'}</td>
+          <td>${formatDateTime(order.timestamp)}</td>
+          <td>${order.total || '0'} درهم</td>
+          <td><span class="badge ${badgeClass}">${statusText}</span></td>
           <td>
             <div class="actions">
-              <button class="action-btn edit" data-id="${item.id}">
-                <i class="fas fa-edit"></i>
+              <button class="action-btn edit" data-id="${order.id}">
+                <i class="fas fa-eye"></i>
               </button>
-              <button class="action-btn visibility" data-id="${item.id}">
-                <i class="fas ${item.hidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
+              <button class="action-btn complete" data-id="${order.id}" ${order.status === 'completed' ? 'style="display: none;"' : ''}>
+                <i class="fas fa-check"></i>
               </button>
-              <button class="action-btn delete" data-id="${item.id}">
-                <i class="fas fa-trash"></i>
+              <button class="action-btn delete" data-id="${order.id}" ${order.status === 'cancelled' ? 'style="display: none;"' : ''}>
+                <i class="fas fa-times"></i>
               </button>
             </div>
           </td>
         `;
-        menuItemsTable.appendChild(tr);
-        
-        // إضافة حدث الحذف مباشرة للزر
-        const deleteBtn = tr.querySelector('.action-btn.delete');
-        deleteBtn.addEventListener('click', function() {
-          showDeleteConfirmation(this.getAttribute('data-id'), false);
+        ordersTable.appendChild(tr);
+      });
+      
+      // إضافة أحداث النقر للأزرار
+      document.querySelectorAll('.action-btn.edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const orderId = this.getAttribute('data-id');
+          const order = orders.find(o => o.id === orderId);
+          if (order) openOrderModal(order);
+        });
+      });
+      
+      document.querySelectorAll('.action-btn.complete').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const orderId = this.getAttribute('data-id');
+          updateOrderStatus(orderId, 'completed');
+        });
+      });
+      
+      document.querySelectorAll('.action-btn.delete').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const orderId = this.getAttribute('data-id');
+          if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
+            updateOrderStatus(orderId, 'cancelled');
+          }
         });
       });
     }
 
-    // تبديل حالة العنصر (نشط/مخفي)
-    function toggleItemVisibility(itemId) {
-      const [sectionIndex, itemIndex] = itemId.split('-').map(Number);
+    // دالة تحديث حالة الطلب
+    function updateOrderStatus(orderId, newStatus) {
+      const orderRef = ref(database, `orders/${orderId}/status`);
       
-      database.ref(`menu/${sectionIndex}/items/${itemIndex}/hidden`).once('value').then(snapshot => {
-        const currentStatus = snapshot.val() || false;
-        
-        database.ref(`menu/${sectionIndex}/items/${itemIndex}/hidden`).set(!currentStatus)
-          .then(() => {
-            refreshAfterUpdate('تم تحديث حالة العنصر بنجاح');
-          })
-          .catch(error => {
-            toastr.error('حدث خطأ أثناء تحديث حالة العنصر: ' + error.message);
-          });
-      });
+      set(orderRef, newStatus)
+        .then(() => {
+          toastr.success('تم تحديث حالة الطلب بنجاح');
+          
+          // إذا كان الطلب الحالي مفتوحًا، قم بتحديثه
+          if (currentOrder && currentOrder.id === orderId) {
+            currentOrder.status = newStatus;
+            updateOrderStatusDisplay(newStatus);
+          }
+        })
+        .catch((error) => {
+          toastr.error('حدث خطأ أثناء تحديث حالة الطلب: ' + error.message);
+        });
     }
 
-    // إضافة قسم جديد
-    sectionForm.addEventListener('submit', function(e) {
-      e.preventDefault();
+    // دالة تصفية الطلبات حسب الحالة
+    function filterOrdersByStatus(status) {
+      currentStatusFilter = status;
       
-      const sectionName = sectionNameInput.value.trim();
-      const sectionIcon = sectionIconInput.value.trim() || 'fa-utensils';
-      
-      if (!sectionName) {
-        toastr.warning('الرجاء إدخال اسم القسم');
+      if (status === 'all') {
+        displayOrders(orders);
         return;
       }
       
-      saveSectionBtn.disabled = true;
-      saveSectionBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
-      
-      // إنشاء قسم جديد مع مصفوفة عناصر فارغة
-      const newSection = {
-        section: sectionName,
-        icon: sectionIcon,
-        items: []
-      };
-      
-      // الحصول على الأقسام الحالية
-      database.ref('menu').once('value').then(snapshot => {
-        const currentSections = snapshot.val() || [];
-        
-        // إضافة القسم الجديد إلى المصفوفة
-        currentSections.push(newSection);
-        
-        // حفظ المصفوفة المحدثة
-        database.ref('menu').set(currentSections)
-          .then(() => {
-            refreshAfterUpdate('تم إضافة القسم الجديد بنجاح');
-            closeSectionModal();
-          })
-          .catch(error => {
-            toastr.error('حدث خطأ أثناء إضافة القسم: ' + error.message);
-          })
-          .finally(() => {
-            saveSectionBtn.disabled = false;
-            saveSectionBtn.innerHTML = '<i class="fas fa-save"></i> حفظ';
-          });
-      });
-    });
+      const filteredOrders = orders.filter(order => order.status === status);
+      displayOrders(filteredOrders);
+    }
 
-    // حفظ العنصر (إضافة/تعديل)
-    menuItemForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const itemId = itemIdInput.value;
-      const itemName = itemNameInput.value.trim();
-      const itemPrice = parseInt(itemPriceInput.value);
-      const itemSection = itemSectionInput.value;
-      const originalSection = itemSectionInput.getAttribute('data-original-section');
-      const itemIcon = itemIconInput.value.trim();
-      const itemDescription = itemDescriptionInput.value.trim();
-      const itemStatus = itemStatusInput.checked;
-      
-      // التحقق من صحة البيانات
-      if (!itemName || isNaN(itemPrice) || !itemSection) {
-        toastr.warning('الرجاء إدخال جميع البيانات المطلوبة');
+    // دالة البحث في الطلبات
+    function searchOrders(query) {
+      if (!query) {
+        filterOrdersByStatus(currentStatusFilter);
         return;
       }
       
-      saveBtn.disabled = true;
-      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
-      
-      if (itemId) {
-        // حالة التعديل
-        const [sectionIndex, itemIndex] = itemId.split('-').map(Number);
-        
-        const updates = {
-          plat: itemName,
-          prix: itemPrice,
-          description: itemDescription || null,
-          icon: itemIcon || null,
-          hidden: !itemStatus
-        };
-        
-        // إذا تم تغيير القسم، نحتاج إلى حذف العنصر من القسم القديم وإضافته للجديد
-        if (originalSection !== itemSection) {
-          // أولاً: احصل على بيانات العنصر الحالية
-          database.ref(`menu/${originalSection}/items/${itemIndex}`).once('value').then(snapshot => {
-            const itemData = snapshot.val();
-            
-            // ثانياً: أضف العنصر إلى القسم الجديد
-            database.ref(`menu/${itemSection}/items`).push({
-              plat: itemName,
-              prix: itemPrice,
-              description: itemDescription || null,
-              icon: itemIcon || null,
-              hidden: !itemStatus
-            })
-              .then(() => {
-                // ثالثاً: احذف العنصر من القسم القديم
-                return database.ref(`menu/${originalSection}/items/${itemIndex}`).remove();
-              })
-              .then(() => {
-                refreshAfterUpdate('تم نقل وتحديث العنصر بنجاح');
-                closeModal();
-              })
-              .catch(error => {
-                toastr.error('حدث خطأ أثناء نقل العنصر: ' + error.message);
-              });
-          });
-        } else {
-          // إذا لم يتغير القسم، قم بالتحديث فقط
-          database.ref(`menu/${sectionIndex}/items/${itemIndex}`).update(updates)
-            .then(() => {
-              refreshAfterUpdate('تم تحديث العنصر بنجاح');
-              closeModal();
-            })
-            .catch(error => {
-              toastr.error('حدث خطأ أثناء تحديث العنصر: ' + error.message);
-            });
-        }
-      } else {
-        // حالة الإضافة
-        const newItem = {
-          plat: itemName,
-          prix: itemPrice,
-          description: itemDescription || null,
-          icon: itemIcon || null,
-          hidden: !itemStatus
-        };
-        
-        database.ref(`menu/${itemSection}/items`).push(newItem)
-          .then(() => {
-            refreshAfterUpdate('تم إضافة العنصر بنجاح');
-            closeModal();
-          })
-          .catch(error => {
-            toastr.error('حدث خطأ أثناء إضافة العنصر: ' + error.message);
-          });
-      }
-      
-      saveBtn.disabled = false;
-      saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ';
-    });
-
-    // البحث في القائمة
-    searchMenuInput.addEventListener('input', function() {
-      const searchTerm = this.value.trim().toLowerCase();
-      
-      if (searchTerm === '') {
-        displayMenuItems(menuItems);
-        return;
-      }
-      
-      const filteredItems = menuItems.filter(item => 
-        item.plat.toLowerCase().includes(searchTerm) ||
-        (item.description && item.description.toLowerCase().includes(searchTerm)) ||
-        item.sectionName.toLowerCase().includes(searchTerm)
+      const filteredOrders = orders.filter(order => 
+        (order.id && order.id.includes(query)) ||
+        (order.table && order.table.toString().includes(query)) ||
+        (order.notes && order.notes.includes(query))
       );
       
-      displayMenuItems(filteredItems);
+      displayOrders(filteredOrders);
+    }
+
+    // عناصر DOM
+    const ordersTable = document.getElementById('ordersTable');
+    const orderModal = document.getElementById('orderModal');
+    const orderIdSpan = document.getElementById('orderId');
+    const orderTableSpan = document.getElementById('orderTable');
+    const orderStatusSpan = document.getElementById('orderStatus');
+    const orderTimeSpan = document.getElementById('orderTime');
+    const orderNotesSpan = document.getElementById('orderNotes');
+    const orderItemsList = document.getElementById('orderItemsList');
+    const orderTotalSpan = document.getElementById('orderTotal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const completeOrderBtn = document.getElementById('completeOrderBtn');
+    const preparingOrderBtn = document.getElementById('preparingOrderBtn');
+    const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+    const printOrderBtn = document.getElementById('printOrderBtn');
+    const refreshOrdersBtn = document.getElementById('refreshOrders');
+    const searchOrdersInput = document.getElementById('searchOrders');
+    const statusButtons = document.querySelectorAll('.status-btn');
+
+    // أحداث DOM
+    closeModalBtn.addEventListener('click', closeOrderModal);
+    cancelBtn.addEventListener('click', closeOrderModal);
+    refreshOrdersBtn.addEventListener('click', loadOrders);
+    printOrderBtn.addEventListener('click', printOrder);
+    
+    completeOrderBtn.addEventListener('click', () => {
+      if (currentOrder) {
+        updateOrderStatus(currentOrder.id, 'completed');
+      }
+    });
+    
+    preparingOrderBtn.addEventListener('click', () => {
+      if (currentOrder) {
+        updateOrderStatus(currentOrder.id, 'preparing');
+      }
+    });
+    
+    cancelOrderBtn.addEventListener('click', () => {
+      if (currentOrder && confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
+        updateOrderStatus(currentOrder.id, 'cancelled');
+      }
+    });
+    
+    statusButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        statusButtons.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        filterOrdersByStatus(this.dataset.status);
+      });
+    });
+    
+    searchOrdersInput.addEventListener('input', function() {
+      searchOrders(this.value.trim());
     });
 
     // تسجيل الخروج
     document.querySelector('.logout-btn').addEventListener('click', function() {
-      auth.signOut().then(() => {
+      signOut(auth).then(() => {
         window.location.href = 'login.html';
-      }).catch(error => {
+      }).catch((error) => {
         toastr.error('حدث خطأ أثناء تسجيل الخروج: ' + error.message);
       });
     });
 
     // التحقق من حالة المصادقة
-    auth.onAuthStateChanged(user => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
         currentUser = user;
-        // تحميل البيانات عند تسجيل الدخول
-        loadSections();
-        loadMenuItems();
+        // تحميل الطلبات عند تسجيل الدخول
+        loadOrders();
       } else {
         // إعادة التوجيه إلى صفحة تسجيل الدخول إذا لم يكن المستخدم مسجلاً
         window.location.href = 'login.html';
@@ -1638,5 +1205,8 @@
       // يمكنك إضافة أي تهيئة إضافية هنا إذا لزم الأمر
     });
   </script>
+  
+  <!-- Toastr للإشعارات -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
 </body>
 </html>
