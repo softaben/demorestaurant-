@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <!-- Toastr للإشعارات -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css">
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <style>
     :root {
       --primary: #D4AF37; /* ذهبي فاخر */
@@ -754,6 +756,40 @@
       background: #0d2b4f;
     }
 
+    /* تأثيرات SweetAlert2 */
+    .animate__animated {
+      animation-duration: 0.5s;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translate3d(0, -20px, 0);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    .animate__fadeInDown {
+      animation-name: fadeInDown;
+    }
+
+    @keyframes fadeOutUp {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+        transform: translate3d(0, -20px, 0);
+      }
+    }
+
+    .animate__fadeOutUp {
+      animation-name: fadeOutUp;
+    }
+
     /* تنسيقات الطباعة */
     @media print {
       body * {
@@ -926,10 +962,6 @@
           <button class="btn btn-primary" id="printAllBtn">
             <i class="fas fa-print"></i>
             طباعة السجل
-          </button>
-          <button class="btn btn-primary" id="refreshOrders">
-            <i class="fas fa-sync-alt"></i>
-            تحديث الطلبات
           </button>
           <button class="btn btn-secondary" id="openModificationBtn">
             <i class="fas fa-edit"></i>
@@ -1204,7 +1236,12 @@
       const printWindow = window.open('', '_blank', 'width=900,height=700');
       
       if (!printWindow || printWindow.closed) {
-        toastr.error('لم يتم فتح نافذة الطباعة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع');
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ في الطباعة',
+          text: 'لم يتم فتح نافذة الطباعة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع',
+          confirmButtonColor: '#D4AF37'
+        });
         return;
       }
 
@@ -1379,7 +1416,12 @@
               }
             }, 1000);
           } catch (error) {
-            toastr.error('حدث خطأ أثناء الطباعة: ' + error.message);
+            Swal.fire({
+              icon: 'error',
+              title: 'خطأ في الطباعة',
+              text: 'حدث خطأ أثناء الطباعة: ' + error.message,
+              confirmButtonColor: '#D4AF37'
+            });
             if (!printWindow.closed) {
               printWindow.close();
             }
@@ -1395,7 +1437,12 @@
       const printWindow = window.open('', '_blank', 'width=800,height=600');
       
       if (!printWindow || printWindow.closed) {
-        toastr.error('لم يتم فتح نافذة الطباعة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع');
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ في الطباعة',
+          text: 'لم يتم فتح نافذة الطباعة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع',
+          confirmButtonColor: '#D4AF37'
+        });
         return;
       }
 
@@ -1513,7 +1560,12 @@
               }
             }, 1000);
           } catch (error) {
-            toastr.error('حدث خطأ أثناء الطباعة: ' + error.message);
+            Swal.fire({
+              icon: 'error',
+              title: 'خطأ في الطباعة',
+              text: 'حدث خطأ أثناء الطباعة: ' + error.message,
+              confirmButtonColor: '#D4AF37'
+            });
             if (!printWindow.closed) {
               printWindow.close();
             }
@@ -1586,22 +1638,47 @@
 
     // دالة إعادة تعيين جميع الطلبات
     function resetAllOrders() {
-      if (confirm('هل أنت متأكد من أنك تريد حذف جميع الطلبات والإحصائيات؟ هذا الإجراء لا يمكن التراجع عنه!')) {
-        const ordersRef = ref(database, 'orders');
-        
-        remove(ordersRef)
-          .then(() => {
-            toastr.success('تم حذف جميع الطلبات بنجاح');
-            lastOrdersCount = 0;
-            lastPendingCount = 0;
-            orders = [];
-            updateStats();
-            displayOrders([]);
-          })
-          .catch((error) => {
-            toastr.error('حدث خطأ أثناء حذف الطلبات: ' + error.message);
-          });
-      }
+      Swal.fire({
+        title: 'هل أنت متأكد؟',
+        text: "سيتم حذف جميع الطلبات والإحصائيات بشكل دائم!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#D4AF37',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'نعم، احذف الكل',
+        cancelButtonText: 'إلغاء',
+        backdrop: `
+          rgba(0,0,0,0.7)
+          url("https://i.gifer.com/7efs.gif")
+          center top
+          no-repeat
+        `
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const ordersRef = ref(database, 'orders');
+          
+          remove(ordersRef)
+            .then(() => {
+              Swal.fire(
+                'تم الحذف!',
+                'تم حذف جميع الطلبات بنجاح.',
+                'success'
+              );
+              lastOrdersCount = 0;
+              lastPendingCount = 0;
+              orders = [];
+              updateStats();
+              displayOrders([]);
+            })
+            .catch((error) => {
+              Swal.fire(
+                'خطأ!',
+                'حدث خطأ أثناء الحذف: ' + error.message,
+                'error'
+              );
+            });
+        }
+      });
     }
 
     // دالة فتح مودال الطلب
@@ -1848,57 +1925,105 @@
         btn.addEventListener('click', function(e) {
           e.stopPropagation();
           const orderId = this.getAttribute('data-id');
-          if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
-            updateOrderStatus(orderId, 'cancelled');
-          }
+          updateOrderStatus(orderId, 'cancelled');
         });
       });
     }
 
     // دالة تحديث حالة الطلب
     function updateOrderStatus(orderId, newStatus) {
-      const confirmMessage = {
-        'pending': 'هل تريد إعادة الطلب إلى الحالة الجديدة؟',
-        'preparing': 'هل تريد تغيير حالة الطلب إلى قيد التحضير؟',
-        'completed': 'هل تريد إكمال هذا الطلب؟',
-        'cancelled': 'هل أنت متأكد من إلغاء هذا الطلب؟'
+      const messages = {
+        'pending': {
+          title: 'تغيير الحالة إلى "جديد"',
+          text: 'هل تريد إعادة الطلب إلى الحالة الجديدة؟',
+          icon: 'question'
+        },
+        'preparing': {
+          title: 'تغيير الحالة إلى "قيد التحضير"',
+          text: 'سيتم إعلام المطبخ ببدء التحضير',
+          icon: 'info'
+        },
+        'completed': {
+          title: 'إكمال الطلب',
+          text: 'هل تريد تأكيد إتمام هذا الطلب؟',
+          icon: 'success'
+        },
+        'cancelled': {
+          title: 'إلغاء الطلب',
+          text: 'هل أنت متأكد من إلغاء هذا الطلب؟',
+          icon: 'warning'
+        }
       };
-      
-      if (confirm(confirmMessage[newStatus] || 'هل تريد تغيير حالة هذا الطلب؟')) {
-        const orderRef = ref(database, `orders/${orderId}/status`);
-        
-        set(orderRef, newStatus)
-          .then(() => {
-            toastr.success('تم تحديث حالة الطلب بنجاح');
-            
-            // إذا كان الطلب الحالي مفتوحًا، قم بتحديثه
-            if (currentOrder && currentOrder.id === orderId) {
-              currentOrder.status = newStatus;
-              updateOrderStatusDisplay(newStatus);
-            }
-            
-            // تحديث عرض الطلبات
-            displayOrders(orders.filter(order => 
-              currentStatusFilter === 'all' || order.status === currentStatusFilter
-            ));
-            
-            // إضافة تأثير تغيير الحالة للصف المحدث
-            const updatedRow = document.querySelector(`.order-row[data-id="${orderId}"]`);
-            if (updatedRow) {
-              updatedRow.classList.add('status-change-effect');
-              setTimeout(() => {
-                updatedRow.classList.remove('status-change-effect');
-              }, 1500);
-            }
-            
-            // تحديث الإحصائيات
-            updateStats();
-            calculateAdvancedStats();
-          })
-          .catch((error) => {
-            toastr.error('حدث خطأ أثناء تحديث حالة الطلب: ' + error.message);
-          });
-      }
+
+      const { title, text, icon } = messages[newStatus] || {
+        title: 'تغيير الحالة',
+        text: 'هل تريد تغيير حالة هذا الطلب؟',
+        icon: 'question'
+      };
+
+      Swal.fire({
+        title: title,
+        text: text,
+        icon: icon,
+        showCancelButton: true,
+        confirmButtonColor: '#D4AF37',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'تأكيد',
+        cancelButtonText: 'إلغاء',
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const orderRef = ref(database, `orders/${orderId}/status`);
+          
+          set(orderRef, newStatus)
+            .then(() => {
+              Swal.fire({
+                position: 'center',
+                icon: 'success',
+                title: 'تم التحديث بنجاح!',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                  toast.addEventListener('mouseenter', Swal.stopTimer);
+                  toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+              });
+
+              if (currentOrder && currentOrder.id === orderId) {
+                currentOrder.status = newStatus;
+                updateOrderStatusDisplay(newStatus);
+              }
+
+              displayOrders(orders.filter(order => 
+                currentStatusFilter === 'all' || order.status === currentStatusFilter
+              ));
+
+              const updatedRow = document.querySelector(`.order-row[data-id="${orderId}"]`);
+              if (updatedRow) {
+                updatedRow.classList.add('status-change-effect');
+                setTimeout(() => {
+                  updatedRow.classList.remove('status-change-effect');
+                }, 1500);
+              }
+
+              updateStats();
+              calculateAdvancedStats();
+            })
+            .catch((error) => {
+              Swal.fire(
+                'خطأ!',
+                'حدث خطأ أثناء التحديث: ' + error.message,
+                'error'
+              );
+            });
+        }
+      });
     }
 
     // دالة تصفية الطلبات حسب الحالة
@@ -1939,7 +2064,6 @@
       const printOrderBtn = document.getElementById('printOrderBtn');
       const printAllBtn = document.getElementById('printAllBtn');
       const resetAllBtn = document.getElementById('resetAllBtn');
-      const refreshOrdersBtn = document.getElementById('refreshOrders');
       const openModificationBtn = document.getElementById('openModificationBtn');
       const searchOrdersInput = document.getElementById('searchOrders');
       const statusButtons = document.querySelectorAll('.status-btn');
@@ -1950,7 +2074,6 @@
       printOrderBtn.addEventListener('click', printOrder);
       printAllBtn.addEventListener('click', printAllOrders);
       resetAllBtn.addEventListener('click', resetAllOrders);
-      refreshOrdersBtn.addEventListener('click', loadOrders);
       openModificationBtn.addEventListener('click', openModificationFile);
       
       updateStatusBtn.addEventListener('click', () => {
@@ -1978,10 +2101,27 @@
 
       // تسجيل الخروج
       document.querySelector('.logout-btn').addEventListener('click', function() {
-        signOut(auth).then(() => {
-          window.location.href = 'login.html';
-        }).catch((error) => {
-          toastr.error('حدث خطأ أثناء تسجيل الخروج: ' + error.message);
+        Swal.fire({
+          title: 'تسجيل الخروج',
+          text: 'هل أنت متأكد أنك تريد تسجيل الخروج؟',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#D4AF37',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'نعم، سجل خروج',
+          cancelButtonText: 'إلغاء'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            signOut(auth).then(() => {
+              window.location.href = 'login.html';
+            }).catch((error) => {
+              Swal.fire(
+                'خطأ!',
+                'حدث خطأ أثناء تسجيل الخروج: ' + error.message,
+                'error'
+              );
+            });
+          }
         });
       });
 
@@ -2001,5 +2141,7 @@
   
   <!-- Toastr للإشعارات -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
