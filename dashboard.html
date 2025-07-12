@@ -559,167 +559,98 @@
       background: #3d8b40;
     }
 
-    /* مودال تفاصيل الطلب المعدل */
-    .modal-overlay {
+    /* بطاقة تفاصيل الطلب الصغيرة */
+    .order-details-card {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 400px;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      padding: 1.5rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      border: 1px solid var(--gold);
+    }
+
+    .order-details-card.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .order-details-card h4 {
+      color: var(--secondary);
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--gold);
+      padding-bottom: 0.5rem;
+    }
+
+    .order-details-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+      font-size: 0.9rem;
+    }
+
+    .order-details-item-label {
+      font-weight: 600;
+      color: var(--secondary);
+    }
+
+    .order-details-items-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin: 1rem 0;
+      padding-right: 0.5rem;
+    }
+
+    .order-details-item-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px dashed var(--gray);
+    }
+
+    .order-details-total {
+      font-weight: 700;
+      text-align: left;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 2px solid var(--gray);
+    }
+
+    .close-details-card {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--danger);
+    }
+
+    .order-details-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
       opacity: 0;
       visibility: hidden;
-      transition: var(--transition);
+      transition: all 0.3s ease;
     }
 
-    .modal-overlay.active {
+    .order-details-overlay.active {
       opacity: 1;
       visibility: visible;
-    }
-
-    .modal {
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: 0 12px 36px rgba(0,0,0,0.2);
-      width: 100%;
-      max-width: 900px;
-      max-height: 90vh;
-      overflow-y: auto;
-      transform: translateY(30px);
-      transition: var(--transition);
-      border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .modal-overlay.active .modal {
-      transform: translateY(0);
-    }
-
-    .modal-header {
-      padding: 1.8rem;
-      border-bottom: 1px solid var(--gray);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--secondary);
-      color: var(--white);
-    }
-
-    .modal-header h3 {
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-
-    .close-modal {
-      background: none;
-      border: none;
-      font-size: 1.8rem;
-      cursor: pointer;
-      color: var(--white);
-      opacity: 0.8;
-      transition: var(--transition);
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .close-modal:hover {
-      opacity: 1;
-      background: rgba(255,255,255,0.1);
-    }
-
-    .modal-body {
-      padding: 2rem;
-    }
-
-    .order-details {
-      margin-bottom: 2rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .order-details-row {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .order-details-label {
-      font-weight: 600;
-      color: var(--secondary);
-      font-size: 0.95rem;
-    }
-
-    /* تحسينات لتغيير الحالة */
-    .status-actions {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .status-select {
-      padding: 0.7rem 1rem;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--gray);
-      font-family: 'Tajawal', sans-serif;
-      background: var(--white);
-      color: var(--text);
-      flex-grow: 1;
-      min-width: 200px;
-    }
-
-    .status-select:focus {
-      outline: none;
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
-    }
-
-    .order-items {
-      margin: 2rem 0;
-    }
-
-    .order-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem;
-      background: var(--light-gray);
-      border-radius: var(--radius-sm);
-      margin-bottom: 0.8rem;
-      transition: var(--transition);
-      border: var(--border);
-    }
-
-    .order-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    }
-
-    .order-total {
-      font-weight: 800;
-      font-size: 1.5rem;
-      text-align: left;
-      margin: 2rem 0;
-      padding-top: 2rem;
-      border-top: 2px solid var(--gray);
-      color: var(--secondary);
-    }
-
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 2px solid var(--gray);
     }
 
     /* تأثيرات للطلبات الجديدة */
@@ -1077,63 +1008,51 @@
     </div>
   </main>
 
-  <!-- مودال تفاصيل الطلب -->
-  <div class="modal-overlay" id="orderModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 id="modalTitle">تفاصيل الطلب #<span id="orderId"></span></h3>
-        <button class="close-modal" id="closeModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="order-details">
-          <div class="order-details-row">
-            <div class="order-details-label">رقم الطاولة:</div>
-            <div id="orderTable">-</div>
-          </div>
-          <div class="order-details-row">
-            <div class="order-details-label">حالة الطلب:</div>
-            <div id="orderStatus"><span class="badge badge-warning">جديد</span></div>
-          </div>
-          <div class="order-details-row">
-            <div class="order-details-label">وقت الطلب:</div>
-            <div id="orderTime">-</div>
-          </div>
-          <div class="order-details-row">
-            <div class="order-details-label">ملاحظات:</div>
-            <div id="orderNotes">لا توجد ملاحظات</div>
-          </div>
-          <div class="order-details-row">
-            <div class="order-details-label">تغيير الحالة:</div>
-            <div class="status-actions">
-              <select id="statusSelect" class="status-select">
-                <option value="pending">جديد</option>
-                <option value="preparing">قيد التحضير</option>
-                <option value="completed">مكتمل</option>
-                <option value="cancelled">ملغى</option>
-              </select>
-              <button class="btn btn-primary" id="updateStatusBtn">
-                <i class="fas fa-save"></i> تحديث
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <h4><i class="fas fa-utensils"></i> الأصناف المطلوبة:</h4>
-        <div class="order-items" id="orderItemsList">
-          <!-- سيتم تعبئة العناصر ديناميكياً -->
-        </div>
-
-        <div class="order-total">
-          المجموع: <span id="orderTotal">0</span> درهم
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn print-btn" id="printOrderBtn">
-            <i class="fas fa-print"></i> طباعة
-          </button>
-          <button type="button" class="btn" id="cancelBtn">إغلاق</button>
-        </div>
-      </div>
+  <!-- بطاقة تفاصيل الطلب الصغيرة -->
+  <div class="order-details-overlay" id="orderDetailsOverlay"></div>
+  <div class="order-details-card" id="orderDetailsCard">
+    <button class="close-details-card" id="closeDetailsCard">&times;</button>
+    <h4>تفاصيل الطلب #<span id="detailsOrderId">0</span></h4>
+    
+    <div class="order-details-item">
+      <span class="order-details-item-label">رقم الطاولة:</span>
+      <span id="detailsTableNumber">-</span>
+    </div>
+    
+    <div class="order-details-item">
+      <span class="order-details-item-label">حالة الطلب:</span>
+      <span id="detailsOrderStatus"><span class="badge badge-warning">جديد</span></span>
+    </div>
+    
+    <div class="order-details-item">
+      <span class="order-details-item-label">وقت الطلب:</span>
+      <span id="detailsOrderTime">-</span>
+    </div>
+    
+    <div class="order-details-item">
+      <span class="order-details-item-label">ملاحظات:</span>
+      <span id="detailsOrderNotes">لا توجد ملاحظات</span>
+    </div>
+    
+    <h4><i class="fas fa-utensils"></i> الأصناف المطلوبة:</h4>
+    <div class="order-details-items-list" id="detailsOrderItems">
+      <!-- سيتم تعبئة العناصر هنا -->
+    </div>
+    
+    <div class="order-details-total">
+      المجموع: <span id="detailsOrderTotal">0</span> درهم
+    </div>
+    
+    <div class="status-actions" style="margin-top: 1rem;">
+      <select id="detailsStatusSelect" class="status-select">
+        <option value="pending">جديد</option>
+        <option value="preparing">قيد التحضير</option>
+        <option value="completed">مكتمل</option>
+        <option value="cancelled">ملغى</option>
+      </select>
+      <button class="btn btn-primary" id="updateDetailsStatusBtn" style="padding: 0.5rem 1rem;">
+        <i class="fas fa-save"></i> تحديث
+      </button>
     </div>
   </div>
 
@@ -1225,7 +1144,7 @@
         toastr.info(`طلب جديد في الطاولة رقم ${order.table || 'غير معروف'}`, 'تنبيه', {
           onclick: function() {
             filterOrdersByStatus('pending');
-            openOrderModal(order);
+            openOrderDetails(order);
           }
         });
       }
@@ -1681,51 +1600,53 @@
       });
     }
 
-    // دالة فتح مودال الطلب
-    function openOrderModal(order) {
+    // دالة فتح بطاقة تفاصيل الطلب
+    function openOrderDetails(order) {
       currentOrder = order;
       
-      document.getElementById('orderId').textContent = order.id || '-';
-      document.getElementById('orderTable').textContent = order.table || '-';
-      document.getElementById('orderTime').textContent = formatDateTime(order.timestamp);
-      document.getElementById('orderNotes').textContent = order.notes || 'لا توجد ملاحظات';
-      document.getElementById('orderTotal').textContent = order.total || '0';
+      document.getElementById('detailsOrderId').textContent = order.id || '-';
+      document.getElementById('detailsTableNumber').textContent = order.table || '-';
+      document.getElementById('detailsOrderTime').textContent = formatDateTime(order.timestamp);
+      document.getElementById('detailsOrderNotes').textContent = order.notes || 'لا توجد ملاحظات';
+      document.getElementById('detailsOrderTotal').textContent = order.total || '0';
       
       // تحديث حالة الطلب
-      updateOrderStatusDisplay(order.status);
+      updateDetailsOrderStatusDisplay(order.status);
       
       // تعبئة قائمة العناصر
-      const orderItemsList = document.getElementById('orderItemsList');
+      const orderItemsList = document.getElementById('detailsOrderItems');
       orderItemsList.innerHTML = '';
+      
       if (order.items && order.items.length > 0) {
         order.items.forEach(item => {
           const itemDiv = document.createElement('div');
-          itemDiv.className = 'order-item';
+          itemDiv.className = 'order-details-item-row';
           itemDiv.innerHTML = `
             <div>${item.plat} × ${item.quantity}</div>
-            <div style="font-weight: 700;">${item.prix * item.quantity} درهم</div>
+            <div style="font-weight: 600;">${item.prix * item.quantity} درهم</div>
           `;
           orderItemsList.appendChild(itemDiv);
         });
       } else {
         orderItemsList.innerHTML = `
-          <div style="text-align: center; padding: 1rem; color: var(--text); opacity: 0.6;">
+          <div style="text-align: center; padding: 0.5rem; color: var(--text); opacity: 0.6;">
             <i class="fas fa-info-circle"></i>
             <p>لا توجد أصناف في هذا الطلب</p>
           </div>
         `;
       }
       
-      // إظهار المودال
-      document.getElementById('orderModal').classList.add('active');
+      // إظهار البطاقة
+      document.getElementById('orderDetailsOverlay').classList.add('active');
+      document.getElementById('orderDetailsCard').classList.add('active');
     }
 
-    // دالة تحديث عرض حالة الطلب
-    function updateOrderStatusDisplay(status) {
-      const statusSelect = document.getElementById('statusSelect');
+    // دالة تحديث عرض حالة الطلب في البطاقة
+    function updateDetailsOrderStatusDisplay(status) {
+      const statusSelect = document.getElementById('detailsStatusSelect');
       statusSelect.value = status;
       
-      const orderStatusSpan = document.getElementById('orderStatus');
+      const orderStatusSpan = document.getElementById('detailsOrderStatus');
       orderStatusSpan.innerHTML = '';
       
       let statusText = '';
@@ -1759,9 +1680,10 @@
       orderStatusSpan.appendChild(badge);
     }
 
-    // دالة إغلاق المودال
-    function closeOrderModal() {
-      document.getElementById('orderModal').classList.remove('active');
+    // دالة إغلاق بطاقة التفاصيل
+    function closeOrderDetails() {
+      document.getElementById('orderDetailsOverlay').classList.remove('active');
+      document.getElementById('orderDetailsCard').classList.remove('active');
       currentOrder = null;
     }
 
@@ -1909,7 +1831,7 @@
         btn.addEventListener('click', function() {
           const orderId = this.getAttribute('data-id');
           const order = orders.find(o => o.id === orderId);
-          if (order) openOrderModal(order);
+          if (order) openOrderDetails(order);
         });
       });
       
@@ -1997,7 +1919,7 @@
 
               if (currentOrder && currentOrder.id === orderId) {
                 currentOrder.status = newStatus;
-                updateOrderStatusDisplay(newStatus);
+                updateDetailsOrderStatusDisplay(newStatus);
               }
 
               displayOrders(orders.filter(order => 
@@ -2058,27 +1980,25 @@
     // أحداث DOM
     document.addEventListener('DOMContentLoaded', function() {
       // عناصر DOM
-      const closeModalBtn = document.getElementById('closeModal');
-      const cancelBtn = document.getElementById('cancelBtn');
-      const updateStatusBtn = document.getElementById('updateStatusBtn');
-      const printOrderBtn = document.getElementById('printOrderBtn');
+      const closeDetailsCard = document.getElementById('closeDetailsCard');
+      const orderDetailsOverlay = document.getElementById('orderDetailsOverlay');
       const printAllBtn = document.getElementById('printAllBtn');
       const resetAllBtn = document.getElementById('resetAllBtn');
       const openModificationBtn = document.getElementById('openModificationBtn');
       const searchOrdersInput = document.getElementById('searchOrders');
       const statusButtons = document.querySelectorAll('.status-btn');
+      const updateDetailsStatusBtn = document.getElementById('updateDetailsStatusBtn');
 
       // أحداث النقر
-      closeModalBtn.addEventListener('click', closeOrderModal);
-      cancelBtn.addEventListener('click', closeOrderModal);
-      printOrderBtn.addEventListener('click', printOrder);
+      closeDetailsCard.addEventListener('click', closeOrderDetails);
+      orderDetailsOverlay.addEventListener('click', closeOrderDetails);
       printAllBtn.addEventListener('click', printAllOrders);
       resetAllBtn.addEventListener('click', resetAllOrders);
       openModificationBtn.addEventListener('click', openModificationFile);
       
-      updateStatusBtn.addEventListener('click', () => {
+      updateDetailsStatusBtn.addEventListener('click', function() {
         if (currentOrder) {
-          const newStatus = document.getElementById('statusSelect').value;
+          const newStatus = document.getElementById('detailsStatusSelect').value;
           if (newStatus !== currentOrder.status) {
             updateOrderStatus(currentOrder.id, newStatus);
           } else {
