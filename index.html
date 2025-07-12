@@ -510,12 +510,12 @@
 
     .actions {
       display: flex;
-      gap: 0.8rem;
+      gap: 0.5rem;
     }
 
     .action-btn {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -525,6 +525,7 @@
       border: none;
       color: var(--white);
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      font-size: 0.9rem;
     }
 
     .action-btn:hover {
@@ -655,6 +656,30 @@
       font-size: 0.95rem;
     }
 
+    /* تحسينات لتغيير الحالة */
+    .status-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .status-select {
+      padding: 0.7rem 1rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--gray);
+      font-family: 'Tajawal', sans-serif;
+      background: var(--white);
+      color: var(--text);
+      flex-grow: 1;
+      min-width: 200px;
+    }
+
+    .status-select:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+    }
+
     .order-items {
       margin: 2rem 0;
     }
@@ -707,6 +732,16 @@
 
     .new-order {
       animation: highlight 3s ease-out;
+    }
+
+    /* تأثير تغيير الحالة */
+    .status-change-effect {
+      animation: statusChange 1.5s ease-out;
+    }
+
+    @keyframes statusChange {
+      0% { background-color: rgba(212, 175, 55, 0.3); }
+      100% { background-color: transparent; }
     }
 
     /* زر الطباعة المعدل */
@@ -828,6 +863,21 @@
       }
       
       .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      /* تحسينات لتغيير الحالة على الجوال */
+      .status-actions {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .status-select {
+        width: 100%;
+      }
+      
+      #updateStatusBtn {
         width: 100%;
         justify-content: center;
       }
@@ -1020,6 +1070,20 @@
             <div class="order-details-label">ملاحظات:</div>
             <div id="orderNotes">لا توجد ملاحظات</div>
           </div>
+          <div class="order-details-row">
+            <div class="order-details-label">تغيير الحالة:</div>
+            <div class="status-actions">
+              <select id="statusSelect" class="status-select">
+                <option value="pending">جديد</option>
+                <option value="preparing">قيد التحضير</option>
+                <option value="completed">مكتمل</option>
+                <option value="cancelled">ملغى</option>
+              </select>
+              <button class="btn btn-primary" id="updateStatusBtn">
+                <i class="fas fa-save"></i> تحديث
+              </button>
+            </div>
+          </div>
         </div>
 
         <h4><i class="fas fa-utensils"></i> الأصناف المطلوبة:</h4>
@@ -1036,15 +1100,6 @@
             <i class="fas fa-print"></i> طباعة
           </button>
           <button type="button" class="btn" id="cancelBtn">إغلاق</button>
-          <button type="button" class="btn btn-success" id="completeOrderBtn">
-            <i class="fas fa-check"></i> تم التسليم
-          </button>
-          <button type="button" class="btn btn-secondary" id="preparingOrderBtn">
-            <i class="fas fa-utensils"></i> قيد التحضير
-          </button>
-          <button type="button" class="btn btn-danger" id="cancelOrderBtn">
-            <i class="fas fa-times"></i> إلغاء الطلب
-          </button>
         </div>
       </div>
     </div>
@@ -1590,6 +1645,9 @@
 
     // دالة تحديث عرض حالة الطلب
     function updateOrderStatusDisplay(status) {
+      const statusSelect = document.getElementById('statusSelect');
+      statusSelect.value = status;
+      
       const orderStatusSpan = document.getElementById('orderStatus');
       orderStatusSpan.innerHTML = '';
       
@@ -1622,11 +1680,6 @@
       badge.className = `badge ${badgeClass}`;
       badge.textContent = statusText;
       orderStatusSpan.appendChild(badge);
-      
-      // تحديث أزرار الإجراءات بناءً على الحالة
-      document.getElementById('completeOrderBtn').style.display = status === 'completed' ? 'none' : 'inline-flex';
-      document.getElementById('preparingOrderBtn').style.display = status === 'preparing' || status === 'completed' || status === 'cancelled' ? 'none' : 'inline-flex';
-      document.getElementById('cancelOrderBtn').style.display = status === 'cancelled' || status === 'completed' ? 'none' : 'inline-flex';
     }
 
     // دالة إغلاق المودال
@@ -1804,30 +1857,48 @@
 
     // دالة تحديث حالة الطلب
     function updateOrderStatus(orderId, newStatus) {
-      const orderRef = ref(database, `orders/${orderId}/status`);
+      const confirmMessage = {
+        'pending': 'هل تريد إعادة الطلب إلى الحالة الجديدة؟',
+        'preparing': 'هل تريد تغيير حالة الطلب إلى قيد التحضير؟',
+        'completed': 'هل تريد إكمال هذا الطلب؟',
+        'cancelled': 'هل أنت متأكد من إلغاء هذا الطلب؟'
+      };
       
-      set(orderRef, newStatus)
-        .then(() => {
-          toastr.success('تم تحديث حالة الطلب بنجاح');
-          
-          // إذا كان الطلب الحالي مفتوحًا، قم بتحديثه
-          if (currentOrder && currentOrder.id === orderId) {
-            currentOrder.status = newStatus;
-            updateOrderStatusDisplay(newStatus);
-          }
-          
-          // تحديث عرض الطلبات
-          displayOrders(orders.filter(order => 
-            currentStatusFilter === 'all' || order.status === currentStatusFilter
-          ));
-          
-          // تحديث الإحصائيات
-          updateStats();
-          calculateAdvancedStats();
-        })
-        .catch((error) => {
-          toastr.error('حدث خطأ أثناء تحديث حالة الطلب: ' + error.message);
-        });
+      if (confirm(confirmMessage[newStatus] || 'هل تريد تغيير حالة هذا الطلب؟')) {
+        const orderRef = ref(database, `orders/${orderId}/status`);
+        
+        set(orderRef, newStatus)
+          .then(() => {
+            toastr.success('تم تحديث حالة الطلب بنجاح');
+            
+            // إذا كان الطلب الحالي مفتوحًا، قم بتحديثه
+            if (currentOrder && currentOrder.id === orderId) {
+              currentOrder.status = newStatus;
+              updateOrderStatusDisplay(newStatus);
+            }
+            
+            // تحديث عرض الطلبات
+            displayOrders(orders.filter(order => 
+              currentStatusFilter === 'all' || order.status === currentStatusFilter
+            ));
+            
+            // إضافة تأثير تغيير الحالة للصف المحدث
+            const updatedRow = document.querySelector(`.order-row[data-id="${orderId}"]`);
+            if (updatedRow) {
+              updatedRow.classList.add('status-change-effect');
+              setTimeout(() => {
+                updatedRow.classList.remove('status-change-effect');
+              }, 1500);
+            }
+            
+            // تحديث الإحصائيات
+            updateStats();
+            calculateAdvancedStats();
+          })
+          .catch((error) => {
+            toastr.error('حدث خطأ أثناء تحديث حالة الطلب: ' + error.message);
+          });
+      }
     }
 
     // دالة تصفية الطلبات حسب الحالة
@@ -1864,9 +1935,7 @@
       // عناصر DOM
       const closeModalBtn = document.getElementById('closeModal');
       const cancelBtn = document.getElementById('cancelBtn');
-      const completeOrderBtn = document.getElementById('completeOrderBtn');
-      const preparingOrderBtn = document.getElementById('preparingOrderBtn');
-      const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+      const updateStatusBtn = document.getElementById('updateStatusBtn');
       const printOrderBtn = document.getElementById('printOrderBtn');
       const printAllBtn = document.getElementById('printAllBtn');
       const resetAllBtn = document.getElementById('resetAllBtn');
@@ -1884,21 +1953,14 @@
       refreshOrdersBtn.addEventListener('click', loadOrders);
       openModificationBtn.addEventListener('click', openModificationFile);
       
-      completeOrderBtn.addEventListener('click', () => {
+      updateStatusBtn.addEventListener('click', () => {
         if (currentOrder) {
-          updateOrderStatus(currentOrder.id, 'completed');
-        }
-      });
-      
-      preparingOrderBtn.addEventListener('click', () => {
-        if (currentOrder) {
-          updateOrderStatus(currentOrder.id, 'preparing');
-        }
-      });
-      
-      cancelOrderBtn.addEventListener('click', () => {
-        if (currentOrder && confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
-          updateOrderStatus(currentOrder.id, 'cancelled');
+          const newStatus = document.getElementById('statusSelect').value;
+          if (newStatus !== currentOrder.status) {
+            updateOrderStatus(currentOrder.id, newStatus);
+          } else {
+            toastr.info('حالة الطلب لم تتغير');
+          }
         }
       });
       
