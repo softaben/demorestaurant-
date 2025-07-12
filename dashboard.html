@@ -1081,13 +1081,13 @@
     const database = getDatabase(app);
     const auth = getAuth(app);
 
-    // تهيئة Toastr
+    // تهيئة Toastr مع وقت اختفاء 3 ثوانٍ
     toastr.options = {
       closeButton: false,
       progressBar: false,
       positionClass: 'toast-top-left',
       rtl: true,
-      timeOut: 5000, // يختفي بعد 5 ثواني
+      timeOut: 3000, // يختفي بعد 3 ثواني
       extendedTimeOut: 1000,
       preventDuplicates: true,
       newestOnTop: true
@@ -1134,9 +1134,8 @@
           console.log('Sound error: ', e);
         }
         
-        // إظهار الإشعار
+        // إظهار الإشعار (سيختفي بعد 3 ثوانٍ حسب إعدادات Toastr)
         toastr.info(`طلب جديد في الطاولة رقم ${order.table || 'غير معروف'}`, 'تنبيه', {
-          timeOut: 7000,
           onclick: function() {
             filterOrdersByStatus('pending');
             openOrderModal(order);
@@ -1681,7 +1680,7 @@
           currentStatusFilter === 'all' || order.status === currentStatusFilter
         ));
         
-        // إظهار إشعار للطلب الجديد
+        // إظهار إشعار للطلب الجديد (سيختفي بعد 3 ثوانٍ)
         showNewOrderNotification(newOrder);
       });
       
