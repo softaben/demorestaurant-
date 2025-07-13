@@ -1302,7 +1302,7 @@
 
       <!-- الأطباق الأكثر مبيعا -->
       <div class="popular-items-section">
-        <h3><i class="fas fa-utensils"></i> الأطباق الأكثر مبيعاً</h3>
+        <h3><i class="fas fa-utensils"></i> الأطباق الأكثر طلباً</h3>
         <div class="popular-items-grid" id="popularItemsGrid">
           <!-- سيتم تعبئتها ديناميكياً -->
         </div>
@@ -1559,9 +1559,9 @@
         { total: 0, date: 'لا يوجد بيانات' };
       
       // تحديث الكروت الملخصة
-      document.getElementById('totalSalesStats').textContent = totalSales.toLocaleString() + ' درهم';
-      document.getElementById('avgDailySales').textContent = avgDailySales.toLocaleString('ar-EG', { maximumFractionDigits: 0 }) + ' درهم';
-      document.getElementById('bestDaySales').textContent = bestDay.total.toLocaleString() + ' درهم';
+      document.getElementById('totalSalesStats').textContent = totalSales.toLocaleString('en-US') + ' درهم';
+      document.getElementById('avgDailySales').textContent = avgDailySales.toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' درهم';
+      document.getElementById('bestDaySales').textContent = bestDay.total.toLocaleString('en-US') + ' درهم';
       
       // تحديث مقارنة الأداء
       updatePerformanceComparison(totalSales, totalOrders, avgOrderValue);
@@ -1575,8 +1575,8 @@
             <tr>
               <td>${formatDateForDisplay(day.date)}</td>
               <td>${day.count}</td>
-              <td>${day.total.toLocaleString()} درهم</td>
-              <td>${avgOrderValue.toLocaleString('ar-EG', { maximumFractionDigits: 0 })} درهم</td>
+              <td>${day.total.toLocaleString('en-US')} درهم</td>
+              <td>${avgOrderValue.toLocaleString('en-US', { maximumFractionDigits: 0 })} درهم</td>
             </tr>
           `;
         }).join('');
@@ -1603,11 +1603,11 @@
                 <div class="popular-item-stat-label">الكمية</div>
               </div>
               <div class="popular-item-stat">
-                <div class="popular-item-stat-value">${item.total.toLocaleString()}</div>
+                <div class="popular-item-stat-value">${item.total.toLocaleString('en-US')}</div>
                 <div class="popular-item-stat-label">إجمالي المبيعات</div>
               </div>
               <div class="popular-item-stat">
-                <div class="popular-item-stat-value">${Math.round(item.total / item.quantity).toLocaleString()}</div>
+                <div class="popular-item-stat-value">${Math.round(item.total / item.quantity).toLocaleString('en-US')}</div>
                 <div class="popular-item-stat-label">متوسط السعر</div>
               </div>
             </div>
@@ -1743,7 +1743,7 @@
                     label += ': ';
                   }
                   if (context.datasetIndex === 0) {
-                    label += context.raw.toLocaleString() + ' درهم';
+                    label += context.raw.toLocaleString('en-US') + ' درهم';
                   } else {
                     label += context.raw;
                   }
@@ -1870,13 +1870,13 @@
               <h2 style="color: #1A1A2E; margin-top: 0;">تقرير إحصائيات المبيعات</h2>
             </div>
             
-            <div class="print-date">تاريخ الطباعة: ${new Date().toLocaleString('ar-EG')}</div>
+            <div class="print-date">تاريخ الطباعة: ${new Date().toLocaleString('en-US')}</div>
             <div class="print-date">الفترة من ${formatDateForDisplay(startDate)} إلى ${formatDateForDisplay(endDate)}</div>
             
             <div class="summary-cards">
               <div class="summary-card">
                 <div>إجمالي المبيعات</div>
-                <div class="summary-value">${totalSales.toLocaleString()} درهم</div>
+                <div class="summary-value">${totalSales.toLocaleString('en-US')} درهم</div>
               </div>
               <div class="summary-card">
                 <div>عدد الطلبات</div>
@@ -1884,7 +1884,7 @@
               </div>
               <div class="summary-card">
                 <div>متوسط قيمة الطلب</div>
-                <div class="summary-value">${avgOrderValue.toLocaleString('ar-EG', { maximumFractionDigits: 0 })} درهم</div>
+                <div class="summary-value">${avgOrderValue.toLocaleString('en-US', { maximumFractionDigits: 0 })} درهم</div>
               </div>
             </div>
             
@@ -1910,8 +1910,8 @@
           <tr>
             <td>${formatDateForDisplay(day.date)}</td>
             <td>${day.count}</td>
-            <td>${day.total.toLocaleString()} درهم</td>
-            <td>${avgOrderValue.toLocaleString('ar-EG', { maximumFractionDigits: 0 })} درهم</td>
+            <td>${day.total.toLocaleString('en-US')} درهم</td>
+            <td>${avgOrderValue.toLocaleString('en-US', { maximumFractionDigits: 0 })} درهم</td>
           </tr>
         `;
       });
@@ -1939,8 +1939,8 @@
           <tr>
             <td>${item.name}</td>
             <td>${item.quantity}</td>
-            <td>${item.total.toLocaleString()} درهم</td>
-            <td>${Math.round(item.total / item.quantity).toLocaleString()} درهم</td>
+            <td>${item.total.toLocaleString('en-US')} درهم</td>
+            <td>${Math.round(item.total / item.quantity).toLocaleString('en-US')} درهم</td>
           </tr>
         `;
       });
@@ -2050,13 +2050,13 @@
       }
 
       // حساب الإحصائيات
-      const today = new Date().toLocaleDateString('ar-EG');
+      const today = new Date().toLocaleDateString('en-US');
       let todayOrders = 0;
       let todaySales = 0;
       const popularItems = {};
       
       orders.forEach(order => {
-        const orderDate = new Date(order.timestamp).toLocaleDateString('ar-EG');
+        const orderDate = new Date(order.timestamp).toLocaleDateString('en-US');
         if (orderDate === today) {
           todayOrders++;
           todaySales += order.total || 0;
@@ -2114,7 +2114,7 @@
               <h2 style="color: #1A1A2E; margin-top: 0;">تقرير الطلبات والإحصائيات</h2>
             </div>
             
-            <div class="print-date">تاريخ الطباعة: ${new Date().toLocaleString('ar-EG')}</div>
+            <div class="print-date">تاريخ الطباعة: ${new Date().toLocaleString('en-US')}</div>
             
             <div class="stats-section">
               <h3 style="border-bottom: 2px solid #1A1A2E; padding-bottom: 5px;">إحصائيات اليوم (${today})</h3>
@@ -2797,7 +2797,7 @@
     // دالة تنسيق التاريخ للعرض
     function formatDateForDisplay(dateStr) {
       const date = new Date(dateStr);
-      return date.toLocaleDateString('ar-EG', {
+      return date.toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'short',
         year: 'numeric'
