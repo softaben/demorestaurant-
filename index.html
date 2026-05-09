@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -271,7 +272,8 @@
         }
         .scanner-controls .btn { width: auto; padding: 10px 20px; margin: 0; }
 
-        .choice-panel, .quantity-panel {
+        /* Quantity Panel after scan - direct */
+        .quantity-panel {
             position: fixed;
             bottom: 0;
             left: 0;
@@ -284,23 +286,33 @@
             z-index: 3100;
             box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
         }
-        .choice-panel.active, .quantity-panel.active { transform: translateY(0); }
+        .quantity-panel.active { transform: translateY(0); }
         
-        .choice-buttons {
+        .type-selector {
             display: flex;
-            gap: 15px;
-            margin-top: 20px;
+            gap: 12px;
+            margin: 15px 0;
         }
-        .choice-btn {
+        .type-btn {
             flex: 1;
-            padding: 15px;
+            padding: 12px;
             border-radius: 50px;
             text-align: center;
             font-weight: 600;
             cursor: pointer;
+            border: 2px solid var(--border-color);
+            background: var(--surface-color);
         }
-        .choice-income { background: #2a9d8f; color: white; }
-        .choice-outcome { background: #e76f51; color: white; }
+        .type-btn.active-income {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+        .type-btn.active-outcome {
+            background: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+        }
 
         .qty-group {
             display: flex;
@@ -353,6 +365,14 @@
             border-radius: 25px;
             cursor: pointer;
             margin-top: 10px;
+        }
+        
+        .product-info-scan {
+            background: var(--surface-color);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
         }
     </style>
 </head>
@@ -411,7 +431,7 @@
         <div class="nav-item" onclick="openAllTransactions()"><i class="fas fa-exchange-alt"></i><span>Mouvements</span></div>
     </nav>
 
-    <!-- Scanner Overlay with html5-qrcode -->
+    <!-- Scanner Overlay -->
     <div id="scannerOverlay" class="scanner-overlay">
         <div class="scanner-header">
             <span><i class="fas fa-camera"></i> Scanner le code-barres</span>
@@ -438,37 +458,44 @@
         </div>
     </div>
 
-    <!-- Choice Panel -->
-    <div id="choicePanel" class="choice-panel">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="choiceProductName"></h3>
-            <button class="close-modal-btn" onclick="closeChoicePanel()"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="choiceProductInfo" style="margin: 10px 0; color: var(--text-secondary);"></div>
-        <div class="choice-buttons">
-            <div class="choice-btn choice-income" onclick="selectAfterScan('income')">➕ Entrée</div>
-            <div class="choice-btn choice-outcome" onclick="selectAfterScan('outcome')">➖ Sortie</div>
-        </div>
-    </div>
-
-    <!-- Quantity Panel -->
+    <!-- Quantity Panel - Direct after scan (with type selection inside) -->
     <div id="quantityPanel" class="quantity-panel">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="panelTitle"></h3>
+            <h3 id="panelTitle">📦 Gestion du produit</h3>
             <button class="close-modal-btn" onclick="closeQuantityPanel()"><i class="fas fa-times"></i></button>
         </div>
-        <div id="panelProductInfo" style="margin: 10px 0; color: var(--text-secondary);"></div>
-        <div class="qty-group">
-            <button class="qty-btn" onclick="changeQty(-1)">-</button>
-            <input type="number" id="quickQuantity" class="qty-input" value="1" min="1">
-            <button class="qty-btn" onclick="changeQty(1)">+</button>
+        
+        <div id="productInfoScan" class="product-info-scan">
+            <div style="font-size: 18px; font-weight: bold;" id="scanProductName"></div>
+            <div style="margin-top: 8px;" id="scanProductDetails"></div>
         </div>
-        <input type="text" id="quickClient" class="form-input" placeholder="🏢 Client / Fournisseur">
-        <input type="text" id="quickNotes" class="form-input" placeholder="📝 Notes" style="margin-top:8px">
-        <button class="btn btn-success" id="confirmBtn" onclick="confirmTransaction()" style="margin-top:15px">Confirmer</button>
+        
+        <div class="form-group">
+            <label class="form-label">Type de mouvement</label>
+            <div class="type-selector" id="typeSelector">
+                <div class="type-btn" data-type="income" onclick="setTransactionType('income')">➕ Entrée</div>
+                <div class="type-btn" data-type="outcome" onclick="setTransactionType('outcome')">➖ Sortie</div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Quantité</label>
+            <div class="qty-group">
+                <button class="qty-btn" onclick="changeQty(-1)">-</button>
+                <input type="number" id="quickQuantity" class="qty-input" value="1" min="1">
+                <button class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+        </div>
+        
+        <input type="text" id="quickClient" class="form-input" placeholder="🏢 Client / Fournisseur (optionnel)">
+        <input type="text" id="quickNotes" class="form-input" placeholder="📝 Notes (optionnel)" style="margin-top:8px">
+        
+        <button class="btn btn-success" id="confirmBtn" onclick="confirmTransaction()" style="margin-top:15px">
+            ✅ Confirmer le mouvement
+        </button>
     </div>
 
-    <!-- Product Modal with Barcode Print -->
+    <!-- Product Modal -->
     <div class="modal-overlay" id="productModal">
         <div class="modal">
             <div class="modal-header">
@@ -482,7 +509,7 @@
                     <div class="form-group"><label>🔢 Code-barres</label><input type="text" id="prodBarcode" class="form-input"></div>
                     <div class="form-group"><label>📂 Catégorie</label><input type="text" id="prodCategory" class="form-input"></div>
                     <div class="row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div class="form-group"><label>📦 Quantité</label><input type="number" id="prodQuantity" class="form-input" min="0" value="0"></div>
+                        <div class="form-group"><label>📦 Quantité initiale</label><input type="number" id="prodQuantity" class="form-input" min="0" value="0"></div>
                         <div class="form-group"><label>💰 Prix (MAD)</label><input type="number" id="prodPrice" class="form-input" min="0" step="0.01" value="0"></div>
                     </div>
                     <div class="form-group"><label>⚠️ Seuil d'alerte</label><input type="number" id="prodMinStock" class="form-input" value="5"></div>
@@ -496,7 +523,6 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -517,8 +543,7 @@
         let html5QrCode = null;
         let currentCamera = 'environment';
         let scannedProduct = null;
-        let selectedTransactionType = null;
-        let currentBarcode = '';
+        let currentTransactionType = 'income';
 
         const app = firebase.initializeApp(firebaseConfig);
         database = firebase.database();
@@ -642,7 +667,7 @@
             `).join('');
         }
 
-        // Scanner Functions with html5-qrcode (more reliable)
+        // Scanner Functions
         async function openScanner() {
             document.getElementById('scannerOverlay').classList.add('active');
             
@@ -651,9 +676,8 @@
             }
             
             html5QrCode = new Html5Qrcode("interactive");
-            
             const config = { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
-            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+            const qrCodeSuccessCallback = (decodedText) => {
                 handleBarcodeResult(decodedText);
             };
             
@@ -694,44 +718,67 @@
         function handleBarcodeResult(barcode) {
             closeScanner();
             const product = products.find(p => p.barcode === barcode);
+            
             if(product) {
                 scannedProduct = product;
-                document.getElementById('choiceProductName').innerHTML = product.name;
-                document.getElementById('choiceProductInfo').innerHTML = `💰 ${formatCurrency(product.price)} | 📦 Stock: ${product.quantity}`;
-                document.getElementById('choicePanel').classList.add('active');
+                currentTransactionType = 'income';
+                showQuantityPanel(product);
                 if(navigator.vibrate) navigator.vibrate(100);
+                showFlash(`✅ Produit trouvé: ${product.name}`, 'success');
             } else {
-                if(confirm(`Produit "${barcode}" non trouvé. Voulez-vous l'ajouter ?`)) {
+                if(confirm(`Produit avec code-barres "${barcode}" non trouvé. Voulez-vous l'ajouter ?`)) {
                     openProductModalWithBarcode(barcode);
                 }
             }
         }
 
-        function selectAfterScan(type) {
-            selectedTransactionType = type;
-            closeChoicePanel();
-            showQuantityPanel(scannedProduct, type);
-        }
-
-        function closeChoicePanel() {
-            document.getElementById('choicePanel').classList.remove('active');
-            scannedProduct = null;
-        }
-
-        function showQuantityPanel(product, type) {
-            if(type === 'outcome' && product.quantity <= 0) {
-                showFlash('Stock insuffisant', 'danger');
-                return;
-            }
-            document.getElementById('panelTitle').innerHTML = type === 'income' ? '➕ Entrée en stock' : '➖ Sortie de stock';
-            document.getElementById('panelProductInfo').innerHTML = `<strong>${product.name}</strong><br>💰 ${formatCurrency(product.price)} | 📦 Disponible: ${product.quantity}`;
+        function showQuantityPanel(product) {
+            // Mettre à jour l'affichage du produit
+            document.getElementById('scanProductName').innerHTML = product.name;
+            document.getElementById('scanProductDetails').innerHTML = `
+                💰 ${formatCurrency(product.price)} | 📦 Stock actuel: ${product.quantity} unités
+            `;
+            
+            // Réinitialiser les valeurs
             document.getElementById('quickQuantity').value = 1;
-            document.getElementById('quickQuantity').max = type === 'outcome' ? product.quantity : 9999;
-            document.getElementById('quickClient').placeholder = type === 'income' ? '🏢 Fournisseur' : '🏢 Client';
+            document.getElementById('quickQuantity').max = 9999;
             document.getElementById('quickClient').value = '';
             document.getElementById('quickNotes').value = '';
-            document.getElementById('confirmBtn').innerHTML = type === 'income' ? '✅ Confirmer l\'entrée' : '✅ Confirmer la sortie';
+            
+            // Réinitialiser le type sélectionné
+            setTransactionType('income');
+            
+            // Afficher le panneau
             document.getElementById('quantityPanel').classList.add('active');
+        }
+
+        function setTransactionType(type) {
+            currentTransactionType = type;
+            
+            // Mettre à jour l'apparence des boutons
+            const incomeBtn = document.querySelector('.type-btn[data-type="income"]');
+            const outcomeBtn = document.querySelector('.type-btn[data-type="outcome"]');
+            
+            if(type === 'income') {
+                incomeBtn.classList.add('active-income');
+                incomeBtn.classList.remove('active-outcome');
+                outcomeBtn.classList.remove('active-income', 'active-outcome');
+                document.getElementById('quickClient').placeholder = '🏢 Fournisseur (optionnel)';
+                if(scannedProduct) {
+                    document.getElementById('quickQuantity').max = 9999;
+                }
+            } else {
+                outcomeBtn.classList.add('active-outcome');
+                outcomeBtn.classList.remove('active-income');
+                incomeBtn.classList.remove('active-income', 'active-outcome');
+                document.getElementById('quickClient').placeholder = '🏢 Client (optionnel)';
+                if(scannedProduct && scannedProduct.quantity > 0) {
+                    document.getElementById('quickQuantity').max = scannedProduct.quantity;
+                    if(parseInt(document.getElementById('quickQuantity').value) > scannedProduct.quantity) {
+                        document.getElementById('quickQuantity').value = scannedProduct.quantity;
+                    }
+                }
+            }
         }
 
         window.changeQty = (delta) => {
@@ -739,57 +786,69 @@
             let val = parseInt(input.value) + delta;
             if(isNaN(val)) val = 1;
             if(val < 1) val = 1;
-            if(scannedProduct && selectedTransactionType === 'outcome' && val > scannedProduct.quantity) val = scannedProduct.quantity;
+            
+            if(currentTransactionType === 'outcome' && scannedProduct && val > scannedProduct.quantity) {
+                val = scannedProduct.quantity;
+                showFlash(`Stock disponible: ${scannedProduct.quantity}`, 'warning');
+            }
             input.value = val;
         };
 
         function closeQuantityPanel() {
             document.getElementById('quantityPanel').classList.remove('active');
             scannedProduct = null;
-            selectedTransactionType = null;
         }
 
         async function confirmTransaction() {
             if(!scannedProduct) { showFlash('Erreur: produit non trouvé', 'danger'); return; }
+            
             const quantity = parseInt(document.getElementById('quickQuantity').value);
             if(quantity <= 0) { showFlash('Quantité invalide', 'danger'); return; }
-            if(selectedTransactionType === 'outcome' && quantity > scannedProduct.quantity) {
-                showFlash('Quantité insuffisante', 'danger');
+            
+            if(currentTransactionType === 'outcome' && quantity > scannedProduct.quantity) {
+                showFlash(`Stock insuffisant. Disponible: ${scannedProduct.quantity}`, 'danger');
                 return;
             }
             
-            const client = document.getElementById('quickClient').value.trim() || (selectedTransactionType === 'income' ? 'Fournisseur' : 'Client');
+            const client = document.getElementById('quickClient').value.trim() || (currentTransactionType === 'income' ? 'Fournisseur' : 'Client');
             const notes = document.getElementById('quickNotes').value.trim() || '';
             
-            if(selectedTransactionType === 'income') {
+            // Mise à jour de la quantité du produit
+            const oldQuantity = scannedProduct.quantity;
+            if(currentTransactionType === 'income') {
                 scannedProduct.quantity += quantity;
             } else {
                 scannedProduct.quantity -= quantity;
             }
+            
             await database.ref(`users/${currentUserId}/products/${scannedProduct.id}`).update({ 
                 quantity: scannedProduct.quantity, 
                 updatedAt: new Date().toISOString() 
             });
             
+            // Création de la transaction
             const transaction = {
                 id: Date.now().toString(),
                 productId: scannedProduct.id,
                 productName: scannedProduct.name,
-                type: selectedTransactionType,
+                type: currentTransactionType,
                 quantity: quantity,
                 price: scannedProduct.price,
                 totalValue: quantity * scannedProduct.price,
                 client: client,
                 notes: notes,
+                oldStock: oldQuantity,
+                newStock: scannedProduct.quantity,
                 date: new Date().toISOString()
             };
             await database.ref(`users/${currentUserId}/transactions/${transaction.id}`).set(transaction);
             transactions.unshift(transaction);
             
-            showFlash(`✅ ${selectedTransactionType === 'income' ? 'Entrée' : 'Sortie'} de ${quantity} ${scannedProduct.name} effectuée`, 'success');
+            const typeText = currentTransactionType === 'income' ? 'Entrée' : 'Sortie';
+            showFlash(`✅ ${typeText} de ${quantity} ${scannedProduct.name} effectuée avec succès`, 'success');
             closeQuantityPanel();
             updateUI();
-            if(navigator.vibrate) navigator.vibrate(100);
+            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
         }
 
         // Generate and Print Barcode
@@ -810,6 +869,7 @@
         function printBarcode() {
             const productName = document.getElementById('prodName').value;
             const barcode = document.getElementById('prodBarcode').value;
+            const price = document.getElementById('prodPrice').value;
             if(!barcode) { showFlash('Générez un code-barres d\'abord', 'warning'); return; }
             
             const printWindow = window.open('', '_blank');
@@ -827,7 +887,7 @@
                 <div class="barcode-card">
                     <svg id="barcode"></svg>
                     <div class="product-name">${productName}</div>
-                    <div class="product-price">${formatCurrency(document.getElementById('prodPrice').value)}</div>
+                    <div class="product-price">${formatCurrency(price)}</div>
                 </div>
                 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
                 <script>
@@ -872,10 +932,10 @@
             await database.ref(`users/${currentUserId}/products/${newProduct.id}`).set(newProduct);
             closeModal();
             updateUI();
-            showFlash(`✅ Produit ${name} enregistré`, 'success');
+            showFlash(`✅ Produit ${name} enregistré avec succès`, 'success');
         };
 
-        // PDF Report in French
+        // PDF Report
         async function generateDailyPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
@@ -1021,6 +1081,9 @@
         
         window.generateDailyPDF = generateDailyPDF;
         window.printBarcode = printBarcode;
+        window.setTransactionType = setTransactionType;
+        window.confirmTransaction = confirmTransaction;
+        window.closeQuantityPanel = closeQuantityPanel;
     </script>
 </body>
 </html>
