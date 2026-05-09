@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#2c7da0">
-    <title>StockFlow Pro - نظام المخزون المتكامل مع المسح الضوئي</title>
+    <title>StockFlow Pro - نظام المخزون المتكامل</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
+    <!-- مكتبة المسح الضوئي المستقرة -->
+    <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -21,6 +21,13 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         :root {
             --primary-color: #2c7da0;
             --primary-dark: #1f5e7a;
@@ -34,15 +41,7 @@
             --text-secondary: #475569;
             --border-color: #e2e8f0;
         }
-        .dark-mode {
-            --background-color: #0f172a;
-            --surface-color: #1e293b;
-            --card-color: #334155;
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --border-color: #475569;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: 'Cairo', 'Inter', system-ui;
             background: var(--background-color);
@@ -51,27 +50,34 @@
             padding-bottom: 70px;
             font-size: 14px;
         }
+
         .app-header {
             position: fixed;
             top: 0; right: 0; left: 0;
             height: 56px;
-            background: var(--primary-color);
+            background: linear-gradient(135deg, #2c7da0, #1f5e7a);
             color: white;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 16px;
             z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .app-title { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+        .app-title { font-weight: 700; display: flex; align-items: center; gap: 8px; font-size: 18px; }
+        
         .icon-button {
-            width: 36px; height: 36px;
+            width: 40px; height: 40px;
             border-radius: 50%;
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
             cursor: pointer;
+            transition: 0.2s;
         }
+        .icon-button:active { transform: scale(0.95); background: rgba(255,255,255,0.3); }
+
         .bottom-nav {
             position: fixed;
             bottom: 0; right: 0; left: 0;
@@ -81,6 +87,7 @@
             display: flex;
             z-index: 1000;
         }
+
         .nav-item {
             flex: 1;
             display: flex;
@@ -92,32 +99,36 @@
             text-decoration: none;
             font-size: 11px;
             cursor: pointer;
+            transition: 0.2s;
         }
         .nav-item.active { color: var(--primary-color); }
         .nav-item i { font-size: 20px; }
+
         .main-content {
             padding: 72px 16px 20px;
             max-width: 1200px;
             margin: 0 auto;
         }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2,1fr);
             gap: 12px;
             margin-bottom: 20px;
         }
-        @media (min-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(4,1fr); }
-        }
+        @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(4,1fr); } }
+
         .stat-card {
             background: var(--card-color);
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 16px;
+            padding: 14px;
             text-align: center;
             border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .stat-value { font-size: 22px; font-weight: 700; color: var(--primary-color); }
-        .stat-label { font-size: 12px; color: var(--text-secondary); }
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--primary-color); }
+        .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(4,1fr);
@@ -127,164 +138,209 @@
         .quick-action-btn {
             background: var(--card-color);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px;
+            border-radius: 16px;
+            padding: 12px 8px;
             text-align: center;
             cursor: pointer;
             transition: 0.2s;
         }
+        .quick-action-btn:active { transform: scale(0.97); background: var(--surface-color); }
         .quick-action-icon {
-            width: 40px; height: 40px;
-            background: var(--primary-color);
+            width: 45px; height: 45px;
+            background: linear-gradient(135deg, #2c7da0, #1f5e7a);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 6px;
+            margin: 0 auto 8px;
             color: white;
+            font-size: 20px;
         }
+
         .product-list { display: grid; gap: 10px; }
         .product-item {
             background: var(--surface-color);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 12px;
             display: flex;
             align-items: center;
             gap: 12px;
             border-right: 4px solid var(--primary-color);
             cursor: pointer;
+            transition: 0.2s;
         }
+        .product-item:active { background: var(--border-color); }
         .product-image {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
+            width: 55px; height: 55px;
+            border-radius: 12px;
             object-fit: cover;
             background: var(--border-color);
         }
         .product-info { flex: 1; }
-        .product-name { font-weight: 600; margin-bottom: 4px; }
-        .product-details { font-size: 12px; color: var(--text-secondary); display: flex; gap: 12px; flex-wrap: wrap; }
-        .badge-low { background: rgba(231,111,81,0.2); color: var(--danger-color); padding: 2px 8px; border-radius: 20px; font-size: 11px; }
+        .product-name { font-weight: 600; margin-bottom: 4px; font-size: 15px; }
+        .product-details { font-size: 11px; color: var(--text-secondary); display: flex; gap: 10px; flex-wrap: wrap; }
+        .badge-low { background: rgba(231,111,81,0.2); color: var(--danger-color); padding: 2px 8px; border-radius: 20px; font-size: 10px; }
+
         .modal-overlay {
             position: fixed; top: 0; right: 0; left: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 2000;
             backdrop-filter: blur(4px);
-            overflow-y: auto;
         }
         .modal-overlay.active { display: flex; }
         .modal {
             background: var(--background-color);
-            border-radius: 24px;
-            width: 90%;
+            border-radius: 28px;
+            width: 92%;
             max-width: 500px;
-            max-height: 90vh;
+            max-height: 85vh;
             overflow: auto;
-            margin: 20px;
         }
-        .modal-header { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 16px; }
+        .modal-header { padding: 18px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 18px; }
+        .modal-body { padding: 18px; }
         .form-group { margin-bottom: 16px; }
-        .form-label { display: block; margin-bottom: 6px; font-weight: 500; }
+        .form-label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px; }
         .form-input, .form-select {
             width: 100%;
-            padding: 10px 12px;
+            padding: 12px;
             background: var(--surface-color);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 14px;
             font-family: inherit;
+            font-size: 14px;
         }
         .btn {
-            padding: 10px 16px;
-            border-radius: 12px;
+            padding: 12px 20px;
+            border-radius: 30px;
             font-weight: 600;
             border: none;
             cursor: pointer;
             width: 100%;
             margin-top: 8px;
+            font-size: 15px;
+            transition: 0.2s;
         }
-        .btn-primary { background: var(--primary-color); color: white; }
-        .btn-danger { background: var(--danger-color); color: white; }
-        .btn-success { background: var(--success-color); color: white; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: linear-gradient(135deg, #2c7da0, #1f5e7a); color: white; }
+        .btn-success { background: #2a9d8f; color: white; }
         .btn-secondary { background: var(--surface-color); border: 1px solid var(--border-color); }
-        .image-preview {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 12px;
-            margin-top: 8px;
-            border: 2px solid var(--border-color);
-        }
-        .transaction-item {
-            background: var(--surface-color);
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-right: 3px solid var(--warning-color);
-        }
-        .empty-state { text-align: center; padding: 40px; color: var(--text-secondary); }
-        canvas { max-height: 250px; width: 100% !important; }
-        .row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (max-width: 600px) { .row-2col { grid-template-columns: 1fr; } }
-        
-        /* Scanner styles */
+        .image-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 16px; margin-top: 8px; border: 2px solid var(--border-color); }
+
+        /* Scanner Overlay */
         .scanner-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.95);
+            background: #000;
             z-index: 3000;
             display: none;
             flex-direction: column;
         }
         .scanner-overlay.active { display: flex; }
         .scanner-header {
-            background: var(--primary-color);
+            background: #1a1a2e;
             color: white;
             padding: 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .scanner-viewport {
-            flex: 1;
-            position: relative;
-            min-height: 400px;
-        }
-        #scannerReader {
+        #scannerVideo {
             width: 100%;
-            height: 100%;
-            min-height: 400px;
+            height: auto;
+            max-height: 60vh;
+            background: #000;
+            object-fit: cover;
         }
         .scanner-controls {
-            padding: 16px;
+            padding: 20px;
             display: flex;
             gap: 12px;
             justify-content: center;
+            background: #1a1a2e;
         }
-        .quantity-scanner {
+        .scanner-controls .btn { width: auto; padding: 10px 20px; margin: 0; }
+
+        .quantity-panel {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             background: var(--background-color);
-            border-radius: 24px 24px 0 0;
-            padding: 20px;
+            border-radius: 28px 28px 0 0;
+            padding: 24px;
             transform: translateY(100%);
-            transition: transform 0.3s;
+            transition: transform 0.3s ease;
             z-index: 3100;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
         }
-        .quantity-scanner.active {
-            transform: translateY(0);
+        .quantity-panel.active { transform: translateY(0); }
+        .qty-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--surface-color);
+            border-radius: 60px;
+            padding: 8px 15px;
+            margin: 15px 0;
+        }
+        .qty-btn {
+            width: 55px; height: 55px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .qty-input {
+            flex: 1;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            font-family: monospace;
+        }
+
+        .transaction-item {
+            background: var(--surface-color);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-right: 3px solid var(--warning-color);
+        }
+
+        .empty-state { text-align: center; padding: 40px; color: var(--text-secondary); }
+        canvas { max-height: 250px; width: 100% !important; }
+        .row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 600px) { .row-2col { grid-template-columns: 1fr; } }
+
+        .flash-message {
+            position: fixed;
+            bottom: 85px;
+            left: 16px;
+            right: 16px;
+            padding: 14px;
+            border-radius: 60px;
+            text-align: center;
+            z-index: 3500;
+            animation: slideUp 0.3s ease;
+            font-weight: 500;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
     </style>
 </head>
 <body>
     <div class="app-header">
         <div class="app-title"><i class="fas fa-boxes"></i> StockFlow Pro</div>
-        <div>
+        <div style="display: flex; gap: 8px;">
             <button class="icon-button" id="scannerBtn"><i class="fas fa-camera"></i></button>
             <button class="icon-button" id="addProductBtn"><i class="fas fa-plus"></i></button>
             <button class="icon-button" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
@@ -294,9 +350,9 @@
     <main class="main-content">
         <div id="dashboardView">
             <div class="stats-grid">
-                <div class="stat-card"><div class="stat-value" id="totalProducts">0</div><div class="stat-label">إجمالي المنتجات</div></div>
+                <div class="stat-card"><div class="stat-value" id="totalProducts">0</div><div class="stat-label">المنتجات</div></div>
                 <div class="stat-card"><div class="stat-value" id="totalStockValue">0 د.م</div><div class="stat-label">القيمة الإجمالية</div></div>
-                <div class="stat-card"><div class="stat-value" id="lowStockCount">0</div><div class="stat-label">منتجات منخفضة</div></div>
+                <div class="stat-card"><div class="stat-value" id="lowStockCount">0</div><div class="stat-label">مخزون منخفض</div></div>
                 <div class="stat-card"><div class="stat-value" id="outCount">0</div><div class="stat-label">خروج اليوم</div></div>
             </div>
 
@@ -307,20 +363,20 @@
                 <div class="quick-action-btn" onclick="exportToExcel()"><div class="quick-action-icon"><i class="fas fa-file-excel"></i></div><span>تصدير</span></div>
             </div>
 
-            <div class="stat-card"><div class="stat-label">⚠️ تنبيهات المخزون المنخفض</div><div id="lowStockAlerts" class="product-list" style="margin-top:8px"></div></div>
-            <div class="stat-card"><div class="stat-label">📦 آخر المنتجات</div><div id="recentProducts" class="product-list" style="margin-top:8px"></div></div>
+            <div class="stat-card"><div class="stat-label">⚠️ تنبيهات المخزون المنخفض</div><div id="lowStockAlerts" class="product-list" style="margin-top:10px"></div></div>
+            <div class="stat-card"><div class="stat-label">📦 أحدث المنتجات</div><div id="recentProducts" class="product-list" style="margin-top:10px"></div></div>
         </div>
 
         <div id="productsView" style="display:none">
-            <div style="display:flex; justify-content:space-between; margin-bottom:16px; gap:10px; flex-wrap:wrap">
-                <h3>جميع المنتجات</h3>
-                <input type="text" id="searchProduct" placeholder="🔍 بحث بالاسم أو الباركود..." style="padding:8px; border-radius:30px; border:1px solid var(--border-color); background:var(--surface-color); flex:1">
+            <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap">
+                <h3 style="flex:1">📦 جميع المنتجات</h3>
+                <input type="text" id="searchProduct" placeholder="🔍 بحث بالاسم أو الباركود..." style="padding:10px 15px; border-radius:30px; border:1px solid var(--border-color); background:var(--surface-color); width:100%; font-size:14px">
             </div>
             <div id="allProductsList" class="product-list"></div>
         </div>
 
         <div id="transactionsView" style="display:none">
-            <h3>حركات خروج المنتجات</h3>
+            <h3>📋 حركات خروج المنتجات</h3>
             <div id="transactionsList" style="margin-top:16px"></div>
         </div>
 
@@ -333,7 +389,7 @@
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="showDashboard()"><i class="fas fa-home"></i><span>الرئيسية</span></div>
         <div class="nav-item" onclick="showAllProducts()"><i class="fas fa-box"></i><span>المخزون</span></div>
-        <div class="nav-item" onclick="showOutTransactions()"><i class="fas fa-sign-out-alt"></i><span>حركات الخروج</span></div>
+        <div class="nav-item" onclick="showOutTransactions()"><i class="fas fa-sign-out-alt"></i><span>الحركات</span></div>
         <div class="nav-item" onclick="showAnalytics()"><i class="fas fa-chart-line"></i><span>تحليلات</span></div>
     </nav>
 
@@ -343,78 +399,64 @@
             <span><i class="fas fa-camera"></i> مسح الباركود</span>
             <button class="icon-button" onclick="closeScanner()" style="background: rgba(255,255,255,0.2);"><i class="fas fa-times"></i></button>
         </div>
-        <div class="scanner-viewport">
-            <div id="scannerReader"></div>
-        </div>
+        <video id="scannerVideo" autoplay playsinline></video>
+        <canvas id="scannerCanvas" style="display: none;"></canvas>
         <div class="scanner-controls">
-            <button class="btn btn-secondary" onclick="toggleScannerCamera()" style="width: auto; padding: 10px 20px;">
-                <i class="fas fa-sync-alt"></i> تبديل الكاميرا
-            </button>
-            <button class="btn btn-primary" onclick="openManualBarcode()" style="width: auto; padding: 10px 20px;">
-                <i class="fas fa-keyboard"></i> إدخال يدوي
-            </button>
+            <button class="btn btn-secondary" onclick="switchCamera()" style="background:#2d2d44; color:white;"><i class="fas fa-sync-alt"></i> تبديل الكاميرا</button>
+            <button class="btn btn-secondary" onclick="openManualBarcode()" style="background:#2d2d44; color:white;"><i class="fas fa-keyboard"></i> إدخال يدوي</button>
         </div>
     </div>
 
-    <!-- Manual Barcode Dialog -->
+    <!-- Manual Barcode Modal -->
     <div class="modal-overlay" id="manualBarcodeModal">
         <div class="modal">
-            <div class="modal-header">
-                <span>إدخال الباركود يدوياً</span>
-                <button class="icon-button" onclick="closeModal()"><i class="fas fa-times"></i></button>
-            </div>
+            <div class="modal-header"><span>📱 إدخال الباركود يدوياً</span><button class="icon-button" onclick="closeModal()"><i class="fas fa-times"></i></button></div>
             <div class="modal-body">
-                <input type="text" id="manualBarcodeInput" class="form-input" placeholder="أدخل الباركود" dir="ltr">
-                <button class="btn btn-primary" onclick="searchManualBarcode()">بحث</button>
+                <input type="text" id="manualBarcodeInput" class="form-input" placeholder="أدخل رقم الباركود" dir="ltr" style="text-align:center; font-size:18px">
+                <button class="btn btn-primary" onclick="searchManualBarcode()" style="margin-top:15px">بحث</button>
             </div>
         </div>
     </div>
 
-    <!-- Quick Out Quantity Modal -->
-    <div id="quantityPanel" class="quantity-scanner">
-        <div style="margin-bottom: 16px;">
-            <h3 id="quickProductName"></h3>
-            <div class="product-details" style="margin: 10px 0;">
-                <span>المتوفرة: <span id="quickAvailableQty">0</span></span>
-                <span>السعر: <span id="quickPrice">0</span></span>
-            </div>
+    <!-- Quantity Panel -->
+    <div id="quantityPanel" class="quantity-panel">
+        <h3 id="quickProductName" style="text-align:center"></h3>
+        <div style="text-align:center; margin:8px 0; color:var(--text-secondary)">
+            المتوفرة: <span id="quickAvailableQty">0</span> | السعر: <span id="quickPrice">0</span>
         </div>
-        <div class="quantity-input-group" style="display: flex; align-items: center; gap: 10px; background: var(--surface-color); border-radius: 60px; padding: 5px;">
-            <button class="qty-btn" onclick="changeQuickQty(-1)" style="width: 50px; height: 50px; border-radius: 50%; border: none; background: var(--primary-color); color: white; font-size: 24px;">-</button>
-            <input type="number" id="quickQuantity" class="quantity-input" value="1" min="1" style="flex: 1; text-align: center; font-size: 28px; font-weight: 700; border: none; background: transparent;">
-            <button class="qty-btn" onclick="changeQuickQty(1)" style="width: 50px; height: 50px; border-radius: 50%; border: none; background: var(--primary-color); color: white; font-size: 24px;">+</button>
+        <div class="qty-group">
+            <button class="qty-btn" onclick="changeQty(-1)">-</button>
+            <input type="number" id="quickQuantity" class="qty-input" value="1" min="1">
+            <button class="qty-btn" onclick="changeQty(1)">+</button>
         </div>
-        <div class="form-group" style="margin: 15px 0;">
-            <input type="text" id="quickReceiver" class="form-input" placeholder="الجهة المستلمة">
-        </div>
-        <div class="action-buttons" style="display: flex; gap: 10px;">
+        <input type="text" id="quickReceiver" class="form-input" placeholder="🏢 الجهة المستلمة (اختياري)" style="margin-bottom:12px">
+        <div style="display: flex; gap: 10px;">
             <button class="btn btn-secondary" onclick="closeQuantityPanel()">إلغاء</button>
-            <button class="btn btn-success" onclick="confirmQuickOut()">تأكيد الخروج</button>
+            <button class="btn btn-success" onclick="confirmOut()">✅ تأكيد الخروج</button>
         </div>
     </div>
 
     <!-- Product Modal -->
     <div class="modal-overlay" id="productModal">
         <div class="modal">
-            <div class="modal-header"><span class="modal-title">منتج جديد</span><button class="icon-button" onclick="closeModal()"><i class="fas fa-times"></i></button></div>
+            <div class="modal-header"><span>➕ منتج جديد</span><button class="icon-button" onclick="closeModal()"><i class="fas fa-times"></i></button></div>
             <div class="modal-body">
                 <form id="productForm">
                     <input type="hidden" id="productId">
                     <div class="form-group"><label>اسم المنتج *</label><input type="text" id="prodName" class="form-input" required></div>
-                    <div class="form-group"><label>الباركود (رقم المنتج)</label><input type="text" id="prodBarcode" class="form-input" placeholder="مسح أو إدخال الباركود"></div>
-                    <div class="form-group"><label>الفئة</label><input type="text" id="prodCategory" class="form-input"></div>
+                    <div class="form-group"><label>🔢 الباركود (رقم المنتج)</label><input type="text" id="prodBarcode" class="form-input" placeholder="يمكن مسحه لاحقاً"></div>
+                    <div class="form-group"><label>📂 الفئة</label><input type="text" id="prodCategory" class="form-input"></div>
                     <div class="row-2col">
-                        <div class="form-group"><label>الكمية *</label><input type="number" id="prodQuantity" class="form-input" required min="0"></div>
-                        <div class="form-group"><label>السعر (د.م) *</label><input type="number" id="prodPrice" class="form-input" required min="0" step="0.01"></div>
+                        <div class="form-group"><label>📦 الكمية *</label><input type="number" id="prodQuantity" class="form-input" required min="0"></div>
+                        <div class="form-group"><label>💰 السعر (د.م) *</label><input type="number" id="prodPrice" class="form-input" required min="0" step="0.01"></div>
                     </div>
-                    <div class="form-group"><label>صورة المنتج</label>
+                    <div class="form-group"><label>🖼️ صورة المنتج</label>
                         <input type="file" id="prodImage" accept="image/*" class="form-input">
                         <img id="imagePreview" class="image-preview" style="display:none">
                     </div>
-                    <div class="form-group"><label>الحد الأدنى للتنبيه</label><input type="number" id="prodMinStock" class="form-input" value="5"></div>
-                    <div class="form-group"><label>الموقع</label><input type="text" id="prodLocation" class="form-input"></div>
-                    <div class="form-group"><label>ملاحظات</label><textarea id="prodNotes" class="form-input" rows="2"></textarea></div>
-                    <button type="submit" class="btn btn-primary">حفظ المنتج</button>
+                    <div class="form-group"><label>⚠️ الحد الأدنى للتنبيه</label><input type="number" id="prodMinStock" class="form-input" value="5"></div>
+                    <div class="form-group"><label>📍 الموقع</label><input type="text" id="prodLocation" class="form-input"></div>
+                    <button type="submit" class="btn btn-primary">💾 حفظ المنتج</button>
                 </form>
             </div>
         </div>
@@ -434,10 +476,13 @@
         let products = [];
         let transactions = [];
         let currentUserId = null;
-        let auth = null, database = null, storage = null;
-        let html5QrCode = null;
+        let database = null, auth = null, storage = null;
+        
+        // Scanner variables
+        let currentStream = null;
         let currentCamera = 'environment';
-        let scannedProduct = null;
+        let scanning = false;
+        let selectedProductForOut = null;
 
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
@@ -447,6 +492,16 @@
 
         // Helper functions
         function formatCurrency(amt) { return new Intl.NumberFormat('ar-MA', { style: 'currency', currency: 'MAD' }).format(amt || 0); }
+        
+        function showFlash(message, type) {
+            const flash = document.createElement('div');
+            flash.className = 'flash-message';
+            flash.style.background = type === 'success' ? '#2a9d8f' : type === 'danger' ? '#e76f51' : '#e9c46a';
+            flash.style.color = 'white';
+            flash.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 2500);
+        }
 
         // Auth
         auth.onAuthStateChanged(user => {
@@ -461,7 +516,7 @@
             const div = document.createElement('div');
             div.id = 'loginModal';
             div.className = 'modal-overlay active';
-            div.innerHTML = `<div class="modal"><div class="modal-header"><div class="modal-title">تسجيل الدخول</div></div><div class="modal-body"><input id="loginEmail" class="form-input" placeholder="البريد"><input id="loginPass" type="password" class="form-input" placeholder="كلمة المرور" style="margin-top:10px"><div id="loginError" style="color:red;margin:10px"></div><button class="btn btn-primary" onclick="doLogin()">دخول</button></div></div>`;
+            div.innerHTML = `<div class="modal"><div class="modal-header"><span>🔐 تسجيل الدخول</span></div><div class="modal-body"><input id="loginEmail" class="form-input" placeholder="البريد الإلكتروني"><input id="loginPass" type="password" class="form-input" placeholder="كلمة المرور" style="margin-top:12px"><div id="loginError" style="color:red;margin:10px"></div><button class="btn btn-primary" onclick="doLogin()">دخول</button></div></div>`;
             document.body.appendChild(div);
         }
         window.doLogin = async () => {
@@ -473,50 +528,43 @@
         window.logout = () => auth.signOut();
         document.getElementById('logoutBtn').onclick = () => logout();
 
-        // Load data from Firebase
         async function loadData() {
             const prodRef = database.ref(`users/${currentUserId}/products`);
             prodRef.on('value', snap => { 
                 if(snap.exists()) products = Object.values(snap.val()); 
                 else products = [];
                 updateUI();
-                saveLocal();
             });
             const transRef = database.ref(`users/${currentUserId}/transactions`);
             transRef.on('value', snap => { 
                 if(snap.exists()) transactions = Object.values(snap.val()); 
                 else transactions = [];
                 if(document.getElementById('transactionsView').style.display !== 'none') renderTransactions();
-                saveLocal();
             });
-            const local = localStorage.getItem(`stock_${currentUserId}`);
-            if(local) {
-                const data = JSON.parse(local);
-                if(data.products && products.length===0) products = data.products;
-                if(data.transactions && transactions.length===0) transactions = data.transactions;
-            }
-            updateUI();
-        }
-
-        function saveLocal() {
-            if(currentUserId) localStorage.setItem(`stock_${currentUserId}`, JSON.stringify({products, transactions}));
         }
 
         function updateUI() {
             const total = products.length;
             const totalValue = products.reduce((s,p)=> s + (p.quantity * p.price),0);
             const low = products.filter(p => p.quantity <= (p.minStock ||5) && p.quantity>0).length;
-            const todayOut = transactions.filter(t => new Date(t.date).toDateString() === new Date().toDateString()).reduce((sum,t)=> sum + t.quantity,0);
+            const todayOut = transactions.filter(t => new Date(t.date).toDateString() === new Date().toDateString()).reduce((s,t)=> s + t.quantity,0);
             document.getElementById('totalProducts').innerText = total;
             document.getElementById('totalStockValue').innerText = formatCurrency(totalValue);
             document.getElementById('lowStockCount').innerText = low;
             document.getElementById('outCount').innerText = todayOut;
             
             const lowProducts = products.filter(p => p.quantity <= (p.minStock||5)).slice(0,5);
-            document.getElementById('lowStockAlerts').innerHTML = lowProducts.length ? lowProducts.map(p=>`<div style="padding:10px; background:var(--surface-color); border-radius:12px"><span>📦 ${p.name}</span> - المتبقي: ${p.quantity} <span class="badge-low">⚠️ منخفض</span><br><button class="btn" style="margin-top:6px; padding:4px 10px; font-size:12px; background:var(--success-color); color:white; border:none; border-radius:20px" onclick="quickOutFromAlert('${p.id}')">تسجيل خروج</button></div>`).join('') : '<div class="empty-state">✅ جميع المنتجات ضمن الحد الآمن</div>';
+            document.getElementById('lowStockAlerts').innerHTML = lowProducts.length ? lowProducts.map(p=>`
+                <div style="padding:12px; background:var(--surface-color); border-radius:14px">
+                    <div><strong>${p.name}</strong> - المتبقي: ${p.quantity} <span class="badge-low">منخفض</span></div>
+                    <button class="btn" style="margin-top:8px; padding:6px 12px; background:var(--success-color); color:white; border:none; border-radius:25px; font-size:12px" onclick="quickOut('${p.id}')">تسجيل خروج</button>
+                </div>`).join('') : '<div class="empty-state">✅ جميع المنتجات ضمن الحد الآمن</div>';
             
             const recent = [...products].sort((a,b)=> new Date(b.createdAt||0) - new Date(a.createdAt||0)).slice(0,5);
-            document.getElementById('recentProducts').innerHTML = recent.map(p=>`<div class="product-item" onclick="editProduct('${p.id}')"><div class="product-info"><div class="product-name">${p.name}</div><div class="product-details">الكمية: ${p.quantity} | السعر: ${formatCurrency(p.price)}</div></div></div>`).join('') || '<div class="empty-state">لا توجد منتجات</div>';
+            document.getElementById('recentProducts').innerHTML = recent.map(p=>`
+                <div class="product-item" onclick="editProduct('${p.id}')">
+                    <div class="product-info"><div class="product-name">${p.name}</div><div class="product-details">${p.quantity} وحدة | ${formatCurrency(p.price)}</div></div>
+                </div>`).join('') || '<div class="empty-state">لا توجد منتجات</div>';
             
             if(document.getElementById('productsView').style.display !== 'none') renderProductsList();
             if(document.getElementById('analyticsView').style.display !== 'none') drawCharts();
@@ -531,46 +579,115 @@
                 <div class="product-item" onclick="editProduct('${p.id}')">
                     ${p.imageUrl ? `<img src="${p.imageUrl}" class="product-image" onerror="this.style.display='none'">` : `<div class="product-image" style="display:flex;align-items:center;justify-content:center;background:var(--border-color)"><i class="fas fa-box"></i></div>`}
                     <div class="product-info">
-                        <div class="product-name">${p.name} ${p.quantity <= (p.minStock||5) ? '<span class="badge-low">مخزون منخفض</span>' : ''}</div>
-                        <div class="product-details">📦 ${p.quantity} | 💰 ${formatCurrency(p.price)} | ${p.barcode ? `🔢 ${p.barcode}` : ''}</div>
+                        <div class="product-name">${p.name} ${p.quantity <= (p.minStock||5) ? '<span class="badge-low">⚠️</span>' : ''}</div>
+                        <div class="product-details">📦 ${p.quantity} | 💰 ${formatCurrency(p.price)} ${p.barcode ? `| 🔢 ${p.barcode.substring(0,15)}` : ''}</div>
                     </div>
-                    <button class="icon-button" style="background:var(--success-color);color:white;width:36px;height:36px" onclick="event.stopPropagation();quickOut('${p.id}')"><i class="fas fa-sign-out-alt"></i></button>
+                    <button class="icon-button" style="background:var(--success-color);color:white;width:40px;height:40px" onclick="event.stopPropagation();quickOut('${p.id}')"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             `).join('');
         }
 
-        // Scanner functions
+        // ========== Scanner Functions (Fixed) ==========
         async function openScanner() {
             document.getElementById('scannerOverlay').classList.add('active');
-            if(html5QrCode) {
-                try { await html5QrCode.stop(); } catch(e) {}
-            }
-            html5QrCode = new Html5Qrcode("scannerReader");
+            await startCamera();
+        }
+
+        async function startCamera() {
             try {
-                await html5QrCode.start(
-                    currentCamera,
-                    { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
-                    (decodedText) => {
-                        handleScannedBarcode(decodedText);
-                    },
-                    (error) => {}
-                );
-            } catch(err) { console.error(err); }
+                if(currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+                
+                const constraints = {
+                    video: { facingMode: { exact: currentCamera } }
+                };
+                
+                try {
+                    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                } catch(e) {
+                    // Fallback to any camera
+                    currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                }
+                
+                const video = document.getElementById('scannerVideo');
+                video.srcObject = currentStream;
+                await video.play();
+                
+                scanning = true;
+                startBarcodeDetection();
+                
+            } catch(err) {
+                console.error('Camera error:', err);
+                showFlash('⚠️ لا يمكن الوصول إلى الكاميرا. تأكد من منح الصلاحيات.', 'danger');
+                closeScanner();
+            }
+        }
+
+        function startBarcodeDetection() {
+            const video = document.getElementById('scannerVideo');
+            const canvas = document.getElementById('scannerCanvas');
+            const context = canvas.getContext('2d');
+            
+            function detectFrame() {
+                if (!scanning) return;
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: "dontInvert",
+                    });
+                    
+                    if (code && code.data) {
+                        // Barcode found!
+                        scanning = false;
+                        handleBarcodeResult(code.data);
+                        return;
+                    }
+                }
+                requestAnimationFrame(detectFrame);
+            }
+            requestAnimationFrame(detectFrame);
+        }
+
+        async function handleBarcodeResult(barcode) {
+            // Stop scanning
+            if(currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            scanning = false;
+            
+            // Search product
+            const product = products.find(p => p.barcode === barcode);
+            if(product) {
+                closeScanner();
+                showQuickOutPanel(product);
+                if(navigator.vibrate) navigator.vibrate(100);
+                showFlash(`✅ تم العثور على: ${product.name}`, 'success');
+            } else {
+                closeScanner();
+                if(confirm(`المنتج بالباركود "${barcode}" غير موجود. هل تريد إضافته الآن؟`)) {
+                    openProductModalWithBarcode(barcode);
+                }
+            }
+        }
+
+        async function switchCamera() {
+            currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
+            await startCamera();
         }
 
         function closeScanner() {
+            scanning = false;
+            if(currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
             document.getElementById('scannerOverlay').classList.remove('active');
-            if(html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().catch(console.log);
-            }
-        }
-
-        async function toggleScannerCamera() {
-            currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
-            if(html5QrCode) {
-                await html5QrCode.stop();
-                await html5QrCode.start(currentCamera, { fps: 10, qrbox: { width: 250, height: 250 } }, handleScannedBarcode, () => {});
-            }
         }
 
         function openManualBarcode() {
@@ -582,21 +699,13 @@
             const barcode = document.getElementById('manualBarcodeInput').value.trim();
             if(barcode) {
                 closeModal();
-                handleScannedBarcode(barcode);
-            }
-        }
-
-        function handleScannedBarcode(barcode) {
-            const product = products.find(p => p.barcode === barcode);
-            if(product) {
-                closeScanner();
-                showQuickOutPanel(product);
-                if(navigator.vibrate) navigator.vibrate(200);
-                showFlash(`✅ تم العثور على: ${product.name}`, 'success');
-            } else {
-                if(confirm(`المنتج بالباركود ${barcode} غير موجود. هل تريد إضافته الآن؟`)) {
-                    closeScanner();
-                    openProductModalWithBarcode(barcode);
+                const product = products.find(p => p.barcode === barcode);
+                if(product) {
+                    showQuickOutPanel(product);
+                } else {
+                    if(confirm(`المنتج بالباركود "${barcode}" غير موجود. هل تريد إضافته؟`)) {
+                        openProductModalWithBarcode(barcode);
+                    }
                 }
             }
         }
@@ -606,15 +715,8 @@
             document.getElementById('prodBarcode').value = barcode;
         }
 
-        window.openScanner = openScanner;
-
-        // Quick Out functions
+        // Quick Out Functions
         window.quickOut = (productId) => {
-            const product = products.find(p => p.id === productId);
-            if(product) showQuickOutPanel(product);
-        };
-
-        window.quickOutFromAlert = (productId) => {
             const product = products.find(p => p.id === productId);
             if(product) showQuickOutPanel(product);
         };
@@ -624,90 +726,70 @@
                 showFlash(`⚠️ المنتج ${product.name} غير متوفر بالمخزون`, 'danger');
                 return;
             }
-            scannedProduct = product;
+            selectedProductForOut = product;
             document.getElementById('quickProductName').innerHTML = `<i class="fas fa-box"></i> ${product.name}`;
             document.getElementById('quickAvailableQty').innerText = product.quantity;
             document.getElementById('quickPrice').innerHTML = formatCurrency(product.price);
             document.getElementById('quickQuantity').value = 1;
-            document.getElementById('quickQuantity').max = product.quantity;
             document.getElementById('quickReceiver').value = '';
             document.getElementById('quantityPanel').classList.add('active');
         }
 
-        window.changeQuickQty = (delta) => {
+        window.changeQty = (delta) => {
             const input = document.getElementById('quickQuantity');
             let val = parseInt(input.value) + delta;
             if(isNaN(val)) val = 1;
             if(val < 1) val = 1;
-            if(scannedProduct && val > scannedProduct.quantity) val = scannedProduct.quantity;
+            if(selectedProductForOut && val > selectedProductForOut.quantity) val = selectedProductForOut.quantity;
             input.value = val;
         };
 
-        window.closeQuantityPanel = () => {
+        function closeQuantityPanel() {
             document.getElementById('quantityPanel').classList.remove('active');
-            scannedProduct = null;
-        };
+            selectedProductForOut = null;
+        }
 
-        window.confirmQuickOut = async () => {
-            if(!scannedProduct) return;
+        async function confirmOut() {
+            if(!selectedProductForOut) return;
             const quantity = parseInt(document.getElementById('quickQuantity').value);
-            if(quantity <= 0 || quantity > scannedProduct.quantity) {
+            if(quantity <= 0 || quantity > selectedProductForOut.quantity) {
                 showFlash('⚠️ كمية غير صالحة', 'danger');
                 return;
             }
             const receiver = document.getElementById('quickReceiver').value.trim() || 'مسح ضوئي';
             
-            // Update product
-            scannedProduct.quantity -= quantity;
-            await database.ref(`users/${currentUserId}/products/${scannedProduct.id}`).update({ 
-                quantity: scannedProduct.quantity, 
+            // Update product quantity
+            selectedProductForOut.quantity -= quantity;
+            await database.ref(`users/${currentUserId}/products/${selectedProductForOut.id}`).update({ 
+                quantity: selectedProductForOut.quantity, 
                 updatedAt: new Date().toISOString() 
             });
             
             // Create transaction
             const transaction = {
                 id: Date.now().toString(),
-                productId: scannedProduct.id,
-                productName: scannedProduct.name,
+                productId: selectedProductForOut.id,
+                productName: selectedProductForOut.name,
                 quantity: quantity,
-                priceAtTime: scannedProduct.price,
-                totalValue: quantity * scannedProduct.price,
+                priceAtTime: selectedProductForOut.price,
+                totalValue: quantity * selectedProductForOut.price,
                 receiver: receiver,
-                reason: 'بيع',
+                reason: 'خروج',
                 notes: 'تم الإخراج عن طريق الماسح الضوئي',
                 date: new Date().toISOString(),
-                userId: currentUserId,
-                barcode: scannedProduct.barcode
+                barcode: selectedProductForOut.barcode
             };
             await database.ref(`users/${currentUserId}/transactions/${transaction.id}`).set(transaction);
             
             // Update local arrays
-            const idx = products.findIndex(p => p.id === scannedProduct.id);
-            if(idx !== -1) products[idx] = scannedProduct;
+            const idx = products.findIndex(p => p.id === selectedProductForOut.id);
+            if(idx !== -1) products[idx] = selectedProductForOut;
             transactions.unshift(transaction);
             
-            showFlash(`✅ تم إخراج ${quantity} وحدة من ${scannedProduct.name}`, 'success');
+            showFlash(`✅ تم إخراج ${quantity} وحدة من ${selectedProductForOut.name}`, 'success');
             closeQuantityPanel();
             updateUI();
             if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        };
-
-        function showFlash(message, type) {
-            const flash = document.createElement('div');
-            flash.className = 'flash-message';
-            flash.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
-            flash.style.position = 'fixed';
-            flash.style.bottom = '80px';
-            flash.style.left = '16px';
-            flash.style.right = '16px';
-            flash.style.background = type === 'success' ? '#2a9d8f' : '#e76f51';
-            flash.style.color = 'white';
-            flash.style.padding = '12px';
-            flash.style.borderRadius = '50px';
-            flash.style.textAlign = 'center';
-            flash.style.zIndex = '4000';
-            document.body.appendChild(flash);
-            setTimeout(() => flash.remove(), 3000);
         }
 
         // Product CRUD
@@ -716,8 +798,9 @@
             const id = document.getElementById('productId').value;
             const name = document.getElementById('prodName').value.trim();
             if(!name) return;
-            const imageFile = document.getElementById('prodImage').files[0];
+            
             let imageUrl = '';
+            const imageFile = document.getElementById('prodImage').files[0];
             if(imageFile) {
                 const storageRef = storage.ref(`users/${currentUserId}/products/${Date.now()}_${imageFile.name}`);
                 const uploadTask = await storageRef.put(imageFile);
@@ -726,6 +809,7 @@
                 const old = products.find(p=>p.id===id);
                 imageUrl = old?.imageUrl || '';
             }
+            
             const newProduct = {
                 id: id || Date.now().toString(),
                 name: name,
@@ -735,15 +819,16 @@
                 price: parseFloat(document.getElementById('prodPrice').value) || 0,
                 minStock: parseInt(document.getElementById('prodMinStock').value) || 5,
                 location: document.getElementById('prodLocation').value,
-                notes: document.getElementById('prodNotes').value,
                 imageUrl: imageUrl,
                 createdAt: id ? (products.find(p=>p.id===id)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
+            
             if(id) {
                 const idx = products.findIndex(p=>p.id===id);
                 if(idx!==-1) products[idx] = newProduct;
             } else products.unshift(newProduct);
+            
             await database.ref(`users/${currentUserId}/products/${newProduct.id}`).set(newProduct);
             closeModal();
             updateUI();
@@ -756,6 +841,7 @@
             document.getElementById('imagePreview').style.display = 'none';
             openModal('productModal');
         };
+        
         window.editProduct = (id) => {
             const p = products.find(p=>p.id===id);
             if(p){
@@ -767,7 +853,6 @@
                 document.getElementById('prodPrice').value = p.price;
                 document.getElementById('prodMinStock').value = p.minStock||5;
                 document.getElementById('prodLocation').value = p.location||'';
-                document.getElementById('prodNotes').value = p.notes||'';
                 if(p.imageUrl) {
                     document.getElementById('imagePreview').src = p.imageUrl;
                     document.getElementById('imagePreview').style.display = 'block';
@@ -775,10 +860,14 @@
                 openModal('productModal');
             }
         };
+        
         document.getElementById('prodImage').addEventListener('change', (e) => {
             if(e.target.files[0]) {
                 const reader = new FileReader();
-                reader.onload = ev => { document.getElementById('imagePreview').src = ev.target.result; document.getElementById('imagePreview').style.display = 'block'; };
+                reader.onload = ev => { 
+                    document.getElementById('imagePreview').src = ev.target.result; 
+                    document.getElementById('imagePreview').style.display = 'block'; 
+                };
                 reader.readAsDataURL(e.target.files[0]);
             }
         });
@@ -819,15 +908,11 @@
         
         function renderTransactions() {
             const container = document.getElementById('transactionsList');
-            if(!transactions.length) { container.innerHTML = '<div class="empty-state">لا توجد حركات خروج مسجلة</div>'; return; }
+            if(!transactions.length) { container.innerHTML = '<div class="empty-state">لا توجد حركات خروج</div>'; return; }
             container.innerHTML = transactions.slice(0,50).map(t => `
                 <div class="transaction-item">
                     <div><strong>📦 ${t.productName}</strong> | ${t.quantity} وحدة | ${formatCurrency(t.totalValue)}</div>
-                    <div style="font-size:12px; color:var(--text-secondary); margin-top:6px">
-                        🕒 ${new Date(t.date).toLocaleString('ar-MA')}<br>
-                        🏢 الجهة: ${t.receiver} | السبب: ${t.reason}
-                        ${t.barcode ? `<br>🔢 الباركود: ${t.barcode}` : ''}
-                    </div>
+                    <div style="font-size:12px; margin-top:6px">🕒 ${new Date(t.date).toLocaleString('ar-MA')}<br>🏢 ${t.receiver} | ${t.reason}</div>
                 </div>
             `).join('');
         }
@@ -839,7 +924,7 @@
             const categories = {};
             products.forEach(p => { let cat = p.category||'أخرى'; categories[cat] = (categories[cat]||0) + p.quantity; });
             if(window.stockChart) window.stockChart.destroy();
-            window.stockChart = new Chart(ctxStock, { type: 'pie', data: { labels: Object.keys(categories), datasets: [{ data: Object.values(categories), backgroundColor: ['#2c7da0','#2a9d8f','#e9c46a','#e76f51'] }] }, options: { responsive: true } });
+            window.stockChart = new Chart(ctxStock, { type: 'pie', data: { labels: Object.keys(categories), datasets: [{ data: Object.values(categories), backgroundColor: ['#2c7da0','#2a9d8f','#e9c46a','#e76f51'] }] } });
             
             const last7Days = Array.from({length:7}, (_,i) => { let d = new Date(); d.setDate(d.getDate()-i); return d.toISOString().split('T')[0]; }).reverse();
             const outByDay = last7Days.map(day => transactions.filter(t => t.date.split('T')[0]===day).reduce((s,t)=> s+t.quantity,0));
@@ -848,8 +933,8 @@
         }
         
         window.exportToExcel = () => {
-            const wsData = [['اسم المنتج','الباركود','الفئة','الكمية','السعر','القيمة الإجمالية','الحد الأدنى','الموقع']];
-            products.forEach(p=> wsData.push([p.name, p.barcode||'', p.category||'', p.quantity, p.price, p.quantity*p.price, p.minStock||5, p.location||'']));
+            const wsData = [['المنتج','الباركود','الفئة','الكمية','السعر','القيمة']];
+            products.forEach(p=> wsData.push([p.name, p.barcode||'', p.category||'', p.quantity, p.price, p.quantity*p.price]));
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'المخزون');
@@ -868,5 +953,6 @@
             document.getElementById('scannerBtn').onclick = openScanner;
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </body>
 </html>
