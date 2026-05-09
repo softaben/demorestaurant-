@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
@@ -65,27 +65,16 @@
 
         .app-title { font-weight: 700; display: flex; align-items: center; gap: 8px; font-size: 16px; }
         
-        .back-home-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .icon-button {
+        .back-home-btn, .icon-button {
             width: 36px; height: 36px;
             border-radius: 50%;
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .bottom-nav {
@@ -268,16 +257,10 @@
             justify-content: space-between;
             align-items: center;
         }
-        .scanner-viewport {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-        #preview {
+        #interactive {
             width: 100%;
             height: 100%;
-            position: absolute;
-            object-fit: cover;
+            background: #000;
         }
         .scanner-controls {
             padding: 20px;
@@ -287,20 +270,8 @@
             background: #1a1a2e;
         }
         .scanner-controls .btn { width: auto; padding: 10px 20px; margin: 0; }
-        .scan-overlay-guide {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            height: 30%;
-            border: 2px solid rgba(255,255,255,0.5);
-            border-radius: 20px;
-            pointer-events: none;
-        }
 
-        /* Choice Panel after scan */
-        .choice-panel {
+        .choice-panel, .quantity-panel {
             position: fixed;
             bottom: 0;
             left: 0;
@@ -313,7 +284,7 @@
             z-index: 3100;
             box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
         }
-        .choice-panel.active { transform: translateY(0); }
+        .choice-panel.active, .quantity-panel.active { transform: translateY(0); }
         
         .choice-buttons {
             display: flex;
@@ -331,20 +302,6 @@
         .choice-income { background: #2a9d8f; color: white; }
         .choice-outcome { background: #e76f51; color: white; }
 
-        .quantity-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--background-color);
-            border-radius: 28px 28px 0 0;
-            padding: 24px;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-            z-index: 3200;
-            box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
-        }
-        .quantity-panel.active { transform: translateY(0); }
         .qty-group {
             display: flex;
             align-items: center;
@@ -380,6 +337,23 @@
             cursor: pointer;
             color: var(--text-secondary);
         }
+        
+        .barcode-container {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            margin: 10px 0;
+        }
+        .print-barcode-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -399,41 +373,17 @@
     <main class="main-content">
         <div id="dashboardView">
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="totalProducts">0</div>
-                    <div class="stat-label">Produits</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="totalStockValue">0 MAD</div>
-                    <div class="stat-label">Valeur du stock</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="todayIncome">0 MAD</div>
-                    <div class="stat-label">Entrées aujourd'hui</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="todayOutcome">0 MAD</div>
-                    <div class="stat-label">Sorties aujourd'hui</div>
-                </div>
+                <div class="stat-card"><div class="stat-value" id="totalProducts">0</div><div class="stat-label">Produits</div></div>
+                <div class="stat-card"><div class="stat-value" id="totalStockValue">0 MAD</div><div class="stat-label">Valeur du stock</div></div>
+                <div class="stat-card"><div class="stat-value" id="todayIncome">0 MAD</div><div class="stat-label">Entrées</div></div>
+                <div class="stat-card"><div class="stat-value" id="todayOutcome">0 MAD</div><div class="stat-label">Sorties</div></div>
             </div>
 
             <div class="quick-actions">
-                <div class="quick-action-btn" onclick="openScanner()">
-                    <div class="quick-action-icon"><i class="fas fa-camera"></i></div>
-                    <span>Scanner</span>
-                </div>
-                <div class="quick-action-btn" onclick="openAllProducts()">
-                    <div class="quick-action-icon"><i class="fas fa-list"></i></div>
-                    <span>Stock</span>
-                </div>
-                <div class="quick-action-btn" onclick="openAllTransactions()">
-                    <div class="quick-action-icon"><i class="fas fa-exchange-alt"></i></div>
-                    <span>Mouvements</span>
-                </div>
-                <div class="quick-action-btn" onclick="generateDailyPDF()">
-                    <div class="quick-action-icon"><i class="fas fa-file-pdf"></i></div>
-                    <span>PDF Journalier</span>
-                </div>
+                <div class="quick-action-btn" onclick="openScanner()"><div class="quick-action-icon"><i class="fas fa-camera"></i></div><span>Scanner</span></div>
+                <div class="quick-action-btn" onclick="openAllProducts()"><div class="quick-action-icon"><i class="fas fa-list"></i></div><span>Stock</span></div>
+                <div class="quick-action-btn" onclick="openAllTransactions()"><div class="quick-action-icon"><i class="fas fa-exchange-alt"></i></div><span>Mouvements</span></div>
+                <div class="quick-action-btn" onclick="generateDailyPDF()"><div class="quick-action-icon"><i class="fas fa-file-pdf"></i></div><span>PDF</span></div>
             </div>
 
             <div class="stat-card"><div class="stat-label">⚠️ Stock faible</div><div id="lowStockAlerts" class="product-list" style="margin-top:10px"></div></div>
@@ -461,16 +411,13 @@
         <div class="nav-item" onclick="openAllTransactions()"><i class="fas fa-exchange-alt"></i><span>Mouvements</span></div>
     </nav>
 
-    <!-- Scanner Overlay -->
+    <!-- Scanner Overlay with html5-qrcode -->
     <div id="scannerOverlay" class="scanner-overlay">
         <div class="scanner-header">
             <span><i class="fas fa-camera"></i> Scanner le code-barres</span>
             <button class="icon-button" onclick="closeScanner()" style="background: rgba(255,255,255,0.2);"><i class="fas fa-times"></i></button>
         </div>
-        <div class="scanner-viewport">
-            <video id="preview" playsinline autoplay muted></video>
-            <div class="scan-overlay-guide"></div>
-        </div>
+        <div id="interactive"></div>
         <div class="scanner-controls">
             <button class="btn btn-secondary" onclick="switchCamera()" style="background:#2d2d44; color:white;"><i class="fas fa-sync-alt"></i> Changer caméra</button>
             <button class="btn btn-secondary" onclick="closeScanner();openManualBarcode()" style="background:#2d2d44; color:white;"><i class="fas fa-keyboard"></i> Manuel</button>
@@ -491,7 +438,7 @@
         </div>
     </div>
 
-    <!-- Choice Panel after scan -->
+    <!-- Choice Panel -->
     <div id="choicePanel" class="choice-panel">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h3 id="choiceProductName"></h3>
@@ -521,7 +468,7 @@
         <button class="btn btn-success" id="confirmBtn" onclick="confirmTransaction()" style="margin-top:15px">Confirmer</button>
     </div>
 
-    <!-- Product Modal -->
+    <!-- Product Modal with Barcode Print -->
     <div class="modal-overlay" id="productModal">
         <div class="modal">
             <div class="modal-header">
@@ -539,12 +486,17 @@
                         <div class="form-group"><label>💰 Prix (MAD)</label><input type="number" id="prodPrice" class="form-input" min="0" step="0.01" value="0"></div>
                     </div>
                     <div class="form-group"><label>⚠️ Seuil d'alerte</label><input type="number" id="prodMinStock" class="form-input" value="5"></div>
+                    <div id="barcodePrintSection" style="display: none;" class="barcode-container">
+                        <svg id="barcodeSvg" width="200" height="60"></svg>
+                        <div><button type="button" class="print-barcode-btn" onclick="printBarcode()"><i class="fas fa-print"></i> Imprimer le code-barres</button></div>
+                    </div>
                     <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
                 </form>
             </div>
         </div>
     </div>
 
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -562,10 +514,11 @@
         let database = null, auth = null;
         
         // Scanner variables
-        let codeReader = null;
+        let html5QrCode = null;
         let currentCamera = 'environment';
         let scannedProduct = null;
         let selectedTransactionType = null;
+        let currentBarcode = '';
 
         const app = firebase.initializeApp(firebaseConfig);
         database = firebase.database();
@@ -689,36 +642,45 @@
             `).join('');
         }
 
-        // Scanner Functions
+        // Scanner Functions with html5-qrcode (more reliable)
         async function openScanner() {
             document.getElementById('scannerOverlay').classList.add('active');
-            if (codeReader) { await codeReader.reset(); codeReader = null; }
-            codeReader = new ZXing.BrowserMultiFormatReader();
+            
+            if (html5QrCode) {
+                try { await html5QrCode.stop(); } catch(e) {}
+            }
+            
+            html5QrCode = new Html5Qrcode("interactive");
+            
+            const config = { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                handleBarcodeResult(decodedText);
+            };
+            
             try {
-                const videoInputDevices = await codeReader.listVideoInputDevices();
-                let selectedDeviceId = null;
-                for (const device of videoInputDevices) {
-                    if (currentCamera === 'environment' && device.label.toLowerCase().includes('back')) {
-                        selectedDeviceId = device.deviceId; break;
-                    } else if (currentCamera === 'user' && device.label.toLowerCase().includes('front')) {
-                        selectedDeviceId = device.deviceId; break;
-                    }
+                await html5QrCode.start({ facingMode: currentCamera }, config, qrCodeSuccessCallback);
+            } catch(err) {
+                try {
+                    await html5QrCode.start("environment", config, qrCodeSuccessCallback);
+                } catch(err2) {
+                    showFlash('Erreur caméra', 'danger');
                 }
-                if (!selectedDeviceId && videoInputDevices.length > 0) selectedDeviceId = videoInputDevices[0].deviceId;
-                await codeReader.decodeFromVideoDevice(selectedDeviceId, 'preview', (result) => {
-                    if (result) { handleBarcodeResult(result.getText()); }
-                });
-            } catch (err) { showFlash('Erreur caméra', 'danger'); }
+            }
         }
 
         async function switchCamera() {
             currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
-            if (codeReader) { await codeReader.reset(); codeReader = null; }
-            await openScanner();
+            if (html5QrCode) {
+                await html5QrCode.stop();
+                await openScanner();
+            }
         }
 
         function closeScanner() {
-            if (codeReader) { codeReader.reset(); codeReader = null; }
+            if (html5QrCode) {
+                html5QrCode.stop().catch(console.log);
+                html5QrCode = null;
+            }
             document.getElementById('scannerOverlay').classList.remove('active');
         }
 
@@ -737,6 +699,7 @@
                 document.getElementById('choiceProductName').innerHTML = product.name;
                 document.getElementById('choiceProductInfo').innerHTML = `💰 ${formatCurrency(product.price)} | 📦 Stock: ${product.quantity}`;
                 document.getElementById('choicePanel').classList.add('active');
+                if(navigator.vibrate) navigator.vibrate(100);
             } else {
                 if(confirm(`Produit "${barcode}" non trouvé. Voulez-vous l'ajouter ?`)) {
                     openProductModalWithBarcode(barcode);
@@ -798,7 +761,6 @@
             const client = document.getElementById('quickClient').value.trim() || (selectedTransactionType === 'income' ? 'Fournisseur' : 'Client');
             const notes = document.getElementById('quickNotes').value.trim() || '';
             
-            // Update product quantity
             if(selectedTransactionType === 'income') {
                 scannedProduct.quantity += quantity;
             } else {
@@ -809,7 +771,6 @@
                 updatedAt: new Date().toISOString() 
             });
             
-            // Create transaction
             const transaction = {
                 id: Date.now().toString(),
                 productId: scannedProduct.id,
@@ -831,6 +792,53 @@
             if(navigator.vibrate) navigator.vibrate(100);
         }
 
+        // Generate and Print Barcode
+        function generateBarcode(barcode, elementId) {
+            if(!barcode) return;
+            try {
+                JsBarcode(`#${elementId}`, barcode, {
+                    format: "CODE128",
+                    width: 2,
+                    height: 50,
+                    displayValue: true,
+                    fontSize: 14,
+                    textMargin: 5
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        function printBarcode() {
+            const productName = document.getElementById('prodName').value;
+            const barcode = document.getElementById('prodBarcode').value;
+            if(!barcode) { showFlash('Générez un code-barres d\'abord', 'warning'); return; }
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html dir="ltr">
+                <head><title>Code-barres - ${productName}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: white; }
+                    .barcode-card { text-align: center; padding: 30px; border: 1px solid #ddd; border-radius: 10px; }
+                    .product-name { font-size: 18px; margin-top: 15px; font-weight: bold; }
+                    .product-price { font-size: 14px; color: #666; margin-top: 5px; }
+                </style>
+                </head>
+                <body>
+                <div class="barcode-card">
+                    <svg id="barcode"></svg>
+                    <div class="product-name">${productName}</div>
+                    <div class="product-price">${formatCurrency(document.getElementById('prodPrice').value)}</div>
+                </div>
+                <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
+                <script>
+                    JsBarcode("#barcode", "${barcode}", { format: "CODE128", width: 2, height: 80 });
+                    setTimeout(() => { window.print(); window.close(); }, 500);
+                <\/script>
+                </body>
+                </html>
+            `);
+        }
+
         // Save Product
         window.saveProduct = async function(event) {
             event.preventDefault();
@@ -839,7 +847,10 @@
             if(!name) { showFlash('Nom du produit requis', 'danger'); return; }
             
             let barcode = document.getElementById('prodBarcode').value.trim();
-            if(!barcode) barcode = `PROD-${Date.now()}`;
+            if(!barcode) {
+                barcode = `PROD-${Date.now()}`;
+                document.getElementById('prodBarcode').value = barcode;
+            }
             
             const newProduct = {
                 id: id || Date.now().toString(),
@@ -918,7 +929,6 @@
                     headStyles: { fillColor: [231, 111, 81], textColor: 255 },
                     styles: { font: 'helvetica', fontSize: 9 }
                 });
-                y = doc.lastAutoTable.finalY + 10;
             }
             
             if(todayTransactions.length === 0) {
@@ -964,12 +974,16 @@
         function openProductModal() {
             document.getElementById('productForm').reset();
             document.getElementById('productId').value = '';
+            document.getElementById('barcodePrintSection').style.display = 'none';
             openModal('productModal');
         }
         function openProductModalWithBarcode(barcode) {
             openProductModal();
             document.getElementById('prodBarcode').value = barcode;
+            document.getElementById('barcodePrintSection').style.display = 'block';
+            generateBarcode(barcode, 'barcodeSvg');
         }
+        
         window.editProduct = (id) => {
             const p = products.find(p => p.id === id);
             if(p){
@@ -980,9 +994,24 @@
                 document.getElementById('prodQuantity').value = p.quantity;
                 document.getElementById('prodPrice').value = p.price;
                 document.getElementById('prodMinStock').value = p.minStock || 5;
+                if(p.barcode) {
+                    document.getElementById('barcodePrintSection').style.display = 'block';
+                    generateBarcode(p.barcode, 'barcodeSvg');
+                } else {
+                    document.getElementById('barcodePrintSection').style.display = 'none';
+                }
                 openModal('productModal');
             }
         };
+        
+        document.getElementById('prodBarcode').addEventListener('input', function() {
+            if(this.value) {
+                document.getElementById('barcodePrintSection').style.display = 'block';
+                generateBarcode(this.value, 'barcodeSvg');
+            } else {
+                document.getElementById('barcodePrintSection').style.display = 'none';
+            }
+        });
         
         function setupEvents() { 
             document.getElementById('searchProduct')?.addEventListener('input', renderProductsList); 
@@ -991,6 +1020,7 @@
         }
         
         window.generateDailyPDF = generateDailyPDF;
+        window.printBarcode = printBarcode;
     </script>
 </body>
 </html>
