@@ -10,9 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- مكتبة المسح الضوئي المستقرة -->
-    <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -76,7 +75,7 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        .icon-button:active { transform: scale(0.95); background: rgba(255,255,255,0.3); }
+        .icon-button:active { transform: scale(0.95); }
 
         .bottom-nav {
             position: fixed;
@@ -96,10 +95,8 @@
             justify-content: center;
             gap: 4px;
             color: var(--text-secondary);
-            text-decoration: none;
             font-size: 11px;
             cursor: pointer;
-            transition: 0.2s;
         }
         .nav-item.active { color: var(--primary-color); }
         .nav-item i { font-size: 20px; }
@@ -124,7 +121,6 @@
             padding: 14px;
             text-align: center;
             border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .stat-value { font-size: 24px; font-weight: 700; color: var(--primary-color); }
         .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
@@ -142,9 +138,7 @@
             padding: 12px 8px;
             text-align: center;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .quick-action-btn:active { transform: scale(0.97); background: var(--surface-color); }
         .quick-action-icon {
             width: 45px; height: 45px;
             background: linear-gradient(135deg, #2c7da0, #1f5e7a);
@@ -167,9 +161,7 @@
             gap: 12px;
             border-right: 4px solid var(--primary-color);
             cursor: pointer;
-            transition: 0.2s;
         }
-        .product-item:active { background: var(--border-color); }
         .product-image {
             width: 55px; height: 55px;
             border-radius: 12px;
@@ -221,13 +213,48 @@
             width: 100%;
             margin-top: 8px;
             font-size: 15px;
-            transition: 0.2s;
         }
-        .btn:active { transform: scale(0.98); }
         .btn-primary { background: linear-gradient(135deg, #2c7da0, #1f5e7a); color: white; }
         .btn-success { background: #2a9d8f; color: white; }
         .btn-secondary { background: var(--surface-color); border: 1px solid var(--border-color); }
-        .image-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 16px; margin-top: 8px; border: 2px solid var(--border-color); }
+        
+        .barcode-card {
+            background: linear-gradient(135deg, #f8fafc, #ffffff);
+            border: 2px dashed var(--primary-color);
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .barcode-image {
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            display: inline-block;
+            margin: 5px auto;
+        }
+        .barcode-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .barcode-actions .btn { margin: 0; padding: 6px 12px; font-size: 12px; width: auto; }
+        
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin-top: 8px;
+            border: 2px solid var(--border-color);
+        }
+        
+        .image-url-input {
+            direction: ltr;
+            text-align: left;
+            font-size: 12px;
+        }
 
         /* Scanner Overlay */
         .scanner-overlay {
@@ -303,7 +330,6 @@
             font-weight: 700;
             border: none;
             background: transparent;
-            font-family: monospace;
         }
 
         .transaction-item {
@@ -329,7 +355,6 @@
             text-align: center;
             z-index: 3500;
             animation: slideUp 0.3s ease;
-            font-weight: 500;
         }
         @keyframes slideUp {
             from { transform: translateY(100px); opacity: 0; }
@@ -410,7 +435,7 @@
     <!-- Manual Barcode Modal -->
     <div class="modal-overlay" id="manualBarcodeModal">
         <div class="modal">
-            <div class="modal-header"><span>📱 إدخال الباركود يدوياً</span><button class="icon-button" onclick="closeModal()"><i class="fas fa-times"></i></button></div>
+            <div class="modal-header"><span>📱 إدخال الباركود</span><button class="icon-button" onclick="closeModal()"><i class="fas fa-times"></i></button></div>
             <div class="modal-body">
                 <input type="text" id="manualBarcodeInput" class="form-input" placeholder="أدخل رقم الباركود" dir="ltr" style="text-align:center; font-size:18px">
                 <button class="btn btn-primary" onclick="searchManualBarcode()" style="margin-top:15px">بحث</button>
@@ -436,26 +461,51 @@
         </div>
     </div>
 
-    <!-- Product Modal -->
+    <!-- Product Modal with Barcode Generation & Image URL -->
     <div class="modal-overlay" id="productModal">
         <div class="modal">
             <div class="modal-header"><span>➕ منتج جديد</span><button class="icon-button" onclick="closeModal()"><i class="fas fa-times"></i></button></div>
             <div class="modal-body">
-                <form id="productForm">
+                <form id="productForm" onsubmit="saveProduct(event)">
                     <input type="hidden" id="productId">
-                    <div class="form-group"><label>اسم المنتج *</label><input type="text" id="prodName" class="form-input" required></div>
-                    <div class="form-group"><label>🔢 الباركود (رقم المنتج)</label><input type="text" id="prodBarcode" class="form-input" placeholder="يمكن مسحه لاحقاً"></div>
-                    <div class="form-group"><label>📂 الفئة</label><input type="text" id="prodCategory" class="form-input"></div>
-                    <div class="row-2col">
-                        <div class="form-group"><label>📦 الكمية *</label><input type="number" id="prodQuantity" class="form-input" required min="0"></div>
-                        <div class="form-group"><label>💰 السعر (د.م) *</label><input type="number" id="prodPrice" class="form-input" required min="0" step="0.01"></div>
+                    <div class="form-group">
+                        <label class="form-label">اسم المنتج *</label>
+                        <input type="text" id="prodName" class="form-input" required>
                     </div>
-                    <div class="form-group"><label>🖼️ صورة المنتج</label>
-                        <input type="file" id="prodImage" accept="image/*" class="form-input">
+                    <div class="form-group">
+                        <label class="form-label">🔢 الباركود</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="prodBarcode" class="form-input" placeholder="سيتولد تلقائياً" style="flex:1">
+                            <button type="button" class="btn btn-secondary" onclick="generateNewBarcode()" style="width: auto; margin:0; padding:0 15px;">توليد</button>
+                        </div>
+                        <div id="barcodePreview" class="barcode-card" style="display: none;">
+                            <div class="barcode-image">
+                                <svg id="barcodeSvg" width="200" height="70"></svg>
+                            </div>
+                            <div class="barcode-actions">
+                                <button type="button" class="btn btn-secondary" onclick="downloadBarcode()"><i class="fas fa-download"></i> تحميل</button>
+                                <button type="button" class="btn btn-secondary" onclick="printBarcode()"><i class="fas fa-print"></i> طباعة</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📂 الفئة</label>
+                        <input type="text" id="prodCategory" class="form-input">
+                    </div>
+                    <div class="row-2col">
+                        <div class="form-group"><label class="form-label">📦 الكمية *</label><input type="number" id="prodQuantity" class="form-input" required min="0" value="0"></div>
+                        <div class="form-group"><label class="form-label">💰 السعر (د.م) *</label><input type="number" id="prodPrice" class="form-input" required min="0" step="0.01" value="0"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🖼️ رابط صورة المنتج (اختياري)</label>
+                        <input type="url" id="prodImageUrl" class="form-input image-url-input" placeholder="https://example.com/product-image.jpg" onchange="previewImageFromUrl()">
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+                            <i class="fas fa-info-circle"></i> يمكنك إدخال رابط صورة من الإنترنت بدلاً من رفعها
+                        </div>
                         <img id="imagePreview" class="image-preview" style="display:none">
                     </div>
-                    <div class="form-group"><label>⚠️ الحد الأدنى للتنبيه</label><input type="number" id="prodMinStock" class="form-input" value="5"></div>
-                    <div class="form-group"><label>📍 الموقع</label><input type="text" id="prodLocation" class="form-input"></div>
+                    <div class="form-group"><label class="form-label">⚠️ الحد الأدنى للتنبيه</label><input type="number" id="prodMinStock" class="form-input" value="5"></div>
+                    <div class="form-group"><label class="form-label">📍 الموقع</label><input type="text" id="prodLocation" class="form-input"></div>
                     <button type="submit" class="btn btn-primary">💾 حفظ المنتج</button>
                 </form>
             </div>
@@ -476,21 +526,20 @@
         let products = [];
         let transactions = [];
         let currentUserId = null;
-        let database = null, auth = null, storage = null;
+        let database = null, auth = null;
         
         // Scanner variables
         let currentStream = null;
         let currentCamera = 'environment';
         let scanning = false;
         let selectedProductForOut = null;
+        let currentBarcodeValue = '';
 
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         database = firebase.database();
         auth = firebase.auth();
-        storage = firebase.storage();
 
-        // Helper functions
         function formatCurrency(amt) { return new Intl.NumberFormat('ar-MA', { style: 'currency', currency: 'MAD' }).format(amt || 0); }
         
         function showFlash(message, type) {
@@ -501,6 +550,112 @@
             flash.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
             document.body.appendChild(flash);
             setTimeout(() => flash.remove(), 2500);
+        }
+
+        // Preview image from URL
+        function previewImageFromUrl() {
+            const url = document.getElementById('prodImageUrl').value;
+            const preview = document.getElementById('imagePreview');
+            if(url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                preview.src = url;
+                preview.style.display = 'block';
+                preview.onerror = () => {
+                    preview.style.display = 'none';
+                    showFlash('رابط الصورة غير صالح', 'danger');
+                };
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        // Generate Barcode
+        function generateNewBarcode() {
+            const name = document.getElementById('prodName').value.trim();
+            const timestamp = Date.now().toString();
+            const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+            let prefix = 'STK';
+            if(name) {
+                prefix = name.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase() || 'STK';
+            }
+            const barcode = `${prefix}-${timestamp.slice(-6)}-${random}`;
+            document.getElementById('prodBarcode').value = barcode;
+            generateBarcodeImage(barcode);
+        }
+
+        function generateBarcodeImage(barcode) {
+            if(!barcode) return;
+            currentBarcodeValue = barcode;
+            const container = document.getElementById('barcodePreview');
+            const svg = document.getElementById('barcodeSvg');
+            
+            try {
+                JsBarcode(svg, barcode, {
+                    format: "CODE128",
+                    width: 1.5,
+                    height: 45,
+                    displayValue: true,
+                    fontSize: 12,
+                    textMargin: 3
+                });
+                container.style.display = 'block';
+            } catch(e) {
+                container.style.display = 'none';
+            }
+        }
+
+        function downloadBarcode() {
+            if(!currentBarcodeValue) return;
+            const svg = document.getElementById('barcodeSvg');
+            const serializer = new XMLSerializer();
+            let svgString = serializer.serializeToString(svg);
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            svgString = 'data:image/svg+xml; charset=utf8, ' + encodeURIComponent(svgString);
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                const pngUrl = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = `barcode_${currentBarcodeValue}.png`;
+                link.href = pngUrl;
+                link.click();
+                showFlash('تم تحميل الباركود', 'success');
+            };
+            img.src = svgString;
+        }
+
+        function printBarcode() {
+            if(!currentBarcodeValue) return;
+            const productName = document.getElementById('prodName').value || 'منتج';
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html dir="rtl">
+                <head><title>طباعة باركود</title>
+                <style>
+                    body { font-family: 'Cairo', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: white; }
+                    .barcode-container { text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
+                    .product-name { font-size: 16px; margin-top: 10px; font-weight: bold; }
+                </style>
+                </head>
+                <body>
+                <div class="barcode-container">
+                    <div id="barcode"></div>
+                    <div class="product-name">${productName}</div>
+                </div>
+                <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
+                <script>
+                    JsBarcode("#barcode", "${currentBarcodeValue}", { format: "CODE128", width: 2, height: 80 });
+                    setTimeout(() => { window.print(); window.close(); }, 500);
+                <\/script>
+                </body>
+                </html>
+            `);
         }
 
         // Auth
@@ -587,7 +742,76 @@
             `).join('');
         }
 
-        // ========== Scanner Functions (Fixed) ==========
+        // Save Product Function (without image upload delay)
+        window.saveProduct = async function(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('productId').value;
+            const name = document.getElementById('prodName').value.trim();
+            
+            if(!name) {
+                showFlash('الرجاء إدخال اسم المنتج', 'danger');
+                return;
+            }
+            
+            // Get or generate barcode
+            let barcode = document.getElementById('prodBarcode').value.trim();
+            if(!barcode) {
+                const timestamp = Date.now().toString();
+                const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+                barcode = `STK-${timestamp.slice(-6)}-${random}`;
+                document.getElementById('prodBarcode').value = barcode;
+            }
+            
+            // Get image URL (no upload, just store the link)
+            let imageUrl = document.getElementById('prodImageUrl').value.trim();
+            
+            const quantity = parseInt(document.getElementById('prodQuantity').value) || 0;
+            const price = parseFloat(document.getElementById('prodPrice').value) || 0;
+            const minStock = parseInt(document.getElementById('prodMinStock').value) || 5;
+            
+            const newProduct = {
+                id: id || Date.now().toString(),
+                name: name,
+                barcode: barcode,
+                category: document.getElementById('prodCategory').value || '',
+                quantity: quantity,
+                price: price,
+                minStock: minStock,
+                location: document.getElementById('prodLocation').value || '',
+                notes: '',
+                imageUrl: imageUrl,
+                createdAt: id ? (products.find(p=>p.id===id)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            try {
+                if(id) {
+                    const idx = products.findIndex(p => p.id === id);
+                    if(idx !== -1) products[idx] = newProduct;
+                } else {
+                    products.unshift(newProduct);
+                }
+                
+                await database.ref(`users/${currentUserId}/products/${newProduct.id}`).set(newProduct);
+                closeModal();
+                updateUI();
+                showFlash(`✅ تم حفظ المنتج ${name} بنجاح`, 'success');
+                
+                // Reset form
+                document.getElementById('productForm').reset();
+                document.getElementById('productId').value = '';
+                document.getElementById('imagePreview').style.display = 'none';
+                document.getElementById('barcodePreview').style.display = 'none';
+                document.getElementById('prodImageUrl').value = '';
+                
+            } catch(e) {
+                console.error('Save error:', e);
+                showFlash('حدث خطأ في حفظ المنتج', 'danger');
+            }
+        };
+
+        // Scanner Functions
         async function openScanner() {
             document.getElementById('scannerOverlay').classList.add('active');
             await startCamera();
@@ -595,31 +819,20 @@
 
         async function startCamera() {
             try {
-                if(currentStream) {
-                    currentStream.getTracks().forEach(track => track.stop());
-                }
-                
-                const constraints = {
-                    video: { facingMode: { exact: currentCamera } }
-                };
-                
+                if(currentStream) currentStream.getTracks().forEach(track => track.stop());
+                const constraints = { video: { facingMode: { exact: currentCamera } } };
                 try {
                     currentStream = await navigator.mediaDevices.getUserMedia(constraints);
                 } catch(e) {
-                    // Fallback to any camera
                     currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
                 }
-                
                 const video = document.getElementById('scannerVideo');
                 video.srcObject = currentStream;
                 await video.play();
-                
                 scanning = true;
                 startBarcodeDetection();
-                
             } catch(err) {
-                console.error('Camera error:', err);
-                showFlash('⚠️ لا يمكن الوصول إلى الكاميرا. تأكد من منح الصلاحيات.', 'danger');
+                showFlash('⚠️ لا يمكن الوصول إلى الكاميرا', 'danger');
                 closeScanner();
             }
         }
@@ -635,14 +848,9 @@
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
                     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                        inversionAttempts: "dontInvert",
-                    });
-                    
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
                     if (code && code.data) {
-                        // Barcode found!
                         scanning = false;
                         handleBarcodeResult(code.data);
                         return;
@@ -654,14 +862,8 @@
         }
 
         async function handleBarcodeResult(barcode) {
-            // Stop scanning
-            if(currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-                currentStream = null;
-            }
+            if(currentStream) currentStream.getTracks().forEach(track => track.stop());
             scanning = false;
-            
-            // Search product
             const product = products.find(p => p.barcode === barcode);
             if(product) {
                 closeScanner();
@@ -700,19 +902,15 @@
             if(barcode) {
                 closeModal();
                 const product = products.find(p => p.barcode === barcode);
-                if(product) {
-                    showQuickOutPanel(product);
-                } else {
-                    if(confirm(`المنتج بالباركود "${barcode}" غير موجود. هل تريد إضافته؟`)) {
-                        openProductModalWithBarcode(barcode);
-                    }
-                }
+                if(product) showQuickOutPanel(product);
+                else if(confirm(`المنتج بالباركود "${barcode}" غير موجود. هل تريد إضافته؟`)) openProductModalWithBarcode(barcode);
             }
         }
 
         function openProductModalWithBarcode(barcode) {
             openProductModal();
             document.getElementById('prodBarcode').value = barcode;
+            generateBarcodeImage(barcode);
         }
 
         // Quick Out Functions
@@ -723,7 +921,7 @@
 
         function showQuickOutPanel(product) {
             if(product.quantity <= 0) {
-                showFlash(`⚠️ المنتج ${product.name} غير متوفر بالمخزون`, 'danger');
+                showFlash(`⚠️ المنتج ${product.name} غير متوفر`, 'danger');
                 return;
             }
             selectedProductForOut = product;
@@ -758,14 +956,12 @@
             }
             const receiver = document.getElementById('quickReceiver').value.trim() || 'مسح ضوئي';
             
-            // Update product quantity
             selectedProductForOut.quantity -= quantity;
             await database.ref(`users/${currentUserId}/products/${selectedProductForOut.id}`).update({ 
                 quantity: selectedProductForOut.quantity, 
                 updatedAt: new Date().toISOString() 
             });
             
-            // Create transaction
             const transaction = {
                 id: Date.now().toString(),
                 productId: selectedProductForOut.id,
@@ -781,7 +977,6 @@
             };
             await database.ref(`users/${currentUserId}/transactions/${transaction.id}`).set(transaction);
             
-            // Update local arrays
             const idx = products.findIndex(p => p.id === selectedProductForOut.id);
             if(idx !== -1) products[idx] = selectedProductForOut;
             transactions.unshift(transaction);
@@ -792,85 +987,39 @@
             if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
         }
 
-        // Product CRUD
-        document.getElementById('productForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('productId').value;
-            const name = document.getElementById('prodName').value.trim();
-            if(!name) return;
-            
-            let imageUrl = '';
-            const imageFile = document.getElementById('prodImage').files[0];
-            if(imageFile) {
-                const storageRef = storage.ref(`users/${currentUserId}/products/${Date.now()}_${imageFile.name}`);
-                const uploadTask = await storageRef.put(imageFile);
-                imageUrl = await uploadTask.ref.getDownloadURL();
-            } else if(id) {
-                const old = products.find(p=>p.id===id);
-                imageUrl = old?.imageUrl || '';
-            }
-            
-            const newProduct = {
-                id: id || Date.now().toString(),
-                name: name,
-                barcode: document.getElementById('prodBarcode').value,
-                category: document.getElementById('prodCategory').value,
-                quantity: parseInt(document.getElementById('prodQuantity').value) || 0,
-                price: parseFloat(document.getElementById('prodPrice').value) || 0,
-                minStock: parseInt(document.getElementById('prodMinStock').value) || 5,
-                location: document.getElementById('prodLocation').value,
-                imageUrl: imageUrl,
-                createdAt: id ? (products.find(p=>p.id===id)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-            
-            if(id) {
-                const idx = products.findIndex(p=>p.id===id);
-                if(idx!==-1) products[idx] = newProduct;
-            } else products.unshift(newProduct);
-            
-            await database.ref(`users/${currentUserId}/products/${newProduct.id}`).set(newProduct);
-            closeModal();
-            updateUI();
-            showFlash('تم حفظ المنتج بنجاح', 'success');
-        });
-
+        // Product Modal Functions
         window.openProductModal = () => {
             document.getElementById('productForm').reset();
             document.getElementById('productId').value = '';
             document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('barcodePreview').style.display = 'none';
+            document.getElementById('prodBarcode').value = '';
+            document.getElementById('prodImageUrl').value = '';
+            document.getElementById('prodQuantity').value = 0;
+            document.getElementById('prodPrice').value = 0;
             openModal('productModal');
         };
         
         window.editProduct = (id) => {
-            const p = products.find(p=>p.id===id);
+            const p = products.find(p => p.id === id);
             if(p){
                 document.getElementById('productId').value = p.id;
                 document.getElementById('prodName').value = p.name;
                 document.getElementById('prodBarcode').value = p.barcode || '';
-                document.getElementById('prodCategory').value = p.category||'';
+                document.getElementById('prodCategory').value = p.category || '';
                 document.getElementById('prodQuantity').value = p.quantity;
                 document.getElementById('prodPrice').value = p.price;
-                document.getElementById('prodMinStock').value = p.minStock||5;
-                document.getElementById('prodLocation').value = p.location||'';
+                document.getElementById('prodMinStock').value = p.minStock || 5;
+                document.getElementById('prodLocation').value = p.location || '';
+                document.getElementById('prodImageUrl').value = p.imageUrl || '';
                 if(p.imageUrl) {
                     document.getElementById('imagePreview').src = p.imageUrl;
                     document.getElementById('imagePreview').style.display = 'block';
                 }
+                if(p.barcode) generateBarcodeImage(p.barcode);
                 openModal('productModal');
             }
         };
-        
-        document.getElementById('prodImage').addEventListener('change', (e) => {
-            if(e.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload = ev => { 
-                    document.getElementById('imagePreview').src = ev.target.result; 
-                    document.getElementById('imagePreview').style.display = 'block'; 
-                };
-                reader.readAsDataURL(e.target.files[0]);
-            }
-        });
 
         // Navigation
         function showAllProducts() { 
@@ -953,6 +1102,5 @@
             document.getElementById('scannerBtn').onclick = openScanner;
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </body>
 </html>
