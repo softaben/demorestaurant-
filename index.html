@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="theme-color" content="#1a1a2e">
-    <title>El Fath Service - système simple</title>
+    <title>El Fath Service - Gestion Stock</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
@@ -27,6 +28,7 @@
             --primary: #4a9eff;
             --success: #2ecc71;
             --danger: #e74c3c;
+            --warning: #f39c12;
             --bg: #0f0f1a;
             --card: #1a1a2e;
             --text: #ffffff;
@@ -38,7 +40,30 @@
             font-family: 'Cairo', system-ui;
             background: var(--bg);
             color: var(--text);
-            padding-bottom: 70px;
+            overflow-x: hidden;
+            touch-action: pan-y;
+        }
+
+        /* Swipe hint */
+        .swipe-hint {
+            position: fixed;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background: rgba(74,158,255,0.2);
+            padding: 10px;
+            border-radius: 30px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 12px;
+            color: var(--primary);
+            pointer-events: none;
+            z-index: 50;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.5; right: 5px; }
+            100% { opacity: 1; right: 15px; }
         }
 
         /* Header */
@@ -154,12 +179,13 @@
         }
         .action-btn.income .action-icon { background: var(--success); }
         .action-btn.outcome .action-icon { background: var(--danger); }
+        .action-btn.scanner .action-icon { background: var(--warning); }
 
         /* Lists */
         .list {
             background: var(--card);
             border-radius: 16px;
-            padding: 5px;
+            overflow: hidden;
         }
         .list-item {
             display: flex;
@@ -171,7 +197,6 @@
         .list-item:last-child { border: none; }
         .item-name { font-weight: 500; }
         .item-details { font-size: 12px; color: var(--text-light); margin-top: 4px; }
-        .item-qty { font-weight: bold; color: var(--primary); }
         .item-actions { display: flex; gap: 8px; }
         .small-btn {
             background: rgba(255,255,255,0.1);
@@ -233,6 +258,46 @@
             border: 1px solid var(--border);
         }
 
+        /* Scanner */
+        .scanner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+        }
+        .scanner-overlay.active { display: flex; }
+        .scanner-header {
+            background: #1a1a2e;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #scanner-viewport {
+            flex: 1;
+            position: relative;
+        }
+        #qr-reader {
+            width: 100%;
+            height: 100%;
+        }
+        .scanner-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 30%;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 20px;
+            pointer-events: none;
+        }
+
         /* Modals */
         .modal {
             position: fixed;
@@ -244,7 +309,7 @@
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 300;
         }
         .modal.active { display: flex; }
         .modal-content {
@@ -298,15 +363,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
         }
-        .result-info h4 { font-size: 14px; }
-        .result-info p { font-size: 11px; color: var(--text-light); }
 
-        /* Hidden */
         .hidden { display: none; }
     </style>
 </head>
 <body>
+
+<!-- Swipe Hint -->
+<div class="swipe-hint" id="swipeHint">
+    <i class="fas fa-arrow-left"></i> ← Swipe pour scanner
+</div>
 
 <div class="header">
     <div class="logo"><i class="fas fa-store"></i> El Fath</div>
@@ -347,9 +415,9 @@
                 <div class="action-icon"><i class="fas fa-arrow-up"></i></div>
                 <div>➖ Sortie</div>
             </div>
-            <div class="action-btn" onclick="showProducts()">
-                <div class="action-icon"><i class="fas fa-box"></i></div>
-                <div>📦 Stock</div>
+            <div class="action-btn scanner" onclick="openScanner()">
+                <div class="action-icon"><i class="fas fa-camera"></i></div>
+                <div>📷 Scanner</div>
             </div>
         </div>
 
@@ -387,7 +455,23 @@
     </div>
 </div>
 
-<!-- Add/Edit Product Modal -->
+<!-- Scanner -->
+<div id="scannerOverlay" class="scanner-overlay">
+    <div class="scanner-header">
+        <span><i class="fas fa-camera"></i> Scanner un produit</span>
+        <button class="btn-icon" onclick="closeScanner()" style="background: rgba(255,255,255,0.2);">✕</button>
+    </div>
+    <div id="scanner-viewport">
+        <div id="qr-reader"></div>
+        <div class="scanner-guide"></div>
+    </div>
+    <div style="padding: 15px; background: #1a1a2e; display: flex; gap: 10px;">
+        <button class="btn-icon" onclick="switchCamera()" style="background: rgba(255,255,255,0.2); width: auto; padding: 0 20px; border-radius: 30px;">🔄 Changer caméra</button>
+        <button class="btn-icon" onclick="closeScanner(); showManualBarcode()" style="background: rgba(255,255,255,0.2); width: auto; padding: 0 20px; border-radius: 30px;">⌨️ Saisie manuelle</button>
+    </div>
+</div>
+
+<!-- Product Modal -->
 <div id="productModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -400,7 +484,7 @@
             <input type="text" id="prodName" placeholder="Ex: iPhone 14">
         </div>
         <div class="form-group">
-            <label>Code-barres (optionnel)</label>
+            <label>Code-barres</label>
             <input type="text" id="prodBarcode" placeholder="Code-barres du produit">
         </div>
         <div class="form-group">
@@ -415,7 +499,19 @@
     </div>
 </div>
 
-<!-- Quantity Modal (for stock in/out) -->
+<!-- Manual Barcode Modal -->
+<div id="manualBarcodeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>🔢 Saisie manuelle</span>
+            <button class="btn-icon" onclick="closeModal('manualBarcodeModal')" style="background: none;">✕</button>
+        </div>
+        <input type="text" id="manualBarcode" placeholder="Entrez le code-barres" style="margin-bottom: 15px;">
+        <button onclick="searchManualBarcode()">Rechercher</button>
+    </div>
+</div>
+
+<!-- Quantity Modal -->
 <div id="quantityModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -435,23 +531,19 @@
             <label>Client / Fournisseur</label>
             <input type="text" id="clientName" placeholder="Nom du client ou fournisseur">
         </div>
-        <div class="form-group">
-            <label>Notes</label>
-            <input type="text" id="notes" placeholder="Optionnel">
-        </div>
         <button id="confirmQtyBtn" class="success">✅ Confirmer</button>
     </div>
 </div>
 
-<!-- Find Product Modal (for stock in/out without scanner) -->
+<!-- Find Product Modal -->
 <div id="findProductModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <span>🔍 Choisir un produit</span>
+            <span id="findTitle">🔍 Choisir un produit</span>
             <button class="btn-icon" onclick="closeModal('findProductModal')" style="background: none;">✕</button>
         </div>
         <div class="search-box">
-            <input type="text" id="findProductSearch" placeholder="Rechercher un produit..." oninput="filterProductList()">
+            <input type="text" id="findProductSearch" placeholder="Rechercher..." oninput="renderProductSelectorList()">
         </div>
         <div id="productListContainer" class="search-results"></div>
     </div>
@@ -472,8 +564,12 @@
     let transactions = [];
     let currentUserId = null;
     let db = null, auth = null;
-    let currentActionType = 'income'; // 'income' or 'outcome'
+    let currentActionType = 'income';
     let selectedProduct = null;
+    
+    // Scanner variables
+    let html5QrCode = null;
+    let currentCamera = 'environment';
 
     // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
@@ -485,10 +581,40 @@
         if (user) {
             currentUserId = user.uid;
             loadData();
+            initSwipe();
         } else {
             showLogin();
         }
     });
+
+    // Swipe Detection (right to left)
+    function initSwipe() {
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const swipeDistance = touchStartX - touchEndX;
+            // Swipe right to left (distance > 50px)
+            if (swipeDistance > 50) {
+                openScanner();
+                // Flash effect
+                const hint = document.getElementById('swipeHint');
+                hint.style.background = 'rgba(74,158,255,0.5)';
+                setTimeout(() => hint.style.background = 'rgba(74,158,255,0.2)', 300);
+            }
+        });
+        
+        // Hide hint after 5 seconds
+        setTimeout(() => {
+            const hint = document.getElementById('swipeHint');
+            hint.style.opacity = '0.5';
+        }, 5000);
+    }
 
     function showLogin() {
         const div = document.createElement('div');
@@ -520,7 +646,6 @@
     window.logout = () => auth.signOut();
     document.getElementById('logoutBtn').onclick = () => logout();
 
-    // Load data
     async function loadData() {
         const prodRef = db.ref(`users/${currentUserId}/products`);
         prodRef.on('value', snap => {
@@ -541,7 +666,6 @@
     }
 
     function updateUI() {
-        // Stats
         const totalValue = products.reduce((s, p) => s + (p.quantity * p.price), 0);
         document.getElementById('totalProducts').innerText = products.length;
         document.getElementById('totalStock').innerHTML = formatMoney(totalValue);
@@ -552,20 +676,17 @@
         document.getElementById('todayIn').innerHTML = formatMoney(todayIn);
         document.getElementById('todayOut').innerHTML = formatMoney(todayOut);
 
-        // Recent transactions
         const recent = [...transactions].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
-        const recentHtml = recent.map(t => `
+        document.getElementById('recentList').innerHTML = recent.map(t => `
             <div class="list-item">
                 <div>
                     <div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div>
                     <div class="item-details">${t.quantity} x ${formatMoney(t.price)} = ${formatMoney(t.totalValue)}</div>
                 </div>
-                <div>${t.client || '-'}</div>
+                <div><small>${t.client || '-'}</small></div>
             </div>
-        `).join('');
-        document.getElementById('recentList').innerHTML = recentHtml || '<div class="empty">Aucun mouvement</div>';
+        `).join('') || '<div class="empty">Aucun mouvement</div>';
 
-        // Products list
         renderProductsList();
         renderTransactionsList();
     }
@@ -583,7 +704,6 @@
                 <div>
                     <div class="item-name">${p.name}</div>
                     <div class="item-details">💰 ${formatMoney(p.price)} | 📦 ${p.quantity}</div>
-                    ${p.barcode ? `<div class="item-details">🔢 ${p.barcode}</div>` : ''}
                 </div>
                 <div class="item-actions">
                     <button class="small-btn income" onclick="openProductMovement('${p.id}', 'income')"><i class="fas fa-arrow-down"></i></button>
@@ -665,6 +785,99 @@
         }
     };
 
+    // Scanner Functions
+    async function openScanner() {
+        document.getElementById('scannerOverlay').classList.add('active');
+        if (html5QrCode) {
+            try { await html5QrCode.stop(); } catch(e) {}
+        }
+        
+        html5QrCode = new Html5Qrcode("qr-reader");
+        const config = { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+        
+        try {
+            await html5QrCode.start({ facingMode: currentCamera }, config, (decodedText) => {
+                handleScanResult(decodedText);
+            });
+        } catch(err) {
+            try {
+                await html5QrCode.start("environment", config, (decodedText) => {
+                    handleScanResult(decodedText);
+                });
+            } catch(err2) {
+                alert("Erreur d'accès à la caméra");
+                closeScanner();
+            }
+        }
+    }
+
+    async function switchCamera() {
+        currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
+        if (html5QrCode) {
+            await html5QrCode.stop();
+            await openScanner();
+        }
+    }
+
+    function closeScanner() {
+        if (html5QrCode) {
+            html5QrCode.stop().catch(console.log);
+            html5QrCode = null;
+        }
+        document.getElementById('scannerOverlay').classList.remove('active');
+    }
+
+    function showManualBarcode() {
+        closeScanner();
+        openModal('manualBarcodeModal');
+    }
+
+    function searchManualBarcode() {
+        const barcode = document.getElementById('manualBarcode').value.trim();
+        if (barcode) {
+            closeModal('manualBarcodeModal');
+            handleScanResult(barcode);
+        }
+    }
+
+    function handleScanResult(barcode) {
+        closeScanner();
+        const product = products.find(p => p.barcode === barcode);
+        if (product) {
+            selectedProduct = product;
+            currentActionType = 'income';
+            showMovementChoice(product);
+        } else {
+            if (confirm(`Produit "${barcode}" non trouvé. Voulez-vous l'ajouter ?`)) {
+                document.getElementById('prodBarcode').value = barcode;
+                openModal('productModal');
+            }
+        }
+    }
+
+    function showMovementChoice(product) {
+        const div = document.createElement('div');
+        div.className = 'modal active';
+        div.id = 'movementChoiceModal';
+        div.innerHTML = `
+            <div class="modal-content" style="max-width: 300px;">
+                <div class="modal-header" style="justify-content: center;">${product.name}</div>
+                <div style="text-align:center; margin-bottom:15px;">💰 ${formatMoney(product.price)} | 📦 Stock: ${product.quantity}</div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="selectMovement('income')" class="success" style="margin:0;">➕ Entrée</button>
+                    <button onclick="selectMovement('outcome')" class="danger" style="margin:0;">➖ Sortie</button>
+                </div>
+                <button onclick="closeModal('movementChoiceModal')" style="margin-top:10px; background:transparent; border:1px solid var(--border);">Annuler</button>
+            </div>
+        `;
+        document.body.appendChild(div);
+        window.selectMovement = (type) => {
+            currentActionType = type;
+            closeModal('movementChoiceModal');
+            showQuantityModal();
+        };
+    }
+
     // Stock movement
     function showAddStock() {
         currentActionType = 'income';
@@ -677,7 +890,7 @@
     }
 
     function showProductSelector(title) {
-        document.getElementById('findProductModal').querySelector('.modal-header span').innerText = title;
+        document.getElementById('findTitle').innerText = title;
         renderProductSelectorList();
         openModal('findProductModal');
     }
@@ -692,16 +905,14 @@
         }
         container.innerHTML = filtered.map(p => `
             <div class="result-item" onclick="selectProductForMovement('${p.id}')">
-                <div class="result-info">
-                    <h4>${p.name}</h4>
-                    <p>💰 ${formatMoney(p.price)} | 📦 Stock: ${p.quantity}</p>
+                <div>
+                    <strong>${p.name}</strong><br>
+                    <small>💰 ${formatMoney(p.price)} | 📦 ${p.quantity}</small>
                 </div>
                 <i class="fas fa-chevron-left"></i>
             </div>
         `).join('');
     }
-
-    window.filterProductList = () => renderProductSelectorList();
 
     window.selectProductForMovement = (productId) => {
         const product = products.find(p => p.id === productId);
@@ -733,12 +944,11 @@
         document.getElementById('qtyModalTitle').innerHTML = currentActionType === 'income' ? '➕ Entrée en stock' : '➖ Sortie de stock';
         document.getElementById('selectedProductInfo').innerHTML = `
             <strong>${selectedProduct.name}</strong><br>
-            Prix: ${formatMoney(selectedProduct.price)} | Stock actuel: ${selectedProduct.quantity}
+            Prix: ${formatMoney(selectedProduct.price)} | Stock: ${selectedProduct.quantity}
         `;
         document.getElementById('quantity').value = 1;
         document.getElementById('quantity').max = currentActionType === 'outcome' ? selectedProduct.quantity : 9999;
         document.getElementById('clientName').value = '';
-        document.getElementById('notes').value = '';
         openModal('quantityModal');
     }
 
@@ -761,9 +971,7 @@
         }
         
         const client = document.getElementById('clientName').value.trim() || (currentActionType === 'income' ? 'Fournisseur' : 'Client');
-        const notes = document.getElementById('notes').value.trim() || '';
         
-        // Update product
         const oldQty = selectedProduct.quantity;
         if (currentActionType === 'income') {
             selectedProduct.quantity += quantity;
@@ -772,7 +980,6 @@
         }
         await db.ref(`users/${currentUserId}/products/${selectedProduct.id}`).update({ quantity: selectedProduct.quantity });
         
-        // Create transaction
         const transaction = {
             id: Date.now().toString(),
             productId: selectedProduct.id,
@@ -782,7 +989,6 @@
             price: selectedProduct.price,
             totalValue: quantity * selectedProduct.price,
             client: client,
-            notes: notes,
             date: new Date().toISOString()
         };
         await db.ref(`users/${currentUserId}/transactions/${transaction.id}`).set(transaction);
@@ -790,7 +996,7 @@
         
         closeModal('quantityModal');
         showDashboard();
-        showFlash(`✅ ${currentActionType === 'income' ? 'Entrée' : 'Sortie'} de ${quantity} ${selectedProduct.name} effectuée`);
+        showFlash(`✅ ${currentActionType === 'income' ? 'Entrée' : 'Sortie'} de ${quantity} ${selectedProduct.name}`);
     };
 
     // Navigation
@@ -798,9 +1004,7 @@
         document.getElementById('dashboard').classList.remove('hidden');
         document.getElementById('productsPage').classList.add('hidden');
         document.getElementById('transactionsPage').classList.add('hidden');
-        document.querySelectorAll('.nav-item').forEach((n, i) => {
-            n.classList.toggle('active', i === 0);
-        });
+        document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === 0));
         updateUI();
     }
 
@@ -808,9 +1012,7 @@
         document.getElementById('dashboard').classList.add('hidden');
         document.getElementById('productsPage').classList.remove('hidden');
         document.getElementById('transactionsPage').classList.add('hidden');
-        document.querySelectorAll('.nav-item').forEach((n, i) => {
-            n.classList.toggle('active', i === 1);
-        });
+        document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === 1));
         renderProductsList();
     }
 
@@ -818,9 +1020,7 @@
         document.getElementById('dashboard').classList.add('hidden');
         document.getElementById('productsPage').classList.add('hidden');
         document.getElementById('transactionsPage').classList.remove('hidden');
-        document.querySelectorAll('.nav-item').forEach((n, i) => {
-            n.classList.toggle('active', i === 2);
-        });
+        document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === 2));
         renderTransactionsList();
     }
 
@@ -829,17 +1029,16 @@
     window.showTransactions = showTransactions;
     window.showAddStock = showAddStock;
     window.showRemoveStock = showRemoveStock;
+    window.openScanner = openScanner;
+    window.switchCamera = switchCamera;
+    window.closeScanner = closeScanner;
+    window.showManualBarcode = showManualBarcode;
+    window.searchManualBarcode = searchManualBarcode;
+    window.selectMovement = (type) => {};
 
     // Utilities
-    function openModal(id) {
-        document.getElementById(id).classList.add('active');
-    }
-    function closeModal(id) {
-        document.getElementById(id).classList.remove('active');
-        if (id === 'findProductModal') {
-            document.getElementById('findProductSearch').value = '';
-        }
-    }
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
     window.closeModal = closeModal;
 
     function showFlash(msg) {
