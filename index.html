@@ -340,7 +340,7 @@
             <div class="stat-card"><div class="stat-number" id="totalProducts">0</div><div class="stat-label">Produits</div></div>
             <div class="stat-card"><div class="stat-number" id="totalStock">0 MAD</div><div class="stat-label">Valeur total</div></div>
             <div class="stat-card"><div class="stat-number" id="todayIn">0 MAD</div><div class="stat-label">Entrées</div></div>
-            <div class="stat-card"><div class="stat-number" id="todayOut">0 MAD</div><div class="stat-label">Sorties</div></div>
+            <div class="stat-card"><div class="stat-number" id="todayOut">0 MAD</div><div class="stat-label">Chiffre d'affaire</div></div>
         </div>
 
         <div class="actions">
@@ -374,7 +374,29 @@
         <div class="list">
             <div style="padding: 12px; border-bottom: 1px solid var(--border); font-weight: bold;">⚙️ Paramètres</div>
             <div class="settings-buttons" style="padding: 12px;">
-                <button class="warning" onclick="showDeleteAllConfirm()" style="background: var(--danger);">🗑️ Supprimer toutes les données</button>
+                <div class="form-group">
+                    <label>Email actuel</label>
+                    <input type="email" id="currentEmail" readonly style="background: var(--card);">
+                </div>
+                <div class="form-group">
+                    <label>Nouvel email</label>
+                    <input type="email" id="newEmail" placeholder="Nouvel email">
+                </div>
+                <div class="form-group">
+                    <label>Mot de passe actuel</label>
+                    <input type="password" id="currentPassword" placeholder="Mot de passe actuel">
+                </div>
+                <div class="form-group">
+                    <label>Nouveau mot de passe</label>
+                    <input type="password" id="newPassword" placeholder="Nouveau mot de passe (min 6 caractères)">
+                </div>
+                <div class="form-group">
+                    <label>Confirmer nouveau mot de passe</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirmer le mot de passe">
+                </div>
+                <button onclick="updateEmail()" style="background: var(--info);">✉️ Changer l'email</button>
+                <button onclick="updatePassword()" style="background: var(--warning);">🔑 Changer le mot de passe</button>
+                <button class="warning" onclick="showDeleteAllConfirm()" style="background: var(--danger); margin-top: 15px;">🗑️ Supprimer toutes les données</button>
             </div>
         </div>
     </div>
@@ -552,7 +574,7 @@
     db = firebase.database();
     auth = firebase.auth();
 
-    // Format number for PDF: 100000,00
+    // Format number for PDF: 100000,00 (French format)
     function formatNumberPDF(num) {
         if (num === undefined || num === null) return '0,00';
         let number = parseFloat(num);
@@ -574,6 +596,7 @@
     auth.onAuthStateChanged(user => {
         if (user) {
             currentUserId = user.uid;
+            document.getElementById('currentEmail').value = user.email || '';
             loadData();
         } else {
             showLogin();
@@ -609,6 +632,69 @@
 
     window.logout = () => auth.signOut();
     document.getElementById('logoutBtn').onclick = () => logout();
+
+    // Update Email
+    window.updateEmail = async () => {
+        const newEmail = document.getElementById('newEmail').value.trim();
+        const password = document.getElementById('currentPassword').value.trim();
+        
+        if (!newEmail) {
+            showFlash('Veuillez entrer un nouvel email', 'warning');
+            return;
+        }
+        if (!password) {
+            showFlash('Veuillez entrer votre mot de passe actuel', 'warning');
+            return;
+        }
+        
+        const user = auth.currentUser;
+        const credential = firebase.auth.EmailAuthProvider.credential(user.email, password);
+        
+        try {
+            await user.reauthenticateWithCredential(credential);
+            await user.updateEmail(newEmail);
+            document.getElementById('currentEmail').value = newEmail;
+            document.getElementById('newEmail').value = '';
+            document.getElementById('currentPassword').value = '';
+            showFlash('Email mis à jour avec succès', 'success');
+        } catch(e) {
+            showFlash('Erreur: ' + e.message, 'danger');
+        }
+    };
+
+    // Update Password
+    window.updatePassword = async () => {
+        const currentPassword = document.getElementById('currentPassword').value.trim();
+        const newPassword = document.getElementById('newPassword').value.trim();
+        const confirmPassword = document.getElementById('confirmPassword').value.trim();
+        
+        if (!currentPassword) {
+            showFlash('Veuillez entrer votre mot de passe actuel', 'warning');
+            return;
+        }
+        if (!newPassword || newPassword.length < 6) {
+            showFlash('Le nouveau mot de passe doit avoir au moins 6 caractères', 'warning');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showFlash('Les mots de passe ne correspondent pas', 'warning');
+            return;
+        }
+        
+        const user = auth.currentUser;
+        const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+        
+        try {
+            await user.reauthenticateWithCredential(credential);
+            await user.updatePassword(newPassword);
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            document.getElementById('currentPassword').value = '';
+            showFlash('Mot de passe mis à jour avec succès', 'success');
+        } catch(e) {
+            showFlash('Erreur: ' + e.message, 'danger');
+        }
+    };
 
     async function loadData() {
         const prodRef = db.ref(`users/${currentUserId}/products`);
@@ -741,7 +827,6 @@
         } else {
             if (product.quantity < newQuantity) {
                 alert(`Stock insuffisant pour ${product.name}. Stock actuel: ${product.quantity}`);
-                // Restore old state
                 if (editingTransaction.type === 'income') {
                     product.quantity += editingTransaction.quantity;
                 } else {
@@ -752,10 +837,8 @@
             product.quantity -= newQuantity;
         }
         
-        // Update product in database
         await db.ref(`users/${currentUserId}/products/${product.id}`).update({ quantity: product.quantity });
         
-        // Update transaction
         const updatedTransaction = {
             ...editingTransaction,
             type: newType,
@@ -768,7 +851,6 @@
         
         await db.ref(`users/${currentUserId}/transactions/${editingTransaction.id}`).set(updatedTransaction);
         
-        // Update local arrays
         const productIndex = products.findIndex(p => p.id === product.id);
         if (productIndex !== -1) products[productIndex] = product;
         
@@ -783,19 +865,16 @@
 
     document.getElementById('deleteTransactionBtn').onclick = async () => {
         if (!editingTransaction) return;
-        
         if (!confirm('⚠️ Supprimer ce mouvement ? Cette action est irréversible.')) return;
         
         const product = products.find(p => p.id === editingTransaction.productId);
         if (product) {
-            // Revert the effect of the transaction
             if (editingTransaction.type === 'income') {
                 product.quantity -= editingTransaction.quantity;
             } else {
                 product.quantity += editingTransaction.quantity;
             }
             await db.ref(`users/${currentUserId}/products/${product.id}`).update({ quantity: product.quantity });
-            
             const productIndex = products.findIndex(p => p.id === product.id);
             if (productIndex !== -1) products[productIndex] = product;
         }
@@ -819,9 +898,7 @@
                 JsBarcode("#barcodeSvg", barcode, { format: "CODE128", width: 1.5, height: 35, displayValue: true, fontSize: 10 });
                 currentBarcodeValue = barcode;
             } catch(e) { console.log(e); }
-        } else {
-            previewDiv.style.display = 'none';
-        }
+        } else { previewDiv.style.display = 'none'; }
     }
 
     function downloadBarcode() {
@@ -859,9 +936,7 @@
                 JsBarcode("#viewBarcodeSvg", product.barcode, { format: "CODE128", width: 2, height: 50, displayValue: true, fontSize: 12 });
                 openModal('barcodeViewModal');
             } catch(e) { alert('Erreur génération code-barres'); }
-        } else {
-            alert('Ce produit n\'a pas de code-barres');
-        }
+        } else { alert('Ce produit n\'a pas de code-barres'); }
     }
 
     function downloadCurrentBarcode() {
@@ -902,7 +977,7 @@
         `);
     }
 
-    // PDF Generation
+    // PDF Generation - Modified with black text for totals
     function showPDFMenu() { openModal('pdfMenuModal'); }
 
     function generatePDFReport(period) {
@@ -963,15 +1038,14 @@
         doc.setTextColor(74, 158, 255);
         doc.text('EL FATH SERVICE', 20, 20);
         doc.setFontSize(12);
-        doc.setTextColor(255, 255, 255);
+        doc.setTextColor(0, 0, 0);
         doc.text(title, 20, 35);
         
         let y = 50;
         doc.setFontSize(11);
-        doc.setTextColor(200, 200, 200);
+        doc.setTextColor(0, 0, 0);
         doc.text(`Total entrées: ${formatNumberPDF(totalIncome)} MAD`, 20, y); y += 8;
-        doc.text(`Total sorties: ${formatNumberPDF(totalOutcome)} MAD`, 20, y); y += 8;
-        doc.text(`Solde: ${formatNumberPDF(totalIncome - totalOutcome)} MAD`, 20, y); y += 15;
+        doc.text(`Chiffre d'affaire: ${formatNumberPDF(totalOutcome)} MAD`, 20, y); y += 15;
         
         if (periodIncome.length > 0) {
             doc.setFontSize(11);
@@ -986,7 +1060,7 @@
                 }),
                 theme: 'striped',
                 headStyles: { fillColor: [46, 204, 113], textColor: 255 },
-                styles: { fontSize: 9, cellPadding: 3 }
+                styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] }
             });
             y = doc.lastAutoTable.finalY + 10;
         }
@@ -1004,7 +1078,7 @@
                 }),
                 theme: 'striped',
                 headStyles: { fillColor: [231, 76, 60], textColor: 255 },
-                styles: { fontSize: 9, cellPadding: 3 }
+                styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] }
             });
         }
         
@@ -1223,7 +1297,6 @@
         
         const client = document.getElementById('clientName').value.trim() || (currentActionType === 'income' ? 'Fournisseur' : 'Client');
         
-        const oldStock = selectedProduct.quantity;
         if (currentActionType === 'income') { selectedProduct.quantity += quantity; } 
         else { selectedProduct.quantity -= quantity; }
         await db.ref(`users/${currentUserId}/products/${selectedProduct.id}`).update({ quantity: selectedProduct.quantity });
@@ -1237,8 +1310,6 @@
             price: selectedProduct.price, 
             totalValue: quantity * selectedProduct.price, 
             client: client, 
-            oldStock: oldStock,
-            newStock: selectedProduct.quantity,
             date: new Date().toISOString() 
         };
         await db.ref(`users/${currentUserId}/transactions/${transaction.id}`).set(transaction);
@@ -1317,6 +1388,8 @@
     window.deleteAllData = deleteAllData;
     window.showDeleteAllConfirm = showDeleteAllConfirm;
     window.openEditTransaction = openEditTransaction;
+    window.updateEmail = updateEmail;
+    window.updatePassword = updatePassword;
 </script>
 </body>
 </html>
