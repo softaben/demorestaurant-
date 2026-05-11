@@ -30,6 +30,7 @@
             --success: #2ecc71;
             --danger: #e74c3c;
             --warning: #f39c12;
+            --info: #3498db;
             --bg: #0f0f1a;
             --card: #1a1a2e;
             --text: #ffffff;
@@ -171,6 +172,8 @@
         .small-btn.income { background: var(--success); }
         .small-btn.outcome { background: var(--danger); }
         .small-btn.barcode { background: var(--warning); }
+        .small-btn.edit { background: var(--info); }
+        .small-btn.delete { background: var(--danger); }
 
         .form-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-light); }
@@ -361,6 +364,9 @@
     </div>
 
     <div id="transactionsPage" class="hidden">
+        <div class="search-box" style="margin-bottom: 12px;">
+            <input type="text" id="transactionSearch" placeholder="🔍 Rechercher par produit ou client..." style="padding: 10px;">
+        </div>
         <div class="list" id="transactionsList"></div>
     </div>
 
@@ -411,6 +417,36 @@
         <div class="form-group"><label>Prix (MAD)</label><input type="number" id="prodPrice" placeholder="0.00"></div>
         <div class="form-group"><label>Quantité initiale</label><input type="number" id="prodQty" placeholder="0" value="0"></div>
         <button id="saveProductBtn">💾 Enregistrer</button>
+    </div>
+</div>
+
+<!-- Edit Transaction Modal -->
+<div id="editTransactionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>✏️ Modifier le mouvement</span>
+            <button class="btn-icon" onclick="closeModal('editTransactionModal')" style="background: none;">✕</button>
+        </div>
+        <input type="hidden" id="editTransactionId">
+        <div class="form-group"><label>Produit</label><input type="text" id="editProductName" readonly style="background: var(--card);"></div>
+        <div class="form-group"><label>Type</label>
+            <select id="editTransactionType" style="width:100%; padding:10px; border-radius:10px; background:var(--bg); border:1px solid var(--border); color:white;">
+                <option value="income">➕ Entrée</option>
+                <option value="outcome">➖ Sortie</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Quantité</label>
+            <div class="quantity-selector">
+                <button class="qty-btn" onclick="changeEditQty(-1)">-</button>
+                <input type="number" id="editQuantity" class="qty-input" value="1" min="1" style="flex:1; text-align:center;">
+                <button class="qty-btn" onclick="changeEditQty(1)">+</button>
+            </div>
+        </div>
+        <div class="form-group"><label>Client / Fournisseur</label><input type="text" id="editClient" placeholder="Nom"></div>
+        <div class="form-group"><label>Date</label><input type="date" id="editDate"></div>
+        <div class="form-group"><label>Prix unitaire (MAD)</label><input type="number" id="editPrice" step="0.01"></div>
+        <button id="updateTransactionBtn" class="success">💾 Mettre à jour</button>
+        <button id="deleteTransactionBtn" class="danger" style="margin-top: 8px;">🗑️ Supprimer ce mouvement</button>
     </div>
 </div>
 
@@ -510,12 +546,13 @@
     let currentBarcodeValue = '';
     let html5QrCode = null;
     let currentCamera = 'environment';
+    let editingTransaction = null;
 
     const app = firebase.initializeApp(firebaseConfig);
     db = firebase.database();
     auth = firebase.auth();
 
-    // Format number for PDF: 100000,00 (French format)
+    // Format number for PDF: 100000,00
     function formatNumberPDF(num) {
         if (num === undefined || num === null) return '0,00';
         let number = parseFloat(num);
@@ -623,22 +660,154 @@
                     <button class="small-btn income" onclick="openProductMovement('${p.id}', 'income')"><i class="fas fa-arrow-down"></i></button>
                     <button class="small-btn outcome" onclick="openProductMovement('${p.id}', 'outcome')"><i class="fas fa-arrow-up"></i></button>
                     <button class="small-btn barcode" onclick="showBarcode('${p.id}')"><i class="fas fa-barcode"></i></button>
-                    <button class="small-btn" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="small-btn edit" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
                 </div>
             </div>
         `).join('');
     }
 
     function renderTransactionsList() {
+        const search = document.getElementById('transactionSearch')?.value.toLowerCase() || '';
+        let filtered = transactions.filter(t => t.productName.toLowerCase().includes(search) || (t.client || '').toLowerCase().includes(search));
+        filtered = filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
         const container = document.getElementById('transactionsList');
-        if (!transactions.length) { container.innerHTML = '<div class="empty">Aucun mouvement</div>'; return; }
-        container.innerHTML = transactions.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
+        if (!filtered.length) { container.innerHTML = '<div class="empty">Aucun mouvement</div>'; return; }
+        container.innerHTML = filtered.map(t => `
             <div class="list-item">
-                <div><div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div><div class="item-details">${t.quantity} x ${formatMoney(t.price)} = ${formatMoney(t.totalValue)}</div></div>
-                <div style="font-size:11px;">${t.client || '-'}<br>${formatDateFrench(t.date)}</div>
+                <div>
+                    <div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div>
+                    <div class="item-details">${t.quantity} x ${formatMoney(t.price)} = ${formatMoney(t.totalValue)}</div>
+                    <div class="item-details">🏢 ${t.client || '-'} | 📅 ${formatDateFrench(t.date)}</div>
+                </div>
+                <div class="item-actions">
+                    <button class="small-btn edit" onclick="openEditTransaction('${t.id}')"><i class="fas fa-edit"></i></button>
+                </div>
             </div>
         `).join('');
     }
+
+    // Edit Transaction Functions
+    async function openEditTransaction(transactionId) {
+        const transaction = transactions.find(t => t.id === transactionId);
+        if (!transaction) return;
+        
+        editingTransaction = transaction;
+        const product = products.find(p => p.id === transaction.productId);
+        
+        document.getElementById('editTransactionId').value = transaction.id;
+        document.getElementById('editProductName').value = transaction.productName;
+        document.getElementById('editTransactionType').value = transaction.type;
+        document.getElementById('editQuantity').value = transaction.quantity;
+        document.getElementById('editClient').value = transaction.client || '';
+        document.getElementById('editDate').value = transaction.date.split('T')[0];
+        document.getElementById('editPrice').value = transaction.price;
+        
+        openModal('editTransactionModal');
+    }
+
+    window.changeEditQty = (delta) => {
+        const input = document.getElementById('editQuantity');
+        let val = parseInt(input.value) + delta;
+        if (isNaN(val)) val = 1;
+        if (val < 1) val = 1;
+        input.value = val;
+    };
+
+    document.getElementById('updateTransactionBtn').onclick = async () => {
+        if (!editingTransaction) return;
+        
+        const newType = document.getElementById('editTransactionType').value;
+        const newQuantity = parseInt(document.getElementById('editQuantity').value);
+        const newClient = document.getElementById('editClient').value.trim() || (newType === 'income' ? 'Fournisseur' : 'Client');
+        const newDate = document.getElementById('editDate').value;
+        const newPrice = parseFloat(document.getElementById('editPrice').value);
+        
+        if (newQuantity <= 0) { alert('Quantité invalide'); return; }
+        if (isNaN(newPrice) || newPrice <= 0) { alert('Prix invalide'); return; }
+        
+        const product = products.find(p => p.id === editingTransaction.productId);
+        if (!product) { alert('Produit non trouvé'); return; }
+        
+        // Revert old transaction effect
+        if (editingTransaction.type === 'income') {
+            product.quantity -= editingTransaction.quantity;
+        } else {
+            product.quantity += editingTransaction.quantity;
+        }
+        
+        // Apply new transaction effect
+        if (newType === 'income') {
+            product.quantity += newQuantity;
+        } else {
+            if (product.quantity < newQuantity) {
+                alert(`Stock insuffisant pour ${product.name}. Stock actuel: ${product.quantity}`);
+                // Restore old state
+                if (editingTransaction.type === 'income') {
+                    product.quantity += editingTransaction.quantity;
+                } else {
+                    product.quantity -= editingTransaction.quantity;
+                }
+                return;
+            }
+            product.quantity -= newQuantity;
+        }
+        
+        // Update product in database
+        await db.ref(`users/${currentUserId}/products/${product.id}`).update({ quantity: product.quantity });
+        
+        // Update transaction
+        const updatedTransaction = {
+            ...editingTransaction,
+            type: newType,
+            quantity: newQuantity,
+            price: newPrice,
+            totalValue: newQuantity * newPrice,
+            client: newClient,
+            date: new Date(newDate).toISOString()
+        };
+        
+        await db.ref(`users/${currentUserId}/transactions/${editingTransaction.id}`).set(updatedTransaction);
+        
+        // Update local arrays
+        const productIndex = products.findIndex(p => p.id === product.id);
+        if (productIndex !== -1) products[productIndex] = product;
+        
+        const transIndex = transactions.findIndex(t => t.id === editingTransaction.id);
+        if (transIndex !== -1) transactions[transIndex] = updatedTransaction;
+        
+        closeModal('editTransactionModal');
+        showDashboard();
+        showFlash('✅ Mouvement modifié avec succès');
+        editingTransaction = null;
+    };
+
+    document.getElementById('deleteTransactionBtn').onclick = async () => {
+        if (!editingTransaction) return;
+        
+        if (!confirm('⚠️ Supprimer ce mouvement ? Cette action est irréversible.')) return;
+        
+        const product = products.find(p => p.id === editingTransaction.productId);
+        if (product) {
+            // Revert the effect of the transaction
+            if (editingTransaction.type === 'income') {
+                product.quantity -= editingTransaction.quantity;
+            } else {
+                product.quantity += editingTransaction.quantity;
+            }
+            await db.ref(`users/${currentUserId}/products/${product.id}`).update({ quantity: product.quantity });
+            
+            const productIndex = products.findIndex(p => p.id === product.id);
+            if (productIndex !== -1) products[productIndex] = product;
+        }
+        
+        await db.ref(`users/${currentUserId}/transactions/${editingTransaction.id}`).remove();
+        transactions = transactions.filter(t => t.id !== editingTransaction.id);
+        
+        closeModal('editTransactionModal');
+        showDashboard();
+        showFlash('✅ Mouvement supprimé avec succès');
+        editingTransaction = null;
+    };
 
     // Barcode Functions
     function generateBarcodePreview() {
@@ -733,7 +902,7 @@
         `);
     }
 
-    // PDF Generation - French format with stock remaining
+    // PDF Generation
     function showPDFMenu() { openModal('pdfMenuModal'); }
 
     function generatePDFReport(period) {
@@ -785,10 +954,6 @@
         const periodOutcome = periodTransactions.filter(t => t.type === 'outcome');
         const totalIncome = periodIncome.reduce((s,t) => s + (t.quantity * t.price), 0);
         const totalOutcome = periodOutcome.reduce((s,t) => s + (t.quantity * t.price), 0);
-        
-        // Calcul du stock après chaque transaction
-        let currentStock = {};
-        products.forEach(p => { currentStock[p.id] = p.quantity; });
         
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -856,16 +1021,11 @@
     }
 
     // Delete All Data
-    function showDeleteAllConfirm() {
-        openModal('deleteAllModal');
-    }
+    function showDeleteAllConfirm() { openModal('deleteAllModal'); }
 
     async function deleteAllData() {
         closeModal('deleteAllModal');
-        
-        if (!confirm('⚠️ ATTENTION ! Cette action supprimera TOUS les produits et TOUS les mouvements. Êtes-vous ABSOLUMENT sûr ?')) {
-            return;
-        }
+        if (!confirm('⚠️ ATTENTION ! Cette action supprimera TOUS les produits et TOUS les mouvements. Êtes-vous ABSOLUMENT sûr ?')) return;
         
         try {
             showFlash('Suppression en cours...', 'warning');
@@ -874,11 +1034,8 @@
             products = [];
             transactions = [];
             updateUI();
-            showFlash('✅ Toutes les données ont été supprimées avec succès', 'success');
-        } catch(e) {
-            showFlash('❌ Erreur lors de la suppression', 'danger');
-            console.error(e);
-        }
+            showFlash('✅ Toutes les données ont été supprimées', 'success');
+        } catch(e) { showFlash('❌ Erreur lors de la suppression', 'danger'); }
     }
 
     // Product CRUD
@@ -1142,6 +1299,7 @@
     }
 
     document.getElementById('productSearch')?.addEventListener('input', () => renderProductsList());
+    document.getElementById('transactionSearch')?.addEventListener('input', () => renderTransactionsList());
     document.getElementById('settingsBtn').onclick = () => showSettings();
     
     window.generatePDFReport = generatePDFReport;
@@ -1158,6 +1316,7 @@
     window.searchManualBarcode = searchManualBarcode;
     window.deleteAllData = deleteAllData;
     window.showDeleteAllConfirm = showDeleteAllConfirm;
+    window.openEditTransaction = openEditTransaction;
 </script>
 </body>
 </html>
