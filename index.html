@@ -44,7 +44,6 @@
             overflow-x: hidden;
         }
 
-        /* Header */
         .header {
             position: fixed;
             top: 0;
@@ -58,10 +57,7 @@
             z-index: 100;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
-        .logo {
-            font-size: 18px;
-            font-weight: bold;
-        }
+        .logo { font-size: 18px; font-weight: bold; }
         .logo i { margin-left: 8px; color: var(--primary); }
         .btn-icon {
             background: rgba(255,255,255,0.1);
@@ -74,7 +70,6 @@
             cursor: pointer;
         }
 
-        /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -93,18 +88,14 @@
             color: var(--text-light);
             cursor: pointer;
         }
-        .nav-item.active {
-            color: var(--primary);
-        }
+        .nav-item.active { color: var(--primary); }
         .nav-item i { font-size: 22px; display: block; margin-bottom: 4px; }
         .nav-item span { font-size: 11px; }
 
-        /* Main Content */
         .main {
             padding: 75px 16px 20px;
         }
 
-        /* Cards */
         .stats {
             display: grid;
             grid-template-columns: repeat(2,1fr);
@@ -118,18 +109,9 @@
             text-align: center;
             border: 1px solid var(--border);
         }
-        .stat-number {
-            font-size: 22px;
-            font-weight: bold;
-            color: var(--primary);
-        }
-        .stat-label {
-            font-size: 11px;
-            color: var(--text-light);
-            margin-top: 5px;
-        }
+        .stat-number { font-size: 22px; font-weight: bold; color: var(--primary); }
+        .stat-label { font-size: 11px; color: var(--text-light); margin-top: 5px; }
 
-        /* Quick Actions */
         .actions {
             display: grid;
             grid-template-columns: repeat(4,1fr);
@@ -161,7 +143,6 @@
         .action-btn.pdf .action-icon { background: var(--primary); }
         .action-btn span { font-size: 11px; }
 
-        /* Lists */
         .list {
             background: var(--card);
             border-radius: 16px;
@@ -191,7 +172,6 @@
         .small-btn.outcome { background: var(--danger); }
         .small-btn.barcode { background: var(--warning); }
 
-        /* Forms */
         .form-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-light); }
         input, select {
@@ -216,8 +196,8 @@
         }
         button.danger { background: var(--danger); }
         button.success { background: var(--success); }
+        button.warning { background: var(--warning); }
 
-        /* Modals */
         .modal {
             position: fixed;
             top: 0;
@@ -293,9 +273,15 @@
             font-size: 12px;
         }
 
+        .settings-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
         .hidden { display: none; }
         
-        /* Scanner */
         .scanner-overlay {
             position: fixed;
             top: 0;
@@ -340,12 +326,12 @@
     <div class="logo"><i class="fas fa-store"></i> El Fath</div>
     <div>
         <button class="btn-icon" id="addBtn"><i class="fas fa-plus"></i></button>
+        <button class="btn-icon" id="settingsBtn"><i class="fas fa-cog"></i></button>
         <button class="btn-icon" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
     </div>
 </div>
 
 <div class="main" id="mainContent">
-    <!-- Dashboard -->
     <div id="dashboard">
         <div class="stats">
             <div class="stat-card"><div class="stat-number" id="totalProducts">0</div><div class="stat-label">Produits</div></div>
@@ -367,7 +353,6 @@
         </div>
     </div>
 
-    <!-- Products Page -->
     <div id="productsPage" class="hidden">
         <div class="search-box" style="margin-bottom: 12px;">
             <input type="text" id="productSearch" placeholder="🔍 Rechercher..." style="padding: 10px;">
@@ -375,9 +360,17 @@
         <div class="list" id="productsList"></div>
     </div>
 
-    <!-- Transactions Page -->
     <div id="transactionsPage" class="hidden">
         <div class="list" id="transactionsList"></div>
+    </div>
+
+    <div id="settingsPage" class="hidden">
+        <div class="list">
+            <div style="padding: 12px; border-bottom: 1px solid var(--border); font-weight: bold;">⚙️ Paramètres</div>
+            <div class="settings-buttons" style="padding: 12px;">
+                <button class="warning" onclick="showDeleteAllConfirm()" style="background: var(--danger);">🗑️ Supprimer toutes les données</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -385,6 +378,7 @@
     <div class="nav-item active" onclick="showDashboard()"><i class="fas fa-home"></i><span>Accueil</span></div>
     <div class="nav-item" onclick="showProducts()"><i class="fas fa-box"></i><span>Stock</span></div>
     <div class="nav-item" onclick="showTransactions()"><i class="fas fa-history"></i><span>Historique</span></div>
+    <div class="nav-item" onclick="showSettings()"><i class="fas fa-cog"></i><span>Paramètres</span></div>
 </div>
 
 <!-- Scanner -->
@@ -468,6 +462,21 @@
     </div>
 </div>
 
+<!-- Delete All Confirmation Modal -->
+<div id="deleteAllModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><span>⚠️ Supprimer toutes les données</span><button class="btn-icon" onclick="closeModal('deleteAllModal')" style="background: none;">✕</button></div>
+        <div style="text-align: center; margin-bottom: 15px;">
+            <p>⚠️ Cette action est irréversible !</p>
+            <p style="font-size: 12px; margin-top: 10px;">Tous les produits et mouvements seront supprimés.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="closeModal('deleteAllModal')" style="background: #2d2d44;">Annuler</button>
+            <button onclick="deleteAllData()" style="background: var(--danger);">🗑️ Confirmer la suppression</button>
+        </div>
+    </div>
+</div>
+
 <!-- Barcode View Modal -->
 <div id="barcodeViewModal" class="modal">
     <div class="modal-content" style="text-align: center;">
@@ -499,15 +508,30 @@
     let currentActionType = 'income';
     let selectedProduct = null;
     let currentBarcodeValue = '';
-    
-    // Scanner variables
     let html5QrCode = null;
     let currentCamera = 'environment';
 
-    // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
     db = firebase.database();
     auth = firebase.auth();
+
+    // Format number for PDF: 100000,00 (French format)
+    function formatNumberPDF(num) {
+        if (num === undefined || num === null) return '0,00';
+        let number = parseFloat(num);
+        if (isNaN(number)) return '0,00';
+        return number.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\s/g, '');
+    }
+
+    function formatMoney(amt) {
+        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD' }).format(amt || 0);
+    }
+
+    function formatDateFrench(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('fr-FR');
+    }
 
     // Auth
     auth.onAuthStateChanged(user => {
@@ -564,10 +588,6 @@
         });
     }
 
-    function formatMoney(amt) {
-        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD' }).format(amt || 0);
-    }
-
     function updateUI() {
         const totalValue = products.reduce((s, p) => s + (p.quantity * p.price), 0);
         document.getElementById('totalProducts').innerText = products.length;
@@ -583,7 +603,7 @@
         document.getElementById('recentList').innerHTML = recent.map(t => `
             <div class="list-item">
                 <div><div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div><div class="item-details">${t.quantity} x ${formatMoney(t.price)}</div></div>
-                <div style="font-size:11px;">${t.client || '-'}<br>${new Date(t.date).toLocaleDateString('fr-FR')}</div>
+                <div style="font-size:11px;">${t.client || '-'}<br>${formatDateFrench(t.date)}</div>
             </div>
         `).join('') || '<div class="empty">Aucun mouvement</div>';
 
@@ -615,7 +635,7 @@
         container.innerHTML = transactions.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
             <div class="list-item">
                 <div><div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div><div class="item-details">${t.quantity} x ${formatMoney(t.price)} = ${formatMoney(t.totalValue)}</div></div>
-                <div style="font-size:11px;">${t.client || '-'}<br>${new Date(t.date).toLocaleDateString('fr-FR')}</div>
+                <div style="font-size:11px;">${t.client || '-'}<br>${formatDateFrench(t.date)}</div>
             </div>
         `).join('');
     }
@@ -713,10 +733,8 @@
         `);
     }
 
-    // PDF Generation - FIXED
-    function showPDFMenu() {
-        openModal('pdfMenuModal');
-    }
+    // PDF Generation - French format with stock remaining
+    function showPDFMenu() { openModal('pdfMenuModal'); }
 
     function generatePDFReport(period) {
         closeModal('pdfMenuModal');
@@ -726,7 +744,6 @@
         let endDate = new Date();
         let title = '';
         
-        // Réinitialiser les heures
         today.setHours(0, 0, 0, 0);
         
         switch(period) {
@@ -769,6 +786,10 @@
         const totalIncome = periodIncome.reduce((s,t) => s + (t.quantity * t.price), 0);
         const totalOutcome = periodOutcome.reduce((s,t) => s + (t.quantity * t.price), 0);
         
+        // Calcul du stock après chaque transaction
+        let currentStock = {};
+        products.forEach(p => { currentStock[p.id] = p.quantity; });
+        
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
         
@@ -783,9 +804,9 @@
         let y = 50;
         doc.setFontSize(11);
         doc.setTextColor(200, 200, 200);
-        doc.text(`Total entrées: ${formatMoney(totalIncome)}`, 20, y); y += 8;
-        doc.text(`Total sorties: ${formatMoney(totalOutcome)}`, 20, y); y += 8;
-        doc.text(`Solde: ${formatMoney(totalIncome - totalOutcome)}`, 20, y); y += 15;
+        doc.text(`Total entrées: ${formatNumberPDF(totalIncome)} MAD`, 20, y); y += 8;
+        doc.text(`Total sorties: ${formatNumberPDF(totalOutcome)} MAD`, 20, y); y += 8;
+        doc.text(`Solde: ${formatNumberPDF(totalIncome - totalOutcome)} MAD`, 20, y); y += 15;
         
         if (periodIncome.length > 0) {
             doc.setFontSize(11);
@@ -793,11 +814,14 @@
             doc.text('ENTRÉES', 20, y); y += 8;
             doc.autoTable({
                 startY: y,
-                head: [['Produit', 'Qté', 'Prix', 'Total', 'Fournisseur']],
-                body: periodIncome.map(t => [t.productName, t.quantity, formatMoney(t.price), formatMoney(t.quantity * t.price), t.client || '-']),
+                head: [['Produit', 'Qté', 'Prix', 'Total', 'Fournisseur', 'Date', 'Stock restant']],
+                body: periodIncome.map(t => {
+                    const stockAfter = (products.find(p => p.id === t.productId)?.quantity || 0);
+                    return [t.productName, t.quantity, formatNumberPDF(t.price), formatNumberPDF(t.quantity * t.price), t.client || '-', formatDateFrench(t.date), formatNumberPDF(stockAfter)];
+                }),
                 theme: 'striped',
                 headStyles: { fillColor: [46, 204, 113], textColor: 255 },
-                styles: { fontSize: 9 }
+                styles: { fontSize: 9, cellPadding: 3 }
             });
             y = doc.lastAutoTable.finalY + 10;
         }
@@ -808,11 +832,14 @@
             doc.text('SORTIES', 20, y); y += 8;
             doc.autoTable({
                 startY: y,
-                head: [['Produit', 'Qté', 'Prix', 'Total', 'Client']],
-                body: periodOutcome.map(t => [t.productName, t.quantity, formatMoney(t.price), formatMoney(t.quantity * t.price), t.client || '-']),
+                head: [['Produit', 'Qté', 'Prix', 'Total', 'Client', 'Date', 'Stock restant']],
+                body: periodOutcome.map(t => {
+                    const stockAfter = (products.find(p => p.id === t.productId)?.quantity || 0);
+                    return [t.productName, t.quantity, formatNumberPDF(t.price), formatNumberPDF(t.quantity * t.price), t.client || '-', formatDateFrench(t.date), formatNumberPDF(stockAfter)];
+                }),
                 theme: 'striped',
                 headStyles: { fillColor: [231, 76, 60], textColor: 255 },
-                styles: { fontSize: 9 }
+                styles: { fontSize: 9, cellPadding: 3 }
             });
         }
         
@@ -826,6 +853,32 @@
         
         doc.save(`Rapport_${period}_${new Date().toISOString().split('T')[0]}.pdf`);
         showFlash('PDF généré avec succès');
+    }
+
+    // Delete All Data
+    function showDeleteAllConfirm() {
+        openModal('deleteAllModal');
+    }
+
+    async function deleteAllData() {
+        closeModal('deleteAllModal');
+        
+        if (!confirm('⚠️ ATTENTION ! Cette action supprimera TOUS les produits et TOUS les mouvements. Êtes-vous ABSOLUMENT sûr ?')) {
+            return;
+        }
+        
+        try {
+            showFlash('Suppression en cours...', 'warning');
+            await db.ref(`users/${currentUserId}/products`).remove();
+            await db.ref(`users/${currentUserId}/transactions`).remove();
+            products = [];
+            transactions = [];
+            updateUI();
+            showFlash('✅ Toutes les données ont été supprimées avec succès', 'success');
+        } catch(e) {
+            showFlash('❌ Erreur lors de la suppression', 'danger');
+            console.error(e);
+        }
     }
 
     // Product CRUD
@@ -875,46 +928,28 @@
         }
     };
 
-    // Scanner Functions - FIXED with better configuration
+    // Scanner Functions
     async function openScanner() {
         document.getElementById('scannerOverlay').classList.add('active');
-        
-        if (html5QrCode) {
-            try { await html5QrCode.stop(); } catch(e) {}
-        }
-        
+        if (html5QrCode) { try { await html5QrCode.stop(); } catch(e) {} }
         html5QrCode = new Html5Qrcode("reader");
         const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
-        
         try {
-            await html5QrCode.start({ facingMode: currentCamera }, config, (decodedText) => {
-                handleScanResult(decodedText);
-            }, (error) => {});
+            await html5QrCode.start({ facingMode: currentCamera }, config, (decodedText) => { handleScanResult(decodedText); }, (error) => {});
         } catch(err) {
             try {
-                await html5QrCode.start("environment", config, (decodedText) => {
-                    handleScanResult(decodedText);
-                }, (error) => {});
-            } catch(err2) {
-                alert("Erreur caméra - vérifiez les permissions");
-                closeScanner();
-            }
+                await html5QrCode.start("environment", config, (decodedText) => { handleScanResult(decodedText); }, (error) => {});
+            } catch(err2) { alert("Erreur caméra"); closeScanner(); }
         }
     }
 
     async function switchCamera() {
         currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
-        if (html5QrCode) {
-            await html5QrCode.stop();
-            await openScanner();
-        }
+        if (html5QrCode) { await html5QrCode.stop(); await openScanner(); }
     }
 
     function closeScanner() {
-        if (html5QrCode) {
-            html5QrCode.stop().catch(console.log);
-            html5QrCode = null;
-        }
+        if (html5QrCode) { html5QrCode.stop().catch(console.log); html5QrCode = null; }
         document.getElementById('scannerOverlay').classList.remove('active');
     }
 
@@ -1031,11 +1066,24 @@
         
         const client = document.getElementById('clientName').value.trim() || (currentActionType === 'income' ? 'Fournisseur' : 'Client');
         
+        const oldStock = selectedProduct.quantity;
         if (currentActionType === 'income') { selectedProduct.quantity += quantity; } 
         else { selectedProduct.quantity -= quantity; }
         await db.ref(`users/${currentUserId}/products/${selectedProduct.id}`).update({ quantity: selectedProduct.quantity });
         
-        const transaction = { id: Date.now().toString(), productId: selectedProduct.id, productName: selectedProduct.name, type: currentActionType, quantity: quantity, price: selectedProduct.price, totalValue: quantity * selectedProduct.price, client: client, date: new Date().toISOString() };
+        const transaction = { 
+            id: Date.now().toString(), 
+            productId: selectedProduct.id, 
+            productName: selectedProduct.name, 
+            type: currentActionType, 
+            quantity: quantity, 
+            price: selectedProduct.price, 
+            totalValue: quantity * selectedProduct.price, 
+            client: client, 
+            oldStock: oldStock,
+            newStock: selectedProduct.quantity,
+            date: new Date().toISOString() 
+        };
         await db.ref(`users/${currentUserId}/transactions/${transaction.id}`).set(transaction);
         transactions.unshift(transaction);
         
@@ -1045,9 +1093,37 @@
     };
 
     // Navigation
-    function showDashboard() { document.getElementById('dashboard').classList.remove('hidden'); document.getElementById('productsPage').classList.add('hidden'); document.getElementById('transactionsPage').classList.add('hidden'); updateNav(0); updateUI(); }
-    function showProducts() { document.getElementById('dashboard').classList.add('hidden'); document.getElementById('productsPage').classList.remove('hidden'); document.getElementById('transactionsPage').classList.add('hidden'); updateNav(1); renderProductsList(); }
-    function showTransactions() { document.getElementById('dashboard').classList.add('hidden'); document.getElementById('productsPage').classList.add('hidden'); document.getElementById('transactionsPage').classList.remove('hidden'); updateNav(2); renderTransactionsList(); }
+    function showDashboard() { 
+        document.getElementById('dashboard').classList.remove('hidden'); 
+        document.getElementById('productsPage').classList.add('hidden'); 
+        document.getElementById('transactionsPage').classList.add('hidden');
+        document.getElementById('settingsPage').classList.add('hidden');
+        updateNav(0); 
+        updateUI(); 
+    }
+    function showProducts() { 
+        document.getElementById('dashboard').classList.add('hidden'); 
+        document.getElementById('productsPage').classList.remove('hidden'); 
+        document.getElementById('transactionsPage').classList.add('hidden');
+        document.getElementById('settingsPage').classList.add('hidden');
+        updateNav(1); 
+        renderProductsList(); 
+    }
+    function showTransactions() { 
+        document.getElementById('dashboard').classList.add('hidden'); 
+        document.getElementById('productsPage').classList.add('hidden'); 
+        document.getElementById('transactionsPage').classList.remove('hidden');
+        document.getElementById('settingsPage').classList.add('hidden');
+        updateNav(2); 
+        renderTransactionsList(); 
+    }
+    function showSettings() {
+        document.getElementById('dashboard').classList.add('hidden');
+        document.getElementById('productsPage').classList.add('hidden');
+        document.getElementById('transactionsPage').classList.add('hidden');
+        document.getElementById('settingsPage').classList.remove('hidden');
+        updateNav(3);
+    }
 
     function updateNav(idx) { document.querySelectorAll('.nav-item').forEach((n,i)=>{ if(i===idx) n.classList.add('active'); else n.classList.remove('active'); }); }
     
@@ -1055,9 +1131,18 @@
     function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
     window.closeModal = closeModal;
     
-    function showFlash(msg) { const flash = document.createElement('div'); flash.style.cssText = 'position:fixed; bottom:80px; left:16px; right:16px; background:#2ecc71; padding:10px; border-radius:50px; text-align:center; z-index:2000; font-size:13px;'; flash.innerText = msg; document.body.appendChild(flash); setTimeout(() => flash.remove(), 2000); }
+    function showFlash(msg, type = 'success') {
+        const flash = document.createElement('div');
+        flash.style.cssText = 'position:fixed; bottom:80px; left:16px; right:16px; background:#2ecc71; padding:10px; border-radius:50px; text-align:center; z-index:2000; font-size:13px;';
+        if (type === 'danger') flash.style.background = '#e74c3c';
+        if (type === 'warning') flash.style.background = '#f39c12';
+        flash.innerText = msg;
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 2000);
+    }
 
     document.getElementById('productSearch')?.addEventListener('input', () => renderProductsList());
+    document.getElementById('settingsBtn').onclick = () => showSettings();
     
     window.generatePDFReport = generatePDFReport;
     window.showPDFMenu = showPDFMenu;
@@ -1071,6 +1156,8 @@
     window.closeScanner = closeScanner;
     window.showManualBarcode = showManualBarcode;
     window.searchManualBarcode = searchManualBarcode;
+    window.deleteAllData = deleteAllData;
+    window.showDeleteAllConfirm = showDeleteAllConfirm;
 </script>
 </body>
 </html>
