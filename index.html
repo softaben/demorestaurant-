@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
@@ -41,29 +42,6 @@
             background: var(--bg);
             color: var(--text);
             overflow-x: hidden;
-            touch-action: pan-y;
-        }
-
-        /* Swipe hint */
-        .swipe-hint {
-            position: fixed;
-            top: 50%;
-            right: 10px;
-            transform: translateY(-50%);
-            background: rgba(74,158,255,0.2);
-            padding: 10px;
-            border-radius: 30px;
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            font-size: 12px;
-            color: var(--primary);
-            pointer-events: none;
-            z-index: 50;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.5; right: 5px; }
-            100% { opacity: 1; right: 15px; }
         }
 
         /* Header */
@@ -129,7 +107,7 @@
         /* Cards */
         .stats {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2,1fr);
             gap: 12px;
             margin-bottom: 20px;
         }
@@ -141,12 +119,12 @@
             border: 1px solid var(--border);
         }
         .stat-number {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             color: var(--primary);
         }
         .stat-label {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-light);
             margin-top: 5px;
         }
@@ -154,32 +132,34 @@
         /* Quick Actions */
         .actions {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            grid-template-columns: repeat(4,1fr);
+            gap: 8px;
             margin-bottom: 20px;
         }
         .action-btn {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 8px 5px;
             text-align: center;
             cursor: pointer;
         }
         .action-icon {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             background: var(--primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 8px;
-            font-size: 22px;
+            margin: 0 auto 5px;
+            font-size: 16px;
         }
         .action-btn.income .action-icon { background: var(--success); }
         .action-btn.outcome .action-icon { background: var(--danger); }
         .action-btn.scanner .action-icon { background: var(--warning); }
+        .action-btn.pdf .action-icon { background: var(--primary); }
+        .action-btn span { font-size: 11px; }
 
         /* Lists */
         .list {
@@ -194,70 +174,127 @@
             padding: 12px;
             border-bottom: 1px solid var(--border);
         }
-        .list-item:last-child { border: none; }
-        .item-name { font-weight: 500; }
-        .item-details { font-size: 12px; color: var(--text-light); margin-top: 4px; }
-        .item-actions { display: flex; gap: 8px; }
+        .item-name { font-weight: 500; font-size: 14px; }
+        .item-details { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+        .item-actions { display: flex; gap: 6px; flex-wrap: wrap; }
         .small-btn {
             background: rgba(255,255,255,0.1);
             border: none;
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             color: white;
             cursor: pointer;
+            font-size: 12px;
         }
         .small-btn.income { background: var(--success); }
         .small-btn.outcome { background: var(--danger); }
+        .small-btn.barcode { background: var(--warning); }
 
         /* Forms */
-        .form-card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 13px;
-            color: var(--text-light);
-        }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-light); }
         input, select {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 10px;
             color: var(--text);
             font-size: 14px;
         }
         button {
             background: var(--primary);
             border: none;
-            padding: 12px;
-            border-radius: 30px;
+            padding: 10px;
+            border-radius: 25px;
             color: white;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            font-size: 16px;
+            font-size: 14px;
         }
         button.danger { background: var(--danger); }
         button.success { background: var(--success); }
 
-        /* Search */
-        .search-box {
-            margin-bottom: 15px;
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
         }
-        .search-box input {
+        .modal.active { display: flex; }
+        .modal-content {
             background: var(--card);
-            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 350px;
+            border-radius: 20px;
+            padding: 18px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: bold;
         }
 
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .qty-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary);
+            font-size: 22px;
+            margin: 0;
+        }
+        .qty-input {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 25px;
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        .barcode-preview {
+            text-align: center;
+            padding: 10px;
+            background: var(--bg);
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        
+        .pdf-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .pdf-btn {
+            background: var(--primary);
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .hidden { display: none; }
+        
         /* Scanner */
         .scanner-overlay {
             position: fixed;
@@ -273,108 +310,31 @@
         .scanner-overlay.active { display: flex; }
         .scanner-header {
             background: #1a1a2e;
-            padding: 15px;
+            padding: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        #scanner-viewport {
-            flex: 1;
-            position: relative;
-        }
-        #qr-reader {
+        #reader {
             width: 100%;
-            height: 100%;
+            flex: 1;
+            min-height: 400px;
         }
-        .scanner-guide {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            height: 30%;
-            border: 2px solid rgba(255,255,255,0.5);
-            border-radius: 20px;
-            pointer-events: none;
-        }
-
-        /* Modals */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 300;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: var(--card);
-            width: 90%;
-            max-width: 350px;
-            border-radius: 24px;
-            padding: 20px;
-        }
-        .modal-header {
+        .scanner-controls {
+            padding: 12px;
+            background: #1a1a2e;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            font-size: 18px;
-            font-weight: bold;
+            gap: 10px;
         }
-
-        .quantity-selector {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 15px 0;
-        }
-        .qty-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--primary);
-            font-size: 24px;
+        .scanner-controls button {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 12px;
             margin: 0;
         }
-        .qty-input {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 30px;
-            color: var(--text-light);
-        }
-
-        .search-results {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .result-item {
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .hidden { display: none; }
     </style>
 </head>
 <body>
-
-<!-- Swipe Hint -->
-<div class="swipe-hint" id="swipeHint">
-    <i class="fas fa-arrow-left"></i> ← Swipe pour scanner
-</div>
 
 <div class="header">
     <div class="logo"><i class="fas fa-store"></i> El Fath</div>
@@ -388,51 +348,29 @@
     <!-- Dashboard -->
     <div id="dashboard">
         <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number" id="totalProducts">0</div>
-                <div class="stat-label">Produits</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalStock">0 MAD</div>
-                <div class="stat-label">Valeur total</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="todayIn">0 MAD</div>
-                <div class="stat-label">Entrées</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="todayOut">0 MAD</div>
-                <div class="stat-label">Sorties</div>
-            </div>
+            <div class="stat-card"><div class="stat-number" id="totalProducts">0</div><div class="stat-label">Produits</div></div>
+            <div class="stat-card"><div class="stat-number" id="totalStock">0 MAD</div><div class="stat-label">Valeur total</div></div>
+            <div class="stat-card"><div class="stat-number" id="todayIn">0 MAD</div><div class="stat-label">Entrées</div></div>
+            <div class="stat-card"><div class="stat-number" id="todayOut">0 MAD</div><div class="stat-label">Sorties</div></div>
         </div>
 
         <div class="actions">
-            <div class="action-btn income" onclick="showAddStock()">
-                <div class="action-icon"><i class="fas fa-arrow-down"></i></div>
-                <div>➕ Entrée</div>
-            </div>
-            <div class="action-btn outcome" onclick="showRemoveStock()">
-                <div class="action-icon"><i class="fas fa-arrow-up"></i></div>
-                <div>➖ Sortie</div>
-            </div>
-            <div class="action-btn scanner" onclick="openScanner()">
-                <div class="action-icon"><i class="fas fa-camera"></i></div>
-                <div>📷 Scanner</div>
-            </div>
+            <div class="action-btn income" onclick="showAddStock()"><div class="action-icon"><i class="fas fa-arrow-down"></i></div><span>Entrée</span></div>
+            <div class="action-btn outcome" onclick="showRemoveStock()"><div class="action-icon"><i class="fas fa-arrow-up"></i></div><span>Sortie</span></div>
+            <div class="action-btn scanner" onclick="openScanner()"><div class="action-icon"><i class="fas fa-camera"></i></div><span>Scanner</span></div>
+            <div class="action-btn pdf" onclick="showPDFMenu()"><div class="action-icon"><i class="fas fa-file-pdf"></i></div><span>PDF</span></div>
         </div>
 
         <div class="list">
-            <div style="padding: 12px; border-bottom: 1px solid var(--border); font-weight: bold;">
-                📋 Derniers mouvements
-            </div>
+            <div style="padding: 10px; border-bottom: 1px solid var(--border); font-weight: bold; font-size: 13px;">📋 Derniers mouvements</div>
             <div id="recentList"></div>
         </div>
     </div>
 
     <!-- Products Page -->
     <div id="productsPage" class="hidden">
-        <div class="search-box">
-            <input type="text" id="productSearch" placeholder="🔍 Rechercher un produit...">
+        <div class="search-box" style="margin-bottom: 12px;">
+            <input type="text" id="productSearch" placeholder="🔍 Rechercher..." style="padding: 10px;">
         </div>
         <div class="list" id="productsList"></div>
     </div>
@@ -444,30 +382,21 @@
 </div>
 
 <div class="bottom-nav">
-    <div class="nav-item active" onclick="showDashboard()">
-        <i class="fas fa-home"></i><span>Accueil</span>
-    </div>
-    <div class="nav-item" onclick="showProducts()">
-        <i class="fas fa-box"></i><span>Stock</span>
-    </div>
-    <div class="nav-item" onclick="showTransactions()">
-        <i class="fas fa-history"></i><span>Historique</span>
-    </div>
+    <div class="nav-item active" onclick="showDashboard()"><i class="fas fa-home"></i><span>Accueil</span></div>
+    <div class="nav-item" onclick="showProducts()"><i class="fas fa-box"></i><span>Stock</span></div>
+    <div class="nav-item" onclick="showTransactions()"><i class="fas fa-history"></i><span>Historique</span></div>
 </div>
 
 <!-- Scanner -->
 <div id="scannerOverlay" class="scanner-overlay">
     <div class="scanner-header">
-        <span><i class="fas fa-camera"></i> Scanner un produit</span>
+        <span><i class="fas fa-camera"></i> Scanner code-barres</span>
         <button class="btn-icon" onclick="closeScanner()" style="background: rgba(255,255,255,0.2);">✕</button>
     </div>
-    <div id="scanner-viewport">
-        <div id="qr-reader"></div>
-        <div class="scanner-guide"></div>
-    </div>
-    <div style="padding: 15px; background: #1a1a2e; display: flex; gap: 10px;">
-        <button class="btn-icon" onclick="switchCamera()" style="background: rgba(255,255,255,0.2); width: auto; padding: 0 20px; border-radius: 30px;">🔄 Changer caméra</button>
-        <button class="btn-icon" onclick="closeScanner(); showManualBarcode()" style="background: rgba(255,255,255,0.2); width: auto; padding: 0 20px; border-radius: 30px;">⌨️ Saisie manuelle</button>
+    <div id="reader"></div>
+    <div class="scanner-controls">
+        <button onclick="switchCamera()" style="background: #2d2d44;">🔄 Changer caméra</button>
+        <button onclick="closeScanner(); showManualBarcode()" style="background: #2d2d44;">⌨️ Saisie manuelle</button>
     </div>
 </div>
 
@@ -479,34 +408,36 @@
             <button class="btn-icon" onclick="closeModal('productModal')" style="background: none;">✕</button>
         </div>
         <input type="hidden" id="productId">
-        <div class="form-group">
-            <label>Nom du produit</label>
-            <input type="text" id="prodName" placeholder="Ex: iPhone 14">
+        <div class="form-group"><label>Nom du produit *</label><input type="text" id="prodName" placeholder="Ex: iPhone 14"></div>
+        <div class="form-group"><label>Code-barres</label><input type="text" id="prodBarcode" placeholder="Code-barres" oninput="generateBarcodePreview()"></div>
+        <div id="barcodePreview" class="barcode-preview" style="display: none;">
+            <svg id="barcodeSvg" width="180" height="45"></svg>
+            <button type="button" onclick="downloadBarcode()" style="margin-top: 8px; background: var(--warning); font-size: 12px; padding: 6px;">📥 Télécharger</button>
         </div>
-        <div class="form-group">
-            <label>Code-barres</label>
-            <input type="text" id="prodBarcode" placeholder="Code-barres du produit">
-        </div>
-        <div class="form-group">
-            <label>Prix (MAD)</label>
-            <input type="number" id="prodPrice" placeholder="0.00">
-        </div>
-        <div class="form-group">
-            <label>Quantité initiale</label>
-            <input type="number" id="prodQty" placeholder="0" value="0">
-        </div>
+        <div class="form-group"><label>Prix (MAD)</label><input type="number" id="prodPrice" placeholder="0.00"></div>
+        <div class="form-group"><label>Quantité initiale</label><input type="number" id="prodQty" placeholder="0" value="0"></div>
         <button id="saveProductBtn">💾 Enregistrer</button>
+    </div>
+</div>
+
+<!-- PDF Menu Modal -->
+<div id="pdfMenuModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><span>📄 Rapport PDF</span><button class="btn-icon" onclick="closeModal('pdfMenuModal')" style="background: none;">✕</button></div>
+        <div class="pdf-buttons">
+            <button class="pdf-btn" onclick="generatePDFReport('today')">📅 Aujourd'hui</button>
+            <button class="pdf-btn" onclick="generatePDFReport('yesterday')">📆 Hier</button>
+            <button class="pdf-btn" onclick="generatePDFReport('week')">📊 Cette semaine</button>
+            <button class="pdf-btn" onclick="generatePDFReport('month')">📈 Ce mois</button>
+        </div>
     </div>
 </div>
 
 <!-- Manual Barcode Modal -->
 <div id="manualBarcodeModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">
-            <span>🔢 Saisie manuelle</span>
-            <button class="btn-icon" onclick="closeModal('manualBarcodeModal')" style="background: none;">✕</button>
-        </div>
-        <input type="text" id="manualBarcode" placeholder="Entrez le code-barres" style="margin-bottom: 15px;">
+        <div class="modal-header"><span>🔢 Saisie manuelle</span><button class="btn-icon" onclick="closeModal('manualBarcodeModal')" style="background: none;">✕</button></div>
+        <input type="text" id="manualBarcode" placeholder="Code-barres" style="margin-bottom: 12px;">
         <button onclick="searchManualBarcode()">Rechercher</button>
     </div>
 </div>
@@ -514,23 +445,16 @@
 <!-- Quantity Modal -->
 <div id="quantityModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">
-            <span id="qtyModalTitle">➕ Entrée en stock</span>
-            <button class="btn-icon" onclick="closeModal('quantityModal')" style="background: none;">✕</button>
-        </div>
-        <div id="selectedProductInfo" style="margin-bottom: 15px; padding: 10px; background: var(--bg); border-radius: 12px;"></div>
-        <div class="form-group">
-            <label>Quantité</label>
+        <div class="modal-header"><span id="qtyModalTitle">➕ Entrée</span><button class="btn-icon" onclick="closeModal('quantityModal')" style="background: none;">✕</button></div>
+        <div id="selectedProductInfo" style="margin-bottom: 12px; padding: 8px; background: var(--bg); border-radius: 10px; font-size: 13px;"></div>
+        <div class="form-group"><label>Quantité</label>
             <div class="quantity-selector">
                 <button class="qty-btn" onclick="changeQty(-1)">-</button>
                 <input type="number" id="quantity" class="qty-input" value="1" min="1" style="flex:1; text-align:center;">
                 <button class="qty-btn" onclick="changeQty(1)">+</button>
             </div>
         </div>
-        <div class="form-group">
-            <label>Client / Fournisseur</label>
-            <input type="text" id="clientName" placeholder="Nom du client ou fournisseur">
-        </div>
+        <div class="form-group"><label>Client / Fournisseur</label><input type="text" id="clientName" placeholder="Nom"></div>
         <button id="confirmQtyBtn" class="success">✅ Confirmer</button>
     </div>
 </div>
@@ -538,14 +462,22 @@
 <!-- Find Product Modal -->
 <div id="findProductModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">
-            <span id="findTitle">🔍 Choisir un produit</span>
-            <button class="btn-icon" onclick="closeModal('findProductModal')" style="background: none;">✕</button>
+        <div class="modal-header"><span id="findTitle">🔍 Choisir un produit</span><button class="btn-icon" onclick="closeModal('findProductModal')" style="background: none;">✕</button></div>
+        <div class="search-box"><input type="text" id="findProductSearch" placeholder="Rechercher..." oninput="renderProductSelectorList()"></div>
+        <div id="productListContainer" class="search-results" style="max-height: 300px; overflow-y: auto;"></div>
+    </div>
+</div>
+
+<!-- Barcode View Modal -->
+<div id="barcodeViewModal" class="modal">
+    <div class="modal-content" style="text-align: center;">
+        <div class="modal-header"><span>🏷️ Code-barres</span><button class="btn-icon" onclick="closeModal('barcodeViewModal')" style="background: none;">✕</button></div>
+        <div id="barcodeViewContainer" style="padding: 10px;"><svg id="viewBarcodeSvg" width="220" height="60"></svg></div>
+        <div id="barcodeProductName" style="margin: 8px 0; font-weight: bold;"></div>
+        <div style="display: flex; gap: 8px;">
+            <button onclick="downloadCurrentBarcode()" style="background: var(--warning);">📥 Télécharger</button>
+            <button onclick="printCurrentBarcode()" style="background: var(--primary);">🖨️ Imprimer</button>
         </div>
-        <div class="search-box">
-            <input type="text" id="findProductSearch" placeholder="Rechercher..." oninput="renderProductSelectorList()">
-        </div>
-        <div id="productListContainer" class="search-results"></div>
     </div>
 </div>
 
@@ -566,6 +498,7 @@
     let db = null, auth = null;
     let currentActionType = 'income';
     let selectedProduct = null;
+    let currentBarcodeValue = '';
     
     // Scanner variables
     let html5QrCode = null;
@@ -581,40 +514,10 @@
         if (user) {
             currentUserId = user.uid;
             loadData();
-            initSwipe();
         } else {
             showLogin();
         }
     });
-
-    // Swipe Detection (right to left)
-    function initSwipe() {
-        let touchStartX = 0;
-        let touchEndX = 0;
-        
-        document.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-        });
-        
-        document.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            const swipeDistance = touchStartX - touchEndX;
-            // Swipe right to left (distance > 50px)
-            if (swipeDistance > 50) {
-                openScanner();
-                // Flash effect
-                const hint = document.getElementById('swipeHint');
-                hint.style.background = 'rgba(74,158,255,0.5)';
-                setTimeout(() => hint.style.background = 'rgba(74,158,255,0.2)', 300);
-            }
-        });
-        
-        // Hide hint after 5 seconds
-        setTimeout(() => {
-            const hint = document.getElementById('swipeHint');
-            hint.style.opacity = '0.5';
-        }, 5000);
-    }
 
     function showLogin() {
         const div = document.createElement('div');
@@ -623,10 +526,10 @@
         div.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header" style="justify-content: center;">🔐 Connexion</div>
-                <input type="email" id="loginEmail" placeholder="Email" style="width:100%; margin-bottom:10px; padding:12px; border-radius:12px; background:var(--bg); border:1px solid var(--border); color:white;">
-                <input type="password" id="loginPass" placeholder="Mot de passe" style="width:100%; margin-bottom:15px; padding:12px; border-radius:12px; background:var(--bg); border:1px solid var(--border); color:white;">
+                <input type="email" id="loginEmail" placeholder="Email" style="width:100%; margin-bottom:10px; padding:10px; border-radius:10px; background:var(--bg); border:1px solid var(--border); color:white;">
+                <input type="password" id="loginPass" placeholder="Mot de passe" style="width:100%; margin-bottom:15px; padding:10px; border-radius:10px; background:var(--bg); border:1px solid var(--border); color:white;">
                 <button onclick="doLogin()">Se connecter</button>
-                <div id="loginError" style="color:red; margin-top:10px; text-align:center;"></div>
+                <div id="loginError" style="color:red; margin-top:8px; text-align:center; font-size:12px;"></div>
             </div>
         `;
         document.body.appendChild(div);
@@ -679,11 +582,8 @@
         const recent = [...transactions].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
         document.getElementById('recentList').innerHTML = recent.map(t => `
             <div class="list-item">
-                <div>
-                    <div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div>
-                    <div class="item-details">${t.quantity} x ${formatMoney(t.price)} = ${formatMoney(t.totalValue)}</div>
-                </div>
-                <div><small>${t.client || '-'}</small></div>
+                <div><div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div><div class="item-details">${t.quantity} x ${formatMoney(t.price)}</div></div>
+                <div style="font-size:11px;">${t.client || '-'}<br>${new Date(t.date).toLocaleDateString('fr-FR')}</div>
             </div>
         `).join('') || '<div class="empty">Aucun mouvement</div>';
 
@@ -695,19 +595,14 @@
         const search = document.getElementById('productSearch')?.value.toLowerCase() || '';
         let filtered = products.filter(p => p.name.toLowerCase().includes(search) || (p.barcode || '').toLowerCase().includes(search));
         const container = document.getElementById('productsList');
-        if (!filtered.length) {
-            container.innerHTML = '<div class="empty">Aucun produit</div>';
-            return;
-        }
+        if (!filtered.length) { container.innerHTML = '<div class="empty">Aucun produit</div>'; return; }
         container.innerHTML = filtered.map(p => `
             <div class="list-item">
-                <div>
-                    <div class="item-name">${p.name}</div>
-                    <div class="item-details">💰 ${formatMoney(p.price)} | 📦 ${p.quantity}</div>
-                </div>
+                <div><div class="item-name">${p.name}</div><div class="item-details">💰 ${formatMoney(p.price)} | 📦 ${p.quantity}</div></div>
                 <div class="item-actions">
                     <button class="small-btn income" onclick="openProductMovement('${p.id}', 'income')"><i class="fas fa-arrow-down"></i></button>
                     <button class="small-btn outcome" onclick="openProductMovement('${p.id}', 'outcome')"><i class="fas fa-arrow-up"></i></button>
+                    <button class="small-btn barcode" onclick="showBarcode('${p.id}')"><i class="fas fa-barcode"></i></button>
                     <button class="small-btn" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
                 </div>
             </div>
@@ -716,19 +611,221 @@
 
     function renderTransactionsList() {
         const container = document.getElementById('transactionsList');
-        if (!transactions.length) {
-            container.innerHTML = '<div class="empty">Aucun mouvement</div>';
-            return;
-        }
+        if (!transactions.length) { container.innerHTML = '<div class="empty">Aucun mouvement</div>'; return; }
         container.innerHTML = transactions.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
             <div class="list-item">
-                <div>
-                    <div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div>
-                    <div class="item-details">${t.quantity} x ${formatMoney(t.price)} = ${formatMoney(t.totalValue)}</div>
-                </div>
-                <div>${t.client || '-'}<br><small>${new Date(t.date).toLocaleDateString('fr-FR')}</small></div>
+                <div><div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div><div class="item-details">${t.quantity} x ${formatMoney(t.price)} = ${formatMoney(t.totalValue)}</div></div>
+                <div style="font-size:11px;">${t.client || '-'}<br>${new Date(t.date).toLocaleDateString('fr-FR')}</div>
             </div>
         `).join('');
+    }
+
+    // Barcode Functions
+    function generateBarcodePreview() {
+        const barcode = document.getElementById('prodBarcode').value;
+        const previewDiv = document.getElementById('barcodePreview');
+        if (barcode) {
+            previewDiv.style.display = 'block';
+            try {
+                JsBarcode("#barcodeSvg", barcode, { format: "CODE128", width: 1.5, height: 35, displayValue: true, fontSize: 10 });
+                currentBarcodeValue = barcode;
+            } catch(e) { console.log(e); }
+        } else {
+            previewDiv.style.display = 'none';
+        }
+    }
+
+    function downloadBarcode() {
+        const barcode = document.getElementById('prodBarcode').value;
+        if (!barcode) return;
+        const svg = document.getElementById('barcodeSvg');
+        const serializer = new XMLSerializer();
+        let svgString = serializer.serializeToString(svg);
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        svgString = 'data:image/svg+xml; charset=utf8, ' + encodeURIComponent(svgString);
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            const pngUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `barcode_${barcode}.png`;
+            link.href = pngUrl;
+            link.click();
+            showFlash('Code-barres téléchargé');
+        };
+        img.src = svgString;
+    }
+
+    function showBarcode(productId) {
+        const product = products.find(p => p.id === productId);
+        if (product && product.barcode) {
+            currentBarcodeValue = product.barcode;
+            document.getElementById('barcodeProductName').innerHTML = product.name;
+            try {
+                JsBarcode("#viewBarcodeSvg", product.barcode, { format: "CODE128", width: 2, height: 50, displayValue: true, fontSize: 12 });
+                openModal('barcodeViewModal');
+            } catch(e) { alert('Erreur génération code-barres'); }
+        } else {
+            alert('Ce produit n\'a pas de code-barres');
+        }
+    }
+
+    function downloadCurrentBarcode() {
+        const svg = document.getElementById('viewBarcodeSvg');
+        const serializer = new XMLSerializer();
+        let svgString = serializer.serializeToString(svg);
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        svgString = 'data:image/svg+xml; charset=utf8, ' + encodeURIComponent(svgString);
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            const pngUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `barcode_${currentBarcodeValue}.png`;
+            link.href = pngUrl;
+            link.click();
+            showFlash('Code-barres téléchargé');
+        };
+        img.src = svgString;
+    }
+
+    function printCurrentBarcode() {
+        const productName = document.getElementById('barcodeProductName').innerHTML;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html><head><title>Code-barres</title>
+            <style>body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; } .card { text-align: center; padding: 20px; }</style>
+            </head><body>
+            <div class="card"><svg id="barcode"></svg><div style="margin-top:15px; font-size:16px; font-weight:bold;">${productName}</div></div>
+            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
+            <script>JsBarcode("#barcode", "${currentBarcodeValue}", { format: "CODE128", width: 2, height: 80 }); setTimeout(() => { window.print(); window.close(); }, 500);<\/script>
+            </body></html>
+        `);
+    }
+
+    // PDF Generation - FIXED
+    function showPDFMenu() {
+        openModal('pdfMenuModal');
+    }
+
+    function generatePDFReport(period) {
+        closeModal('pdfMenuModal');
+        
+        const today = new Date();
+        let startDate = new Date();
+        let endDate = new Date();
+        let title = '';
+        
+        // Réinitialiser les heures
+        today.setHours(0, 0, 0, 0);
+        
+        switch(period) {
+            case 'today':
+                startDate = new Date(today);
+                endDate = new Date(today);
+                endDate.setHours(23, 59, 59);
+                title = 'Rapport du ' + today.toLocaleDateString('fr-FR');
+                break;
+            case 'yesterday':
+                startDate = new Date(today);
+                startDate.setDate(today.getDate() - 1);
+                endDate = new Date(startDate);
+                endDate.setHours(23, 59, 59);
+                title = 'Rapport du ' + startDate.toLocaleDateString('fr-FR');
+                break;
+            case 'week':
+                startDate = new Date(today);
+                startDate.setDate(today.getDate() - 7);
+                endDate = new Date(today);
+                endDate.setHours(23, 59, 59);
+                title = 'Rapport des 7 derniers jours';
+                break;
+            case 'month':
+                startDate = new Date(today);
+                startDate.setDate(today.getDate() - 30);
+                endDate = new Date(today);
+                endDate.setHours(23, 59, 59);
+                title = 'Rapport des 30 derniers jours';
+                break;
+        }
+        
+        const periodTransactions = transactions.filter(t => {
+            const transDate = new Date(t.date);
+            return transDate >= startDate && transDate <= endDate;
+        });
+        
+        const periodIncome = periodTransactions.filter(t => t.type === 'income');
+        const periodOutcome = periodTransactions.filter(t => t.type === 'outcome');
+        const totalIncome = periodIncome.reduce((s,t) => s + (t.quantity * t.price), 0);
+        const totalOutcome = periodOutcome.reduce((s,t) => s + (t.quantity * t.price), 0);
+        
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        doc.setFont('helvetica');
+        doc.setFontSize(16);
+        doc.setTextColor(74, 158, 255);
+        doc.text('EL FATH SERVICE', 20, 20);
+        doc.setFontSize(12);
+        doc.setTextColor(255, 255, 255);
+        doc.text(title, 20, 35);
+        
+        let y = 50;
+        doc.setFontSize(11);
+        doc.setTextColor(200, 200, 200);
+        doc.text(`Total entrées: ${formatMoney(totalIncome)}`, 20, y); y += 8;
+        doc.text(`Total sorties: ${formatMoney(totalOutcome)}`, 20, y); y += 8;
+        doc.text(`Solde: ${formatMoney(totalIncome - totalOutcome)}`, 20, y); y += 15;
+        
+        if (periodIncome.length > 0) {
+            doc.setFontSize(11);
+            doc.setTextColor(46, 204, 113);
+            doc.text('ENTRÉES', 20, y); y += 8;
+            doc.autoTable({
+                startY: y,
+                head: [['Produit', 'Qté', 'Prix', 'Total', 'Fournisseur']],
+                body: periodIncome.map(t => [t.productName, t.quantity, formatMoney(t.price), formatMoney(t.quantity * t.price), t.client || '-']),
+                theme: 'striped',
+                headStyles: { fillColor: [46, 204, 113], textColor: 255 },
+                styles: { fontSize: 9 }
+            });
+            y = doc.lastAutoTable.finalY + 10;
+        }
+        
+        if (periodOutcome.length > 0) {
+            doc.setFontSize(11);
+            doc.setTextColor(231, 76, 60);
+            doc.text('SORTIES', 20, y); y += 8;
+            doc.autoTable({
+                startY: y,
+                head: [['Produit', 'Qté', 'Prix', 'Total', 'Client']],
+                body: periodOutcome.map(t => [t.productName, t.quantity, formatMoney(t.price), formatMoney(t.quantity * t.price), t.client || '-']),
+                theme: 'striped',
+                headStyles: { fillColor: [231, 76, 60], textColor: 255 },
+                styles: { fontSize: 9 }
+            });
+        }
+        
+        if (periodTransactions.length === 0) {
+            doc.text('Aucun mouvement pendant cette période', 20, y);
+        }
+        
+        doc.setFontSize(8);
+        doc.setTextColor(128, 128, 128);
+        doc.text(`Généré le ${new Date().toLocaleString('fr-FR')} - El Fath Service`, 20, 280);
+        
+        doc.save(`Rapport_${period}_${new Date().toISOString().split('T')[0]}.pdf`);
+        showFlash('PDF généré avec succès');
     }
 
     // Product CRUD
@@ -739,33 +836,22 @@
         document.getElementById('prodBarcode').value = '';
         document.getElementById('prodPrice').value = '';
         document.getElementById('prodQty').value = '0';
+        document.getElementById('barcodePreview').style.display = 'none';
         openModal('productModal');
     };
 
     document.getElementById('saveProductBtn').onclick = async () => {
         const id = document.getElementById('productId').value;
         const name = document.getElementById('prodName').value.trim();
-        if (!name) { alert('Nom du produit requis'); return; }
+        if (!name) { alert('Nom requis'); return; }
         const barcode = document.getElementById('prodBarcode').value.trim() || `PROD-${Date.now()}`;
         const price = parseFloat(document.getElementById('prodPrice').value) || 0;
         const quantity = parseInt(document.getElementById('prodQty').value) || 0;
         
-        const product = {
-            id: id || Date.now().toString(),
-            name: name,
-            barcode: barcode,
-            price: price,
-            quantity: quantity,
-            minStock: 5,
-            createdAt: id ? (products.find(p=>p.id===id)?.createdAt || new Date().toISOString()) : new Date().toISOString()
-        };
+        const product = { id: id || Date.now().toString(), name: name, barcode: barcode, price: price, quantity: quantity, minStock: 5, createdAt: id ? (products.find(p=>p.id===id)?.createdAt || new Date().toISOString()) : new Date().toISOString() };
         
-        if (id) {
-            const idx = products.findIndex(p => p.id === id);
-            if (idx !== -1) products[idx] = product;
-        } else {
-            products.unshift(product);
-        }
+        if (id) { const idx = products.findIndex(p => p.id === id); if (idx !== -1) products[idx] = product; } 
+        else { products.unshift(product); }
         await db.ref(`users/${currentUserId}/products/${product.id}`).set(product);
         closeModal('productModal');
         showDashboard();
@@ -775,37 +861,42 @@
     window.editProduct = (id) => {
         const p = products.find(p => p.id === id);
         if (p) {
-            document.getElementById('modalTitle').innerText = '✏️ Modifier produit';
+            document.getElementById('modalTitle').innerText = '✏️ Modifier';
             document.getElementById('productId').value = p.id;
             document.getElementById('prodName').value = p.name;
             document.getElementById('prodBarcode').value = p.barcode || '';
             document.getElementById('prodPrice').value = p.price;
             document.getElementById('prodQty').value = p.quantity;
+            if (p.barcode) {
+                document.getElementById('barcodePreview').style.display = 'block';
+                JsBarcode("#barcodeSvg", p.barcode, { format: "CODE128", width: 1.5, height: 35, displayValue: true });
+            } else { document.getElementById('barcodePreview').style.display = 'none'; }
             openModal('productModal');
         }
     };
 
-    // Scanner Functions
+    // Scanner Functions - FIXED with better configuration
     async function openScanner() {
         document.getElementById('scannerOverlay').classList.add('active');
+        
         if (html5QrCode) {
             try { await html5QrCode.stop(); } catch(e) {}
         }
         
-        html5QrCode = new Html5Qrcode("qr-reader");
-        const config = { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+        html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
         
         try {
             await html5QrCode.start({ facingMode: currentCamera }, config, (decodedText) => {
                 handleScanResult(decodedText);
-            });
+            }, (error) => {});
         } catch(err) {
             try {
                 await html5QrCode.start("environment", config, (decodedText) => {
                     handleScanResult(decodedText);
-                });
+                }, (error) => {});
             } catch(err2) {
-                alert("Erreur d'accès à la caméra");
+                alert("Erreur caméra - vérifiez les permissions");
                 closeScanner();
             }
         }
@@ -827,17 +918,10 @@
         document.getElementById('scannerOverlay').classList.remove('active');
     }
 
-    function showManualBarcode() {
-        closeScanner();
-        openModal('manualBarcodeModal');
-    }
-
+    function showManualBarcode() { openModal('manualBarcodeModal'); }
     function searchManualBarcode() {
         const barcode = document.getElementById('manualBarcode').value.trim();
-        if (barcode) {
-            closeModal('manualBarcodeModal');
-            handleScanResult(barcode);
-        }
+        if (barcode) { closeModal('manualBarcodeModal'); handleScanResult(barcode); }
     }
 
     function handleScanResult(barcode) {
@@ -848,7 +932,7 @@
             currentActionType = 'income';
             showMovementChoice(product);
         } else {
-            if (confirm(`Produit "${barcode}" non trouvé. Voulez-vous l'ajouter ?`)) {
+            if (confirm(`Produit "${barcode}" non trouvé. Ajouter ?`)) {
                 document.getElementById('prodBarcode').value = barcode;
                 openModal('productModal');
             }
@@ -860,12 +944,12 @@
         div.className = 'modal active';
         div.id = 'movementChoiceModal';
         div.innerHTML = `
-            <div class="modal-content" style="max-width: 300px;">
+            <div class="modal-content" style="max-width: 280px;">
                 <div class="modal-header" style="justify-content: center;">${product.name}</div>
-                <div style="text-align:center; margin-bottom:15px;">💰 ${formatMoney(product.price)} | 📦 Stock: ${product.quantity}</div>
+                <div style="text-align:center; margin-bottom:12px;">💰 ${formatMoney(product.price)} | 📦 Stock: ${product.quantity}</div>
                 <div style="display: flex; gap: 10px;">
-                    <button onclick="selectMovement('income')" class="success" style="margin:0;">➕ Entrée</button>
-                    <button onclick="selectMovement('outcome')" class="danger" style="margin:0;">➖ Sortie</button>
+                    <button onclick="selectMovement('income')" style="background:var(--success); margin:0;">➕ Entrée</button>
+                    <button onclick="selectMovement('outcome')" style="background:var(--danger); margin:0;">➖ Sortie</button>
                 </div>
                 <button onclick="closeModal('movementChoiceModal')" style="margin-top:10px; background:transparent; border:1px solid var(--border);">Annuler</button>
             </div>
@@ -879,15 +963,8 @@
     }
 
     // Stock movement
-    function showAddStock() {
-        currentActionType = 'income';
-        showProductSelector('➕ Entrée en stock');
-    }
-
-    function showRemoveStock() {
-        currentActionType = 'outcome';
-        showProductSelector('➖ Sortie de stock');
-    }
+    function showAddStock() { currentActionType = 'income'; showProductSelector('➕ Entrée en stock'); }
+    function showRemoveStock() { currentActionType = 'outcome'; showProductSelector('➖ Sortie de stock'); }
 
     function showProductSelector(title) {
         document.getElementById('findTitle').innerText = title;
@@ -899,16 +976,10 @@
         const search = document.getElementById('findProductSearch')?.value.toLowerCase() || '';
         let filtered = products.filter(p => p.name.toLowerCase().includes(search) || (p.barcode || '').toLowerCase().includes(search));
         const container = document.getElementById('productListContainer');
-        if (!filtered.length) {
-            container.innerHTML = '<div class="empty">Aucun produit trouvé</div>';
-            return;
-        }
+        if (!filtered.length) { container.innerHTML = '<div class="empty">Aucun produit</div>'; return; }
         container.innerHTML = filtered.map(p => `
-            <div class="result-item" onclick="selectProductForMovement('${p.id}')">
-                <div>
-                    <strong>${p.name}</strong><br>
-                    <small>💰 ${formatMoney(p.price)} | 📦 ${p.quantity}</small>
-                </div>
+            <div class="result-item" onclick="selectProductForMovement('${p.id}')" style="padding:10px; border-bottom:1px solid var(--border); cursor:pointer;">
+                <div><strong>${p.name}</strong><br><small>💰 ${formatMoney(p.price)} | 📦 ${p.quantity}</small></div>
                 <i class="fas fa-chevron-left"></i>
             </div>
         `).join('');
@@ -917,10 +988,7 @@
     window.selectProductForMovement = (productId) => {
         const product = products.find(p => p.id === productId);
         if (product) {
-            if (currentActionType === 'outcome' && product.quantity <= 0) {
-                alert(`Stock insuffisant pour ${product.name}`);
-                return;
-            }
+            if (currentActionType === 'outcome' && product.quantity <= 0) { alert(`Stock insuffisant`); return; }
             selectedProduct = product;
             closeModal('findProductModal');
             showQuantityModal();
@@ -930,10 +998,7 @@
     window.openProductMovement = (productId, type) => {
         const product = products.find(p => p.id === productId);
         if (product) {
-            if (type === 'outcome' && product.quantity <= 0) {
-                alert(`Stock insuffisant pour ${product.name}`);
-                return;
-            }
+            if (type === 'outcome' && product.quantity <= 0) { alert(`Stock insuffisant`); return; }
             selectedProduct = product;
             currentActionType = type;
             showQuantityModal();
@@ -941,11 +1006,8 @@
     };
 
     function showQuantityModal() {
-        document.getElementById('qtyModalTitle').innerHTML = currentActionType === 'income' ? '➕ Entrée en stock' : '➖ Sortie de stock';
-        document.getElementById('selectedProductInfo').innerHTML = `
-            <strong>${selectedProduct.name}</strong><br>
-            Prix: ${formatMoney(selectedProduct.price)} | Stock: ${selectedProduct.quantity}
-        `;
+        document.getElementById('qtyModalTitle').innerHTML = currentActionType === 'income' ? '➕ Entrée' : '➖ Sortie';
+        document.getElementById('selectedProductInfo').innerHTML = `<strong>${selectedProduct.name}</strong><br>Prix: ${formatMoney(selectedProduct.price)} | Stock: ${selectedProduct.quantity}`;
         document.getElementById('quantity').value = 1;
         document.getElementById('quantity').max = currentActionType === 'outcome' ? selectedProduct.quantity : 9999;
         document.getElementById('clientName').value = '';
@@ -965,32 +1027,15 @@
         if (!selectedProduct) return;
         const quantity = parseInt(document.getElementById('quantity').value);
         if (quantity <= 0) { alert('Quantité invalide'); return; }
-        if (currentActionType === 'outcome' && quantity > selectedProduct.quantity) {
-            alert(`Stock insuffisant. Disponible: ${selectedProduct.quantity}`);
-            return;
-        }
+        if (currentActionType === 'outcome' && quantity > selectedProduct.quantity) { alert(`Stock insuffisant`); return; }
         
         const client = document.getElementById('clientName').value.trim() || (currentActionType === 'income' ? 'Fournisseur' : 'Client');
         
-        const oldQty = selectedProduct.quantity;
-        if (currentActionType === 'income') {
-            selectedProduct.quantity += quantity;
-        } else {
-            selectedProduct.quantity -= quantity;
-        }
+        if (currentActionType === 'income') { selectedProduct.quantity += quantity; } 
+        else { selectedProduct.quantity -= quantity; }
         await db.ref(`users/${currentUserId}/products/${selectedProduct.id}`).update({ quantity: selectedProduct.quantity });
         
-        const transaction = {
-            id: Date.now().toString(),
-            productId: selectedProduct.id,
-            productName: selectedProduct.name,
-            type: currentActionType,
-            quantity: quantity,
-            price: selectedProduct.price,
-            totalValue: quantity * selectedProduct.price,
-            client: client,
-            date: new Date().toISOString()
-        };
+        const transaction = { id: Date.now().toString(), productId: selectedProduct.id, productName: selectedProduct.name, type: currentActionType, quantity: quantity, price: selectedProduct.price, totalValue: quantity * selectedProduct.price, client: client, date: new Date().toISOString() };
         await db.ref(`users/${currentUserId}/transactions/${transaction.id}`).set(transaction);
         transactions.unshift(transaction);
         
@@ -1000,56 +1045,32 @@
     };
 
     // Navigation
-    function showDashboard() {
-        document.getElementById('dashboard').classList.remove('hidden');
-        document.getElementById('productsPage').classList.add('hidden');
-        document.getElementById('transactionsPage').classList.add('hidden');
-        document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === 0));
-        updateUI();
-    }
+    function showDashboard() { document.getElementById('dashboard').classList.remove('hidden'); document.getElementById('productsPage').classList.add('hidden'); document.getElementById('transactionsPage').classList.add('hidden'); updateNav(0); updateUI(); }
+    function showProducts() { document.getElementById('dashboard').classList.add('hidden'); document.getElementById('productsPage').classList.remove('hidden'); document.getElementById('transactionsPage').classList.add('hidden'); updateNav(1); renderProductsList(); }
+    function showTransactions() { document.getElementById('dashboard').classList.add('hidden'); document.getElementById('productsPage').classList.add('hidden'); document.getElementById('transactionsPage').classList.remove('hidden'); updateNav(2); renderTransactionsList(); }
 
-    function showProducts() {
-        document.getElementById('dashboard').classList.add('hidden');
-        document.getElementById('productsPage').classList.remove('hidden');
-        document.getElementById('transactionsPage').classList.add('hidden');
-        document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === 1));
-        renderProductsList();
-    }
+    function updateNav(idx) { document.querySelectorAll('.nav-item').forEach((n,i)=>{ if(i===idx) n.classList.add('active'); else n.classList.remove('active'); }); }
+    
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
+    window.closeModal = closeModal;
+    
+    function showFlash(msg) { const flash = document.createElement('div'); flash.style.cssText = 'position:fixed; bottom:80px; left:16px; right:16px; background:#2ecc71; padding:10px; border-radius:50px; text-align:center; z-index:2000; font-size:13px;'; flash.innerText = msg; document.body.appendChild(flash); setTimeout(() => flash.remove(), 2000); }
 
-    function showTransactions() {
-        document.getElementById('dashboard').classList.add('hidden');
-        document.getElementById('productsPage').classList.add('hidden');
-        document.getElementById('transactionsPage').classList.remove('hidden');
-        document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === 2));
-        renderTransactionsList();
-    }
-
-    window.showDashboard = showDashboard;
-    window.showProducts = showProducts;
-    window.showTransactions = showTransactions;
-    window.showAddStock = showAddStock;
-    window.showRemoveStock = showRemoveStock;
+    document.getElementById('productSearch')?.addEventListener('input', () => renderProductsList());
+    
+    window.generatePDFReport = generatePDFReport;
+    window.showPDFMenu = showPDFMenu;
+    window.showBarcode = showBarcode;
+    window.downloadBarcode = downloadBarcode;
+    window.downloadCurrentBarcode = downloadCurrentBarcode;
+    window.printCurrentBarcode = printCurrentBarcode;
+    window.generateBarcodePreview = generateBarcodePreview;
     window.openScanner = openScanner;
     window.switchCamera = switchCamera;
     window.closeScanner = closeScanner;
     window.showManualBarcode = showManualBarcode;
     window.searchManualBarcode = searchManualBarcode;
-    window.selectMovement = (type) => {};
-
-    // Utilities
-    function openModal(id) { document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
-    window.closeModal = closeModal;
-
-    function showFlash(msg) {
-        const flash = document.createElement('div');
-        flash.style.cssText = 'position:fixed; bottom:80px; left:16px; right:16px; background:#2ecc71; padding:12px; border-radius:50px; text-align:center; z-index:2000;';
-        flash.innerText = msg;
-        document.body.appendChild(flash);
-        setTimeout(() => flash.remove(), 2000);
-    }
-
-    document.getElementById('productSearch')?.addEventListener('input', () => renderProductsList());
 </script>
 </body>
 </html>
