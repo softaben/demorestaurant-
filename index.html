@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#2c7da0">
+    <meta name="theme-color" content="#1a1a2e">
     <title>El Fath Service - Gestion de Stock</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -27,18 +27,20 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* Dark Mode Colors */
         :root {
-            --primary-color: #2c7da0;
-            --primary-dark: #1f5e7a;
-            --success-color: #2a9d8f;
-            --danger-color: #e76f51;
-            --warning-color: #e9c46a;
-            --background-color: #ffffff;
-            --surface-color: #f8fafc;
-            --card-color: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #475569;
-            --border-color: #e2e8f0;
+            --primary-color: #4a9eff;
+            --primary-dark: #3a7ecc;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --background-color: #0f0f1a;
+            --surface-color: #1a1a2e;
+            --card-color: #16213e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --border-color: #2d2d44;
+            --input-bg: #1e1e32;
         }
 
         body {
@@ -54,14 +56,14 @@
             position: fixed;
             top: 0; right: 0; left: 0;
             height: 56px;
-            background: linear-gradient(135deg, #2c7da0, #1f5e7a);
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
             color: white;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 16px;
             z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
 
         .app-title { font-weight: 700; display: flex; align-items: center; gap: 8px; font-size: 16px; }
@@ -69,7 +71,7 @@
         .back-home-btn, .icon-button {
             width: 36px; height: 36px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
             border: none;
             color: white;
             cursor: pointer;
@@ -141,7 +143,7 @@
         }
         .quick-action-icon {
             width: 45px; height: 45px;
-            background: linear-gradient(135deg, #2c7da0, #1f5e7a);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -168,7 +170,7 @@
 
         .modal-overlay {
             position: fixed; top: 0; right: 0; left: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.8);
             display: none;
             align-items: center;
             justify-content: center;
@@ -177,7 +179,7 @@
         }
         .modal-overlay.active { display: flex; }
         .modal {
-            background: var(--background-color);
+            background: var(--card-color);
             border-radius: 28px;
             width: 92%;
             max-width: 500px;
@@ -191,11 +193,12 @@
         .form-input, .form-select {
             width: 100%;
             padding: 12px;
-            background: var(--surface-color);
+            background: var(--input-bg);
             border: 1px solid var(--border-color);
             border-radius: 14px;
             font-family: inherit;
             font-size: 14px;
+            color: var(--text-primary);
         }
         .btn {
             padding: 12px 20px;
@@ -207,10 +210,10 @@
             margin-top: 8px;
             font-size: 15px;
         }
-        .btn-primary { background: linear-gradient(135deg, #2c7da0, #1f5e7a); color: white; }
-        .btn-success { background: #2a9d8f; color: white; }
-        .btn-danger { background: #e76f51; color: white; }
-        .btn-secondary { background: var(--surface-color); border: 1px solid var(--border-color); }
+        .btn-primary { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; }
+        .btn-success { background: var(--success-color); color: white; }
+        .btn-danger { background: var(--danger-color); color: white; }
+        .btn-secondary { background: var(--surface-color); border: 1px solid var(--border-color); color: var(--text-primary); }
 
         .transaction-item {
             background: var(--surface-color);
@@ -272,19 +275,18 @@
         }
         .scanner-controls .btn { width: auto; padding: 10px 20px; margin: 0; }
 
-        /* Quantity Panel after scan - direct */
         .quantity-panel {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--background-color);
+            background: var(--card-color);
             border-radius: 28px 28px 0 0;
             padding: 24px;
             transform: translateY(100%);
             transition: transform 0.3s ease;
             z-index: 3100;
-            box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.3);
         }
         .quantity-panel.active { transform: translateY(0); }
         
@@ -340,6 +342,7 @@
             font-weight: 700;
             border: none;
             background: transparent;
+            color: var(--text-primary);
         }
         
         .close-modal-btn {
@@ -353,7 +356,7 @@
         .barcode-container {
             text-align: center;
             padding: 15px;
-            background: white;
+            background: var(--surface-color);
             border-radius: 12px;
             margin: 10px 0;
         }
@@ -372,6 +375,38 @@
             border-radius: 16px;
             padding: 15px;
             margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        /* Date range picker styles */
+        .date-range-container {
+            background: var(--surface-color);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .date-input-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .date-input-group .form-input {
+            flex: 1;
+        }
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .preset-btn {
+            flex: 1;
+            padding: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 12px;
             text-align: center;
         }
     </style>
@@ -403,7 +438,7 @@
                 <div class="quick-action-btn" onclick="openScanner()"><div class="quick-action-icon"><i class="fas fa-camera"></i></div><span>Scanner</span></div>
                 <div class="quick-action-btn" onclick="openAllProducts()"><div class="quick-action-icon"><i class="fas fa-list"></i></div><span>Stock</span></div>
                 <div class="quick-action-btn" onclick="openAllTransactions()"><div class="quick-action-icon"><i class="fas fa-exchange-alt"></i></div><span>Mouvements</span></div>
-                <div class="quick-action-btn" onclick="generateDailyPDF()"><div class="quick-action-icon"><i class="fas fa-file-pdf"></i></div><span>PDF</span></div>
+                <div class="quick-action-btn" onclick="openPDFDateModal()"><div class="quick-action-icon"><i class="fas fa-file-pdf"></i></div><span>PDF</span></div>
             </div>
 
             <div class="stat-card"><div class="stat-label">⚠️ Stock faible</div><div id="lowStockAlerts" class="product-list" style="margin-top:10px"></div></div>
@@ -414,7 +449,7 @@
         <div id="productsView" style="display:none">
             <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap">
                 <h3 style="flex:1">📦 Tous les produits</h3>
-                <input type="text" id="searchProduct" placeholder="🔍 Rechercher..." style="padding:10px 15px; border-radius:30px; border:1px solid var(--border-color); background:var(--surface-color); width:100%; font-size:14px">
+                <input type="text" id="searchProduct" placeholder="🔍 Rechercher..." style="padding:10px 15px; border-radius:30px; border:1px solid var(--border-color); background:var(--surface-color); width:100%; font-size:14px; color:var(--text-primary)">
             </div>
             <div id="allProductsList" class="product-list"></div>
         </div>
@@ -439,8 +474,8 @@
         </div>
         <div id="interactive"></div>
         <div class="scanner-controls">
-            <button class="btn btn-secondary" onclick="switchCamera()" style="background:#2d2d44; color:white;"><i class="fas fa-sync-alt"></i> Changer caméra</button>
-            <button class="btn btn-secondary" onclick="closeScanner();openManualBarcode()" style="background:#2d2d44; color:white;"><i class="fas fa-keyboard"></i> Manuel</button>
+            <button class="btn btn-secondary" onclick="switchCamera()"><i class="fas fa-sync-alt"></i> Changer caméra</button>
+            <button class="btn btn-secondary" onclick="closeScanner();openManualBarcode()"><i class="fas fa-keyboard"></i> Manuel</button>
         </div>
     </div>
 
@@ -458,7 +493,37 @@
         </div>
     </div>
 
-    <!-- Quantity Panel - Direct after scan (with type selection inside) -->
+    <!-- PDF Date Range Modal -->
+    <div class="modal-overlay" id="pdfDateModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span>📅 Période du rapport PDF</span>
+                <button class="close-modal-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="date-range-container">
+                    <div class="form-group">
+                        <label class="form-label">Date de début</label>
+                        <input type="date" id="startDate" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date de fin</label>
+                        <input type="date" id="endDate" class="form-input">
+                    </div>
+                    <div class="preset-buttons">
+                        <div class="preset-btn" onclick="setDatePreset('today')">Aujourd'hui</div>
+                        <div class="preset-btn" onclick="setDatePreset('yesterday')">Hier</div>
+                        <div class="preset-btn" onclick="setDatePreset('week')">7 derniers jours</div>
+                        <div class="preset-btn" onclick="setDatePreset('month')">30 derniers jours</div>
+                        <div class="preset-btn" onclick="setDatePreset('year')">Cette année</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="generatePeriodPDF()">📄 Générer le rapport PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quantity Panel -->
     <div id="quantityPanel" class="quantity-panel">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h3 id="panelTitle">📦 Gestion du produit</h3>
@@ -554,7 +619,7 @@
         function showFlash(message, type) {
             const flash = document.createElement('div');
             flash.className = 'flash-message';
-            flash.style.background = type === 'success' ? '#2a9d8f' : type === 'danger' ? '#e76f51' : '#e9c46a';
+            flash.style.background = type === 'success' ? '#2ecc71' : type === 'danger' ? '#e74c3c' : '#f39c12';
             flash.style.color = 'white';
             flash.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
             document.body.appendChild(flash);
@@ -667,6 +732,131 @@
             `).join('');
         }
 
+        // PDF Date Range Functions
+        function openPDFDateModal() {
+            const today = new Date().toISOString().split('T')[0];
+            const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+            document.getElementById('startDate').value = startOfMonth;
+            document.getElementById('endDate').value = today;
+            openModal('pdfDateModal');
+        }
+
+        function setDatePreset(preset) {
+            const today = new Date();
+            const endDate = new Date().toISOString().split('T')[0];
+            let startDate = new Date();
+            
+            switch(preset) {
+                case 'today':
+                    startDate = today;
+                    break;
+                case 'yesterday':
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - 1);
+                    endDate = startDate.toISOString().split('T')[0];
+                    break;
+                case 'week':
+                    startDate.setDate(today.getDate() - 7);
+                    break;
+                case 'month':
+                    startDate.setDate(today.getDate() - 30);
+                    break;
+                case 'year':
+                    startDate = new Date(today.getFullYear(), 0, 1);
+                    break;
+            }
+            
+            document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+            document.getElementById('endDate').value = endDate;
+        }
+
+        async function generatePeriodPDF() {
+            const startDateStr = document.getElementById('startDate').value;
+            const endDateStr = document.getElementById('endDate').value;
+            
+            if(!startDateStr || !endDateStr) {
+                showFlash('Veuillez sélectionner une période', 'danger');
+                return;
+            }
+            
+            const startDate = new Date(startDateStr);
+            const endDate = new Date(endDateStr);
+            endDate.setHours(23, 59, 59);
+            
+            const periodTransactions = transactions.filter(t => {
+                const transDate = new Date(t.date);
+                return transDate >= startDate && transDate <= endDate;
+            });
+            
+            const periodIncome = periodTransactions.filter(t => t.type === 'income');
+            const periodOutcome = periodTransactions.filter(t => t.type === 'outcome');
+            const totalIncome = periodIncome.reduce((s,t)=> s + t.totalValue, 0);
+            const totalOutcome = periodOutcome.reduce((s,t)=> s + t.totalValue, 0);
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            const dateRangeText = `${new Date(startDateStr).toLocaleDateString('fr-FR')} au ${new Date(endDateStr).toLocaleDateString('fr-FR')}`;
+            
+            doc.setFont('helvetica');
+            doc.setFontSize(20);
+            doc.setTextColor(74, 158, 255);
+            doc.text('EL FATH SERVICE', 20, 20);
+            doc.setFontSize(14);
+            doc.setTextColor(255, 255, 255);
+            doc.text(`Rapport de période - ${dateRangeText}`, 20, 35);
+            
+            let y = 50;
+            doc.setFontSize(12);
+            doc.setTextColor(200, 200, 200);
+            doc.text(`Total des entrées: ${formatCurrency(totalIncome)}`, 20, y); y += 8;
+            doc.text(`Total des sorties: ${formatCurrency(totalOutcome)}`, 20, y); y += 8;
+            doc.text(`Solde de la période: ${formatCurrency(totalIncome - totalOutcome)}`, 20, y); y += 15;
+            
+            if(periodIncome.length > 0) {
+                doc.setFontSize(12);
+                doc.setTextColor(46, 204, 113);
+                doc.text('Entrées', 20, y); y += 8;
+                doc.autoTable({
+                    startY: y,
+                    head: [['Produit', 'Quantité', 'Prix unitaire', 'Total', 'Fournisseur', 'Date']],
+                    body: periodIncome.map(t => [t.productName, t.quantity, formatCurrency(t.price), formatCurrency(t.totalValue), t.client || '-', new Date(t.date).toLocaleDateString('fr-FR')]),
+                    theme: 'dark',
+                    headStyles: { fillColor: [46, 204, 113], textColor: 255 },
+                    styles: { font: 'helvetica', fontSize: 9, textColor: [255,255,255] },
+                    alternateRowStyles: { fillColor: [30,30,50] }
+                });
+                y = doc.lastAutoTable.finalY + 10;
+            }
+            
+            if(periodOutcome.length > 0) {
+                doc.setFontSize(12);
+                doc.setTextColor(231, 76, 60);
+                doc.text('Sorties', 20, y); y += 8;
+                doc.autoTable({
+                    startY: y,
+                    head: [['Produit', 'Quantité', 'Prix unitaire', 'Total', 'Client', 'Date']],
+                    body: periodOutcome.map(t => [t.productName, t.quantity, formatCurrency(t.price), formatCurrency(t.totalValue), t.client || '-', new Date(t.date).toLocaleDateString('fr-FR')]),
+                    theme: 'dark',
+                    headStyles: { fillColor: [231, 76, 60], textColor: 255 },
+                    styles: { font: 'helvetica', fontSize: 9, textColor: [255,255,255] },
+                    alternateRowStyles: { fillColor: [30,30,50] }
+                });
+            }
+            
+            if(periodTransactions.length === 0) {
+                doc.text('Aucun mouvement pendant cette période', 20, y);
+            }
+            
+            doc.setFontSize(8);
+            doc.setTextColor(128, 128, 128);
+            doc.text(`Généré le ${new Date().toLocaleString('fr-FR')} - El Fath Service`, 20, 280);
+            
+            closeModal();
+            doc.save(`Rapport_${startDateStr}_au_${endDateStr}.pdf`);
+            showFlash('PDF généré avec succès', 'success');
+        }
+
         // Scanner Functions
         async function openScanner() {
             document.getElementById('scannerOverlay').classList.add('active');
@@ -733,29 +923,23 @@
         }
 
         function showQuantityPanel(product) {
-            // Mettre à jour l'affichage du produit
             document.getElementById('scanProductName').innerHTML = product.name;
             document.getElementById('scanProductDetails').innerHTML = `
                 💰 ${formatCurrency(product.price)} | 📦 Stock actuel: ${product.quantity} unités
             `;
             
-            // Réinitialiser les valeurs
             document.getElementById('quickQuantity').value = 1;
             document.getElementById('quickQuantity').max = 9999;
             document.getElementById('quickClient').value = '';
             document.getElementById('quickNotes').value = '';
             
-            // Réinitialiser le type sélectionné
             setTransactionType('income');
-            
-            // Afficher le panneau
             document.getElementById('quantityPanel').classList.add('active');
         }
 
         function setTransactionType(type) {
             currentTransactionType = type;
             
-            // Mettre à jour l'apparence des boutons
             const incomeBtn = document.querySelector('.type-btn[data-type="income"]');
             const outcomeBtn = document.querySelector('.type-btn[data-type="outcome"]');
             
@@ -813,7 +997,6 @@
             const client = document.getElementById('quickClient').value.trim() || (currentTransactionType === 'income' ? 'Fournisseur' : 'Client');
             const notes = document.getElementById('quickNotes').value.trim() || '';
             
-            // Mise à jour de la quantité du produit
             const oldQuantity = scannedProduct.quantity;
             if(currentTransactionType === 'income') {
                 scannedProduct.quantity += quantity;
@@ -826,7 +1009,6 @@
                 updatedAt: new Date().toISOString() 
             });
             
-            // Création de la transaction
             const transaction = {
                 id: Date.now().toString(),
                 productId: scannedProduct.id,
@@ -861,7 +1043,9 @@
                     height: 50,
                     displayValue: true,
                     fontSize: 14,
-                    textMargin: 5
+                    textMargin: 5,
+                    lineColor: "#ffffff",
+                    background: "#16213e"
                 });
             } catch(e) { console.error(e); }
         }
@@ -878,7 +1062,7 @@
                 <head><title>Code-barres - ${productName}</title>
                 <style>
                     body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: white; }
-                    .barcode-card { text-align: center; padding: 30px; border: 1px solid #ddd; border-radius: 10px; }
+                    .barcode-card { text-align: center; padding: 30px; border: 1px solid #ddd; border-radius: 10px; background: white; }
                     .product-name { font-size: 18px; margin-top: 15px; font-weight: bold; }
                     .product-price { font-size: 14px; color: #666; margin-top: 5px; }
                 </style>
@@ -934,74 +1118,6 @@
             updateUI();
             showFlash(`✅ Produit ${name} enregistré avec succès`, 'success');
         };
-
-        // PDF Report
-        async function generateDailyPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const today = new Date();
-            const dateStr = today.toLocaleDateString('fr-FR');
-            
-            const todayTransactions = transactions.filter(t => new Date(t.date).toDateString() === today.toDateString());
-            const todayIncome = todayTransactions.filter(t => t.type === 'income');
-            const todayOutcome = todayTransactions.filter(t => t.type === 'outcome');
-            const totalIncome = todayIncome.reduce((s,t)=> s + t.totalValue, 0);
-            const totalOutcome = todayOutcome.reduce((s,t)=> s + t.totalValue, 0);
-            
-            doc.setFont('helvetica');
-            doc.setFontSize(20);
-            doc.setTextColor(44, 125, 160);
-            doc.text('EL FATH SERVICE', 20, 20);
-            doc.setFontSize(14);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Rapport Journalier - ${dateStr}`, 20, 35);
-            
-            let y = 50;
-            doc.setFontSize(12);
-            doc.text(`Total des entrées: ${formatCurrency(totalIncome)}`, 20, y); y += 8;
-            doc.text(`Total des sorties: ${formatCurrency(totalOutcome)}`, 20, y); y += 8;
-            doc.text(`Solde du jour: ${formatCurrency(totalIncome - totalOutcome)}`, 20, y); y += 15;
-            
-            if(todayIncome.length > 0) {
-                doc.setFontSize(12);
-                doc.setTextColor(42, 157, 143);
-                doc.text('Entrées du jour', 20, y); y += 8;
-                doc.autoTable({
-                    startY: y,
-                    head: [['Produit', 'Quantité', 'Prix unitaire', 'Total', 'Fournisseur']],
-                    body: todayIncome.map(t => [t.productName, t.quantity, formatCurrency(t.price), formatCurrency(t.totalValue), t.client || '-']),
-                    theme: 'striped',
-                    headStyles: { fillColor: [42, 157, 143], textColor: 255 },
-                    styles: { font: 'helvetica', fontSize: 9 }
-                });
-                y = doc.lastAutoTable.finalY + 10;
-            }
-            
-            if(todayOutcome.length > 0) {
-                doc.setFontSize(12);
-                doc.setTextColor(231, 111, 81);
-                doc.text('Sorties du jour', 20, y); y += 8;
-                doc.autoTable({
-                    startY: y,
-                    head: [['Produit', 'Quantité', 'Prix unitaire', 'Total', 'Client']],
-                    body: todayOutcome.map(t => [t.productName, t.quantity, formatCurrency(t.price), formatCurrency(t.totalValue), t.client || '-']),
-                    theme: 'striped',
-                    headStyles: { fillColor: [231, 111, 81], textColor: 255 },
-                    styles: { font: 'helvetica', fontSize: 9 }
-                });
-            }
-            
-            if(todayTransactions.length === 0) {
-                doc.text('Aucun mouvement enregistré aujourd\'hui', 20, y);
-            }
-            
-            doc.setFontSize(8);
-            doc.setTextColor(128, 128, 128);
-            doc.text(`Généré le ${new Date().toLocaleString('fr-FR')} - El Fath Service`, 20, 280);
-            
-            doc.save(`Rapport_${dateStr.replace(/\//g, '-')}.pdf`);
-            showFlash('PDF généré avec succès', 'success');
-        }
 
         // Navigation
         function showDashboard() { 
@@ -1079,7 +1195,9 @@
             document.getElementById('scannerBtn').onclick = openScanner;
         }
         
-        window.generateDailyPDF = generateDailyPDF;
+        window.generatePeriodPDF = generatePeriodPDF;
+        window.setDatePreset = setDatePreset;
+        window.openPDFDateModal = openPDFDateModal;
         window.printBarcode = printBarcode;
         window.setTransactionType = setTransactionType;
         window.confirmTransaction = confirmTransaction;
