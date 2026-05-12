@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -115,7 +116,7 @@
 
         .actions {
             display: grid;
-            grid-template-columns: repeat(4,1fr);
+            grid-template-columns: repeat(3,1fr);
             gap: 8px;
             margin-bottom: 20px;
         }
@@ -141,8 +142,35 @@
         .action-btn.income .action-icon { background: var(--success); }
         .action-btn.outcome .action-icon { background: var(--danger); }
         .action-btn.scanner .action-icon { background: var(--warning); }
-        .action-btn.pdf .action-icon { background: var(--primary); }
         .action-btn span { font-size: 11px; }
+
+        .export-actions {
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .export-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px 5px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .export-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 5px;
+            font-size: 16px;
+        }
+        .export-btn.pdf .export-icon { background: var(--danger); }
+        .export-btn.excel .export-icon { background: var(--success); }
+        .export-btn.report .export-icon { background: var(--info); }
 
         .list {
             background: var(--card);
@@ -173,7 +201,6 @@
         .small-btn.outcome { background: var(--danger); }
         .small-btn.barcode { background: var(--warning); }
         .small-btn.edit { background: var(--info); }
-        .small-btn.delete { background: var(--danger); }
 
         .form-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-light); }
@@ -347,7 +374,21 @@
             <div class="action-btn income" onclick="showAddStock()"><div class="action-icon"><i class="fas fa-arrow-down"></i></div><span>Entrée</span></div>
             <div class="action-btn outcome" onclick="showRemoveStock()"><div class="action-icon"><i class="fas fa-arrow-up"></i></div><span>Sortie</span></div>
             <div class="action-btn scanner" onclick="openScanner()"><div class="action-icon"><i class="fas fa-camera"></i></div><span>Scanner</span></div>
-            <div class="action-btn pdf" onclick="showPDFMenu()"><div class="action-icon"><i class="fas fa-file-pdf"></i></div><span>PDF</span></div>
+        </div>
+
+        <div class="export-actions">
+            <div class="export-btn pdf" onclick="exportStockPDF()">
+                <div class="export-icon"><i class="fas fa-file-pdf"></i></div>
+                <span>Stock PDF</span>
+            </div>
+            <div class="export-btn excel" onclick="exportStockExcel()">
+                <div class="export-icon"><i class="fas fa-file-excel"></i></div>
+                <span>Stock Excel</span>
+            </div>
+            <div class="export-btn report" onclick="showPDFMenu()">
+                <div class="export-icon"><i class="fas fa-chart-line"></i></div>
+                <span>Rapport Mouvement</span>
+            </div>
         </div>
 
         <div class="list">
@@ -472,10 +513,10 @@
     </div>
 </div>
 
-<!-- PDF Menu Modal -->
+<!-- PDF Menu Modal (Mouvements) -->
 <div id="pdfMenuModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header"><span>📄 Rapport PDF</span><button class="btn-icon" onclick="closeModal('pdfMenuModal')" style="background: none;">✕</button></div>
+        <div class="modal-header"><span>📄 Rapport des mouvements</span><button class="btn-icon" onclick="closeModal('pdfMenuModal')" style="background: none;">✕</button></div>
         <div class="pdf-buttons">
             <button class="pdf-btn" onclick="generatePDFReport('today')">📅 Aujourd'hui</button>
             <button class="pdf-btn" onclick="generatePDFReport('yesterday')">📆 Hier</button>
@@ -574,7 +615,7 @@
     db = firebase.database();
     auth = firebase.auth();
 
-    // Format number for PDF: 100000,00 (French format)
+    // Format number for PDF: 100000,00
     function formatNumberPDF(num) {
         if (num === undefined || num === null) return '0,00';
         let number = parseFloat(num);
@@ -746,6 +787,89 @@
         `).join('');
     }
 
+    // STOCK PDF EXPORT - New Function
+    window.exportStockPDF = () => {
+        if (products.length === 0) {
+            showFlash('Aucun produit à exporter', 'warning');
+            return;
+        }
+        
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        doc.setFont('helvetica');
+        doc.setFontSize(16);
+        doc.setTextColor(74, 158, 255);
+        doc.text('EL FATH SERVICE', 20, 20);
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.text('RAPPORT DU STOCK', 20, 35);
+        
+        const totalValue = products.reduce((s, p) => s + (p.quantity * p.price), 0);
+        
+        let y = 50;
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Nombre total de produits: ${products.length}`, 20, y); y += 8;
+        doc.text(`Valeur totale du stock: ${formatNumberPDF(totalValue)} MAD`, 20, y); y += 15;
+        
+        const stockData = products.map(p => [
+            p.name,
+            p.barcode || '-',
+            p.category || '-',
+            p.quantity,
+            formatNumberPDF(p.price) + ' MAD',
+            formatNumberPDF(p.quantity * p.price) + ' MAD'
+        ]);
+        
+        doc.autoTable({
+            startY: y,
+            head: [['Produit', 'Code-barres', 'Catégorie', 'Quantité', 'Prix unitaire', 'Valeur totale']],
+            body: stockData,
+            theme: 'striped',
+            headStyles: { fillColor: [74, 158, 255], textColor: 255 },
+            styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] }
+        });
+        
+        doc.setFontSize(8);
+        doc.setTextColor(128, 128, 128);
+        doc.text(`Généré le ${new Date().toLocaleString('fr-FR')} - El Fath Service`, 20, 280);
+        
+        doc.save(`Rapport_Stock_${new Date().toISOString().split('T')[0]}.pdf`);
+        showFlash('Rapport PDF du stock généré avec succès', 'success');
+    };
+
+    // STOCK EXCEL EXPORT - New Function
+    window.exportStockExcel = () => {
+        if (products.length === 0) {
+            showFlash('Aucun produit à exporter', 'warning');
+            return;
+        }
+        
+        const wsData = [
+            ['Produit', 'Code-barres', 'Catégorie', 'Quantité', 'Prix unitaire (MAD)', 'Valeur totale (MAD)', 'Date de création']
+        ];
+        
+        products.forEach(p => {
+            wsData.push([
+                p.name,
+                p.barcode || '',
+                p.category || '',
+                p.quantity,
+                formatNumberPDF(p.price),
+                formatNumberPDF(p.quantity * p.price),
+                formatDateFrench(p.createdAt)
+            ]);
+        });
+        
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Stock');
+        
+        XLSX.writeFile(wb, `Stock_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showFlash('Rapport Excel du stock généré avec succès', 'success');
+    };
+
     // Edit Transaction Functions
     async function openEditTransaction(transactionId) {
         const transaction = transactions.find(t => t.id === transactionId);
@@ -913,7 +1037,7 @@
         `);
     }
 
-    // PDF Generation - With new summary table by product
+    // PDF Generation for Movements
     function showPDFMenu() { openModal('pdfMenuModal'); }
 
     function generatePDFReport(period) {
@@ -956,7 +1080,6 @@
                 break;
         }
         
-        // Get transactions in period
         const periodTransactions = transactions.filter(t => {
             const transDate = new Date(t.date);
             return transDate >= startDate && transDate <= endDate;
@@ -971,31 +1094,10 @@
         const productOutcomeSummary = {};
         periodOutcome.forEach(t => {
             if (!productOutcomeSummary[t.productId]) {
-                productOutcomeSummary[t.productId] = {
-                    productName: t.productName,
-                    totalQuantity: 0,
-                    totalValue: 0
-                };
+                productOutcomeSummary[t.productId] = { productName: t.productName, totalQuantity: 0, totalValue: 0 };
             }
             productOutcomeSummary[t.productId].totalQuantity += t.quantity;
             productOutcomeSummary[t.productId].totalValue += t.quantity * t.price;
-        });
-        
-        // Get current stock after period (stock at end date)
-        // Calculate stock by applying all transactions up to end date
-        let stockAfterPeriod = {};
-        products.forEach(p => {
-            stockAfterPeriod[p.id] = p.quantity;
-        });
-        
-        // Apply all transactions AFTER the period to get stock at the end
-        const afterPeriodTransactions = transactions.filter(t => new Date(t.date) > endDate);
-        afterPeriodTransactions.forEach(t => {
-            if (t.type === 'income') {
-                stockAfterPeriod[t.productId] -= t.quantity;
-            } else {
-                stockAfterPeriod[t.productId] += t.quantity;
-            }
         });
         
         const { jsPDF } = window.jspdf;
@@ -1015,20 +1117,14 @@
         doc.text(`Total entrées: ${formatNumberPDF(totalIncome)} MAD`, 20, y); y += 8;
         doc.text(`Chiffre d'affaire: ${formatNumberPDF(totalOutcome)} MAD`, 20, y); y += 15;
         
-        // NEW TABLE: Summary of outcomes per product
         if (Object.keys(productOutcomeSummary).length > 0) {
             doc.setFontSize(11);
             doc.setTextColor(231, 76, 60);
             doc.text('RÉCAPITULATIF DES SORTIES PAR PRODUIT', 20, y); y += 8;
             doc.autoTable({
                 startY: y,
-                head: [['Produit', 'Quantité totale sortie', 'Valeur totale', 'Stock restant après période']],
-                body: Object.values(productOutcomeSummary).map(item => [
-                    item.productName, 
-                    item.totalQuantity, 
-                    formatNumberPDF(item.totalValue) + ' MAD',
-                    formatNumberPDF(stockAfterPeriod[Object.keys(productOutcomeSummary).find(key => productOutcomeSummary[key].productName === item.productName)] || 0) + ' unités'
-                ]),
+                head: [['Produit', 'Quantité totale sortie', 'Valeur totale']],
+                body: Object.values(productOutcomeSummary).map(item => [item.productName, item.totalQuantity, formatNumberPDF(item.totalValue) + ' MAD']),
                 theme: 'striped',
                 headStyles: { fillColor: [231, 76, 60], textColor: 255 },
                 styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] }
@@ -1036,7 +1132,6 @@
             y = doc.lastAutoTable.finalY + 10;
         }
         
-        // Detailed Entries table
         if (periodIncome.length > 0) {
             doc.setFontSize(11);
             doc.setTextColor(46, 204, 113);
@@ -1052,7 +1147,6 @@
             y = doc.lastAutoTable.finalY + 10;
         }
         
-        // Detailed Outcomes table
         if (periodOutcome.length > 0) {
             doc.setFontSize(11);
             doc.setTextColor(231, 76, 60);
@@ -1075,8 +1169,8 @@
         doc.setTextColor(128, 128, 128);
         doc.text(`Généré le ${new Date().toLocaleString('fr-FR')} - El Fath Service`, 20, 280);
         
-        doc.save(`Rapport_${period}_${new Date().toISOString().split('T')[0]}.pdf`);
-        showFlash('PDF généré avec succès');
+        doc.save(`Rapport_Mouvements_${period}_${new Date().toISOString().split('T')[0]}.pdf`);
+        showFlash('PDF des mouvements généré avec succès', 'success');
     }
 
     // Delete All Data
@@ -1358,6 +1452,8 @@
     window.openEditTransaction = openEditTransaction;
     window.updateEmail = updateEmail;
     window.updatePassword = updatePassword;
+    window.exportStockPDF = exportStockPDF;
+    window.exportStockExcel = exportStockExcel;
 </script>
 </body>
 </html>
