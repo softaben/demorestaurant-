@@ -637,19 +637,10 @@
     window.updateEmail = async () => {
         const newEmail = document.getElementById('newEmail').value.trim();
         const password = document.getElementById('currentPassword').value.trim();
-        
-        if (!newEmail) {
-            showFlash('Veuillez entrer un nouvel email', 'warning');
-            return;
-        }
-        if (!password) {
-            showFlash('Veuillez entrer votre mot de passe actuel', 'warning');
-            return;
-        }
-        
+        if (!newEmail) { showFlash('Veuillez entrer un nouvel email', 'warning'); return; }
+        if (!password) { showFlash('Veuillez entrer votre mot de passe actuel', 'warning'); return; }
         const user = auth.currentUser;
         const credential = firebase.auth.EmailAuthProvider.credential(user.email, password);
-        
         try {
             await user.reauthenticateWithCredential(credential);
             await user.updateEmail(newEmail);
@@ -657,33 +648,18 @@
             document.getElementById('newEmail').value = '';
             document.getElementById('currentPassword').value = '';
             showFlash('Email mis à jour avec succès', 'success');
-        } catch(e) {
-            showFlash('Erreur: ' + e.message, 'danger');
-        }
+        } catch(e) { showFlash('Erreur: ' + e.message, 'danger'); }
     };
 
-    // Update Password
     window.updatePassword = async () => {
         const currentPassword = document.getElementById('currentPassword').value.trim();
         const newPassword = document.getElementById('newPassword').value.trim();
         const confirmPassword = document.getElementById('confirmPassword').value.trim();
-        
-        if (!currentPassword) {
-            showFlash('Veuillez entrer votre mot de passe actuel', 'warning');
-            return;
-        }
-        if (!newPassword || newPassword.length < 6) {
-            showFlash('Le nouveau mot de passe doit avoir au moins 6 caractères', 'warning');
-            return;
-        }
-        if (newPassword !== confirmPassword) {
-            showFlash('Les mots de passe ne correspondent pas', 'warning');
-            return;
-        }
-        
+        if (!currentPassword) { showFlash('Veuillez entrer votre mot de passe actuel', 'warning'); return; }
+        if (!newPassword || newPassword.length < 6) { showFlash('Le nouveau mot de passe doit avoir au moins 6 caractères', 'warning'); return; }
+        if (newPassword !== confirmPassword) { showFlash('Les mots de passe ne correspondent pas', 'warning'); return; }
         const user = auth.currentUser;
         const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
-        
         try {
             await user.reauthenticateWithCredential(credential);
             await user.updatePassword(newPassword);
@@ -691,9 +667,7 @@
             document.getElementById('confirmPassword').value = '';
             document.getElementById('currentPassword').value = '';
             showFlash('Mot de passe mis à jour avec succès', 'success');
-        } catch(e) {
-            showFlash('Erreur: ' + e.message, 'danger');
-        }
+        } catch(e) { showFlash('Erreur: ' + e.message, 'danger'); }
     };
 
     async function loadData() {
@@ -776,10 +750,7 @@
     async function openEditTransaction(transactionId) {
         const transaction = transactions.find(t => t.id === transactionId);
         if (!transaction) return;
-        
         editingTransaction = transaction;
-        const product = products.find(p => p.id === transaction.productId);
-        
         document.getElementById('editTransactionId').value = transaction.id;
         document.getElementById('editProductName').value = transaction.productName;
         document.getElementById('editTransactionType').value = transaction.type;
@@ -787,7 +758,6 @@
         document.getElementById('editClient').value = transaction.client || '';
         document.getElementById('editDate').value = transaction.date.split('T')[0];
         document.getElementById('editPrice').value = transaction.price;
-        
         openModal('editTransactionModal');
     }
 
@@ -801,62 +771,34 @@
 
     document.getElementById('updateTransactionBtn').onclick = async () => {
         if (!editingTransaction) return;
-        
         const newType = document.getElementById('editTransactionType').value;
         const newQuantity = parseInt(document.getElementById('editQuantity').value);
         const newClient = document.getElementById('editClient').value.trim() || (newType === 'income' ? 'Fournisseur' : 'Client');
         const newDate = document.getElementById('editDate').value;
         const newPrice = parseFloat(document.getElementById('editPrice').value);
-        
         if (newQuantity <= 0) { alert('Quantité invalide'); return; }
         if (isNaN(newPrice) || newPrice <= 0) { alert('Prix invalide'); return; }
-        
         const product = products.find(p => p.id === editingTransaction.productId);
         if (!product) { alert('Produit non trouvé'); return; }
-        
-        // Revert old transaction effect
-        if (editingTransaction.type === 'income') {
-            product.quantity -= editingTransaction.quantity;
-        } else {
-            product.quantity += editingTransaction.quantity;
-        }
-        
-        // Apply new transaction effect
-        if (newType === 'income') {
-            product.quantity += newQuantity;
-        } else {
+        if (editingTransaction.type === 'income') { product.quantity -= editingTransaction.quantity; }
+        else { product.quantity += editingTransaction.quantity; }
+        if (newType === 'income') { product.quantity += newQuantity; }
+        else {
             if (product.quantity < newQuantity) {
-                alert(`Stock insuffisant pour ${product.name}. Stock actuel: ${product.quantity}`);
-                if (editingTransaction.type === 'income') {
-                    product.quantity += editingTransaction.quantity;
-                } else {
-                    product.quantity -= editingTransaction.quantity;
-                }
+                alert(`Stock insuffisant. Stock actuel: ${product.quantity}`);
+                if (editingTransaction.type === 'income') { product.quantity += editingTransaction.quantity; }
+                else { product.quantity -= editingTransaction.quantity; }
                 return;
             }
             product.quantity -= newQuantity;
         }
-        
         await db.ref(`users/${currentUserId}/products/${product.id}`).update({ quantity: product.quantity });
-        
-        const updatedTransaction = {
-            ...editingTransaction,
-            type: newType,
-            quantity: newQuantity,
-            price: newPrice,
-            totalValue: newQuantity * newPrice,
-            client: newClient,
-            date: new Date(newDate).toISOString()
-        };
-        
+        const updatedTransaction = { ...editingTransaction, type: newType, quantity: newQuantity, price: newPrice, totalValue: newQuantity * newPrice, client: newClient, date: new Date(newDate).toISOString() };
         await db.ref(`users/${currentUserId}/transactions/${editingTransaction.id}`).set(updatedTransaction);
-        
         const productIndex = products.findIndex(p => p.id === product.id);
         if (productIndex !== -1) products[productIndex] = product;
-        
         const transIndex = transactions.findIndex(t => t.id === editingTransaction.id);
         if (transIndex !== -1) transactions[transIndex] = updatedTransaction;
-        
         closeModal('editTransactionModal');
         showDashboard();
         showFlash('✅ Mouvement modifié avec succès');
@@ -866,22 +808,16 @@
     document.getElementById('deleteTransactionBtn').onclick = async () => {
         if (!editingTransaction) return;
         if (!confirm('⚠️ Supprimer ce mouvement ? Cette action est irréversible.')) return;
-        
         const product = products.find(p => p.id === editingTransaction.productId);
         if (product) {
-            if (editingTransaction.type === 'income') {
-                product.quantity -= editingTransaction.quantity;
-            } else {
-                product.quantity += editingTransaction.quantity;
-            }
+            if (editingTransaction.type === 'income') { product.quantity -= editingTransaction.quantity; }
+            else { product.quantity += editingTransaction.quantity; }
             await db.ref(`users/${currentUserId}/products/${product.id}`).update({ quantity: product.quantity });
             const productIndex = products.findIndex(p => p.id === product.id);
             if (productIndex !== -1) products[productIndex] = product;
         }
-        
         await db.ref(`users/${currentUserId}/transactions/${editingTransaction.id}`).remove();
         transactions = transactions.filter(t => t.id !== editingTransaction.id);
-        
         closeModal('editTransactionModal');
         showDashboard();
         showFlash('✅ Mouvement supprimé avec succès');
@@ -977,7 +913,7 @@
         `);
     }
 
-    // PDF Generation - Modified with black text for totals
+    // PDF Generation - With new summary table by product
     function showPDFMenu() { openModal('pdfMenuModal'); }
 
     function generatePDFReport(period) {
@@ -1020,6 +956,7 @@
                 break;
         }
         
+        // Get transactions in period
         const periodTransactions = transactions.filter(t => {
             const transDate = new Date(t.date);
             return transDate >= startDate && transDate <= endDate;
@@ -1029,6 +966,37 @@
         const periodOutcome = periodTransactions.filter(t => t.type === 'outcome');
         const totalIncome = periodIncome.reduce((s,t) => s + (t.quantity * t.price), 0);
         const totalOutcome = periodOutcome.reduce((s,t) => s + (t.quantity * t.price), 0);
+        
+        // Calculate total outcome per product
+        const productOutcomeSummary = {};
+        periodOutcome.forEach(t => {
+            if (!productOutcomeSummary[t.productId]) {
+                productOutcomeSummary[t.productId] = {
+                    productName: t.productName,
+                    totalQuantity: 0,
+                    totalValue: 0
+                };
+            }
+            productOutcomeSummary[t.productId].totalQuantity += t.quantity;
+            productOutcomeSummary[t.productId].totalValue += t.quantity * t.price;
+        });
+        
+        // Get current stock after period (stock at end date)
+        // Calculate stock by applying all transactions up to end date
+        let stockAfterPeriod = {};
+        products.forEach(p => {
+            stockAfterPeriod[p.id] = p.quantity;
+        });
+        
+        // Apply all transactions AFTER the period to get stock at the end
+        const afterPeriodTransactions = transactions.filter(t => new Date(t.date) > endDate);
+        afterPeriodTransactions.forEach(t => {
+            if (t.type === 'income') {
+                stockAfterPeriod[t.productId] -= t.quantity;
+            } else {
+                stockAfterPeriod[t.productId] += t.quantity;
+            }
+        });
         
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -1047,17 +1015,36 @@
         doc.text(`Total entrées: ${formatNumberPDF(totalIncome)} MAD`, 20, y); y += 8;
         doc.text(`Chiffre d'affaire: ${formatNumberPDF(totalOutcome)} MAD`, 20, y); y += 15;
         
+        // NEW TABLE: Summary of outcomes per product
+        if (Object.keys(productOutcomeSummary).length > 0) {
+            doc.setFontSize(11);
+            doc.setTextColor(231, 76, 60);
+            doc.text('RÉCAPITULATIF DES SORTIES PAR PRODUIT', 20, y); y += 8;
+            doc.autoTable({
+                startY: y,
+                head: [['Produit', 'Quantité totale sortie', 'Valeur totale', 'Stock restant après période']],
+                body: Object.values(productOutcomeSummary).map(item => [
+                    item.productName, 
+                    item.totalQuantity, 
+                    formatNumberPDF(item.totalValue) + ' MAD',
+                    formatNumberPDF(stockAfterPeriod[Object.keys(productOutcomeSummary).find(key => productOutcomeSummary[key].productName === item.productName)] || 0) + ' unités'
+                ]),
+                theme: 'striped',
+                headStyles: { fillColor: [231, 76, 60], textColor: 255 },
+                styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] }
+            });
+            y = doc.lastAutoTable.finalY + 10;
+        }
+        
+        // Detailed Entries table
         if (periodIncome.length > 0) {
             doc.setFontSize(11);
             doc.setTextColor(46, 204, 113);
-            doc.text('ENTRÉES', 20, y); y += 8;
+            doc.text('DÉTAIL DES ENTRÉES', 20, y); y += 8;
             doc.autoTable({
                 startY: y,
-                head: [['Produit', 'Qté', 'Prix', 'Total', 'Fournisseur', 'Date', 'Stock restant']],
-                body: periodIncome.map(t => {
-                    const stockAfter = (products.find(p => p.id === t.productId)?.quantity || 0);
-                    return [t.productName, t.quantity, formatNumberPDF(t.price), formatNumberPDF(t.quantity * t.price), t.client || '-', formatDateFrench(t.date), formatNumberPDF(stockAfter)];
-                }),
+                head: [['Produit', 'Qté', 'Prix unitaire', 'Total', 'Fournisseur', 'Date']],
+                body: periodIncome.map(t => [t.productName, t.quantity, formatNumberPDF(t.price), formatNumberPDF(t.quantity * t.price), t.client || '-', formatDateFrench(t.date)]),
                 theme: 'striped',
                 headStyles: { fillColor: [46, 204, 113], textColor: 255 },
                 styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] }
@@ -1065,17 +1052,15 @@
             y = doc.lastAutoTable.finalY + 10;
         }
         
+        // Detailed Outcomes table
         if (periodOutcome.length > 0) {
             doc.setFontSize(11);
             doc.setTextColor(231, 76, 60);
-            doc.text('SORTIES', 20, y); y += 8;
+            doc.text('DÉTAIL DES SORTIES', 20, y); y += 8;
             doc.autoTable({
                 startY: y,
-                head: [['Produit', 'Qté', 'Prix', 'Total', 'Client', 'Date', 'Stock restant']],
-                body: periodOutcome.map(t => {
-                    const stockAfter = (products.find(p => p.id === t.productId)?.quantity || 0);
-                    return [t.productName, t.quantity, formatNumberPDF(t.price), formatNumberPDF(t.quantity * t.price), t.client || '-', formatDateFrench(t.date), formatNumberPDF(stockAfter)];
-                }),
+                head: [['Produit', 'Qté', 'Prix unitaire', 'Total', 'Client', 'Date']],
+                body: periodOutcome.map(t => [t.productName, t.quantity, formatNumberPDF(t.price), formatNumberPDF(t.quantity * t.price), t.client || '-', formatDateFrench(t.date)]),
                 theme: 'striped',
                 headStyles: { fillColor: [231, 76, 60], textColor: 255 },
                 styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] }
@@ -1100,7 +1085,6 @@
     async function deleteAllData() {
         closeModal('deleteAllModal');
         if (!confirm('⚠️ ATTENTION ! Cette action supprimera TOUS les produits et TOUS les mouvements. Êtes-vous ABSOLUMENT sûr ?')) return;
-        
         try {
             showFlash('Suppression en cours...', 'warning');
             await db.ref(`users/${currentUserId}/products`).remove();
@@ -1131,9 +1115,7 @@
         const barcode = document.getElementById('prodBarcode').value.trim() || `PROD-${Date.now()}`;
         const price = parseFloat(document.getElementById('prodPrice').value) || 0;
         const quantity = parseInt(document.getElementById('prodQty').value) || 0;
-        
         const product = { id: id || Date.now().toString(), name: name, barcode: barcode, price: price, quantity: quantity, minStock: 5, createdAt: id ? (products.find(p=>p.id===id)?.createdAt || new Date().toISOString()) : new Date().toISOString() };
-        
         if (id) { const idx = products.findIndex(p => p.id === id); if (idx !== -1) products[idx] = product; } 
         else { products.unshift(product); }
         await db.ref(`users/${currentUserId}/products/${product.id}`).set(product);
@@ -1294,27 +1276,13 @@
         const quantity = parseInt(document.getElementById('quantity').value);
         if (quantity <= 0) { alert('Quantité invalide'); return; }
         if (currentActionType === 'outcome' && quantity > selectedProduct.quantity) { alert(`Stock insuffisant`); return; }
-        
         const client = document.getElementById('clientName').value.trim() || (currentActionType === 'income' ? 'Fournisseur' : 'Client');
-        
         if (currentActionType === 'income') { selectedProduct.quantity += quantity; } 
         else { selectedProduct.quantity -= quantity; }
         await db.ref(`users/${currentUserId}/products/${selectedProduct.id}`).update({ quantity: selectedProduct.quantity });
-        
-        const transaction = { 
-            id: Date.now().toString(), 
-            productId: selectedProduct.id, 
-            productName: selectedProduct.name, 
-            type: currentActionType, 
-            quantity: quantity, 
-            price: selectedProduct.price, 
-            totalValue: quantity * selectedProduct.price, 
-            client: client, 
-            date: new Date().toISOString() 
-        };
+        const transaction = { id: Date.now().toString(), productId: selectedProduct.id, productName: selectedProduct.name, type: currentActionType, quantity: quantity, price: selectedProduct.price, totalValue: quantity * selectedProduct.price, client: client, date: new Date().toISOString() };
         await db.ref(`users/${currentUserId}/transactions/${transaction.id}`).set(transaction);
         transactions.unshift(transaction);
-        
         closeModal('quantityModal');
         showDashboard();
         showFlash(`✅ ${currentActionType === 'income' ? 'Entrée' : 'Sortie'} de ${quantity} ${selectedProduct.name}`);
