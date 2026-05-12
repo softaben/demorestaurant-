@@ -20,12 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #4a9eff;
             --success: #2ecc71;
@@ -38,316 +33,150 @@
             --text-light: #a0a0b0;
             --border: #2d2d44;
         }
-
         body {
             font-family: 'Cairo', system-ui;
             background: var(--bg);
             color: var(--text);
             overflow-x: hidden;
         }
-
         .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            position: fixed; top: 0; left: 0; right: 0;
             background: linear-gradient(135deg, #1a1a2e, #16213e);
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            padding: 15px; display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         .logo { font-size: 18px; font-weight: bold; }
         .logo i { margin-left: 8px; color: var(--primary); }
         .btn-icon {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
+            background: rgba(255,255,255,0.1); border: none; width: 40px; height: 40px;
+            border-radius: 50%; color: white; font-size: 18px; cursor: pointer;
         }
-
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--card);
-            display: flex;
-            padding: 10px 0;
-            border-top: 1px solid var(--border);
-            z-index: 100;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--card); display: flex; padding: 10px 0;
+            border-top: 1px solid var(--border); z-index: 100;
         }
         .nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
-            color: var(--text-light);
-            cursor: pointer;
+            flex: 1; text-align: center; padding: 8px;
+            color: var(--text-light); cursor: pointer;
         }
         .nav-item.active { color: var(--primary); }
         .nav-item i { font-size: 22px; display: block; margin-bottom: 4px; }
         .nav-item span { font-size: 11px; }
-
-        .main {
-            padding: 75px 16px 20px;
-        }
-
+        .main { padding: 75px 16px 20px; }
         .stats {
-            display: grid;
-            grid-template-columns: repeat(2,1fr);
-            gap: 12px;
-            margin-bottom: 20px;
+            display: grid; grid-template-columns: repeat(2,1fr);
+            gap: 12px; margin-bottom: 20px;
         }
         .stat-card {
-            background: var(--card);
-            padding: 15px;
-            border-radius: 16px;
-            text-align: center;
-            border: 1px solid var(--border);
+            background: var(--card); padding: 15px; border-radius: 16px;
+            text-align: center; border: 1px solid var(--border);
         }
         .stat-number { font-size: 22px; font-weight: bold; color: var(--primary); }
         .stat-label { font-size: 11px; color: var(--text-light); margin-top: 5px; }
-
         .actions {
-            display: grid;
-            grid-template-columns: repeat(3,1fr);
-            gap: 8px;
-            margin-bottom: 20px;
+            display: grid; grid-template-columns: repeat(3,1fr);
+            gap: 8px; margin-bottom: 20px;
         }
         .action-btn {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 8px 5px;
-            text-align: center;
-            cursor: pointer;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 8px 5px; text-align: center; cursor: pointer;
         }
         .action-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 5px;
-            font-size: 16px;
+            width: 40px; height: 40px; background: var(--primary);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; margin: 0 auto 5px; font-size: 16px;
         }
         .action-btn.income .action-icon { background: var(--success); }
         .action-btn.outcome .action-icon { background: var(--danger); }
         .action-btn.scanner .action-icon { background: var(--warning); }
         .action-btn span { font-size: 11px; }
-
         .export-actions {
-            display: grid;
-            grid-template-columns: repeat(3,1fr);
-            gap: 8px;
-            margin-bottom: 20px;
+            display: grid; grid-template-columns: repeat(3,1fr);
+            gap: 8px; margin-bottom: 20px;
         }
         .export-btn {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 8px 5px;
-            text-align: center;
-            cursor: pointer;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 8px 5px; text-align: center; cursor: pointer;
         }
         .export-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 5px;
-            font-size: 16px;
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 5px; font-size: 16px;
         }
         .export-btn.pdf .export-icon { background: var(--danger); }
         .export-btn.excel .export-icon { background: var(--success); }
         .export-btn.report .export-icon { background: var(--info); }
-
         .list {
-            background: var(--card);
-            border-radius: 16px;
-            overflow: hidden;
+            background: var(--card); border-radius: 16px; overflow: hidden;
         }
         .list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; border-bottom: 1px solid var(--border);
         }
         .item-name { font-weight: 500; font-size: 14px; }
         .item-details { font-size: 11px; color: var(--text-light); margin-top: 4px; }
         .item-actions { display: flex; gap: 6px; flex-wrap: wrap; }
         .small-btn {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            color: white;
-            cursor: pointer;
-            font-size: 12px;
+            background: rgba(255,255,255,0.1); border: none; width: 30px; height: 30px;
+            border-radius: 50%; color: white; cursor: pointer; font-size: 12px;
         }
         .small-btn.income { background: var(--success); }
         .small-btn.outcome { background: var(--danger); }
         .small-btn.barcode { background: var(--warning); }
         .small-btn.edit { background: var(--info); }
-
         .form-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-light); }
         input, select {
-            width: 100%;
-            padding: 10px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--text);
-            font-size: 14px;
+            width: 100%; padding: 10px; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 10px;
+            color: var(--text); font-size: 14px;
         }
         button {
-            background: var(--primary);
-            border: none;
-            padding: 10px;
-            border-radius: 25px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            font-size: 14px;
+            background: var(--primary); border: none; padding: 10px;
+            border-radius: 25px; color: white; font-weight: bold;
+            cursor: pointer; width: 100%; font-size: 14px;
         }
         button.danger { background: var(--danger); }
         button.success { background: var(--success); }
         button.warning { background: var(--warning); }
-
         .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 300;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9); display: none;
+            align-items: center; justify-content: center; z-index: 300;
         }
         .modal.active { display: flex; }
         .modal-content {
-            background: var(--card);
-            width: 90%;
-            max-width: 350px;
-            border-radius: 20px;
-            padding: 18px;
+            background: var(--card); width: 90%; max-width: 350px;
+            border-radius: 20px; padding: 18px;
         }
         .modal-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 16px;
-            font-weight: bold;
+            display: flex; justify-content: space-between;
+            margin-bottom: 12px; font-size: 16px; font-weight: bold;
         }
-
         .quantity-selector {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 12px 0;
+            display: flex; align-items: center; gap: 12px; margin: 12px 0;
         }
         .qty-btn {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: var(--primary);
-            font-size: 22px;
-            margin: 0;
+            width: 45px; height: 45px; border-radius: 50%;
+            background: var(--primary); font-size: 22px; margin: 0;
         }
-        .qty-input {
-            text-align: center;
-            font-size: 22px;
-            font-weight: bold;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 25px;
-            color: var(--text-light);
-            font-size: 13px;
-        }
-
-        .barcode-preview {
-            text-align: center;
-            padding: 10px;
-            background: var(--bg);
-            border-radius: 10px;
-            margin-top: 10px;
-        }
-        
-        .pdf-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .pdf-btn {
-            background: var(--primary);
-            padding: 8px;
-            font-size: 12px;
-        }
-
-        .settings-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
+        .qty-input { text-align: center; font-size: 22px; font-weight: bold; }
+        .empty { text-align: center; padding: 25px; color: var(--text-light); font-size: 13px; }
+        .barcode-preview { text-align: center; padding: 10px; background: var(--bg); border-radius: 10px; margin-top: 10px; }
+        .pdf-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .pdf-btn { background: var(--primary); padding: 8px; font-size: 12px; }
+        .settings-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
         .hidden { display: none; }
-        
         .scanner-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #000;
-            z-index: 200;
-            display: none;
-            flex-direction: column;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #000; z-index: 200; display: none; flex-direction: column;
         }
         .scanner-overlay.active { display: flex; }
-        .scanner-header {
-            background: #1a1a2e;
-            padding: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        #reader {
-            width: 100%;
-            flex: 1;
-            min-height: 400px;
-        }
-        .scanner-controls {
-            padding: 12px;
-            background: #1a1a2e;
-            display: flex;
-            gap: 10px;
-        }
-        .scanner-controls button {
-            width: auto;
-            padding: 8px 15px;
-            font-size: 12px;
-            margin: 0;
-        }
+        .scanner-header { background: #1a1a2e; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+        #reader { width: 100%; flex: 1; min-height: 400px; }
+        .scanner-controls { padding: 12px; background: #1a1a2e; display: flex; gap: 10px; }
+        .scanner-controls button { width: auto; padding: 8px 15px; font-size: 12px; margin: 0; }
     </style>
 </head>
 <body>
@@ -377,18 +206,9 @@
         </div>
 
         <div class="export-actions">
-            <div class="export-btn pdf" onclick="exportStockPDF()">
-                <div class="export-icon"><i class="fas fa-file-pdf"></i></div>
-                <span>Stock PDF</span>
-            </div>
-            <div class="export-btn excel" onclick="exportStockExcel()">
-                <div class="export-icon"><i class="fas fa-file-excel"></i></div>
-                <span>Stock Excel</span>
-            </div>
-            <div class="export-btn report" onclick="showPDFMenu()">
-                <div class="export-icon"><i class="fas fa-chart-line"></i></div>
-                <span>Rapport Mouvement</span>
-            </div>
+            <div class="export-btn pdf" onclick="exportStockPDF()"><div class="export-icon"><i class="fas fa-file-pdf"></i></div><span>Stock PDF</span></div>
+            <div class="export-btn excel" onclick="exportStockExcel()"><div class="export-icon"><i class="fas fa-file-excel"></i></div><span>Stock Excel</span></div>
+            <div class="export-btn report" onclick="showPDFMenu()"><div class="export-icon"><i class="fas fa-chart-line"></i></div><span>Rapport Mouvement</span></div>
         </div>
 
         <div class="list">
@@ -415,26 +235,11 @@
         <div class="list">
             <div style="padding: 12px; border-bottom: 1px solid var(--border); font-weight: bold;">⚙️ Paramètres</div>
             <div class="settings-buttons" style="padding: 12px;">
-                <div class="form-group">
-                    <label>Email actuel</label>
-                    <input type="email" id="currentEmail" readonly style="background: var(--card);">
-                </div>
-                <div class="form-group">
-                    <label>Nouvel email</label>
-                    <input type="email" id="newEmail" placeholder="Nouvel email">
-                </div>
-                <div class="form-group">
-                    <label>Mot de passe actuel</label>
-                    <input type="password" id="currentPassword" placeholder="Mot de passe actuel">
-                </div>
-                <div class="form-group">
-                    <label>Nouveau mot de passe</label>
-                    <input type="password" id="newPassword" placeholder="Nouveau mot de passe (min 6 caractères)">
-                </div>
-                <div class="form-group">
-                    <label>Confirmer nouveau mot de passe</label>
-                    <input type="password" id="confirmPassword" placeholder="Confirmer le mot de passe">
-                </div>
+                <div class="form-group"><label>Email actuel</label><input type="email" id="currentEmail" readonly style="background: var(--card);"></div>
+                <div class="form-group"><label>Nouvel email</label><input type="email" id="newEmail" placeholder="Nouvel email"></div>
+                <div class="form-group"><label>Mot de passe actuel</label><input type="password" id="currentPassword" placeholder="Mot de passe actuel"></div>
+                <div class="form-group"><label>Nouveau mot de passe</label><input type="password" id="newPassword" placeholder="Nouveau mot de passe (min 6 caractères)"></div>
+                <div class="form-group"><label>Confirmer nouveau mot de passe</label><input type="password" id="confirmPassword" placeholder="Confirmer le mot de passe"></div>
                 <button onclick="updateEmail()" style="background: var(--info);">✉️ Changer l'email</button>
                 <button onclick="updatePassword()" style="background: var(--warning);">🔑 Changer le mot de passe</button>
                 <button class="warning" onclick="showDeleteAllConfirm()" style="background: var(--danger); margin-top: 15px;">🗑️ Supprimer toutes les données</button>
@@ -452,10 +257,7 @@
 
 <!-- Scanner -->
 <div id="scannerOverlay" class="scanner-overlay">
-    <div class="scanner-header">
-        <span><i class="fas fa-camera"></i> Scanner code-barres</span>
-        <button class="btn-icon" onclick="closeScanner()" style="background: rgba(255,255,255,0.2);">✕</button>
-    </div>
+    <div class="scanner-header"><span><i class="fas fa-camera"></i> Scanner code-barres</span><button class="btn-icon" onclick="closeScanner()" style="background: rgba(255,255,255,0.2);">✕</button></div>
     <div id="reader"></div>
     <div class="scanner-controls">
         <button onclick="switchCamera()" style="background: #2d2d44;">🔄 Changer caméra</button>
@@ -466,17 +268,11 @@
 <!-- Product Modal -->
 <div id="productModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">
-            <span id="modalTitle">➕ Nouveau produit</span>
-            <button class="btn-icon" onclick="closeModal('productModal')" style="background: none;">✕</button>
-        </div>
+        <div class="modal-header"><span id="modalTitle">➕ Nouveau produit</span><button class="btn-icon" onclick="closeModal('productModal')" style="background: none;">✕</button></div>
         <input type="hidden" id="productId">
         <div class="form-group"><label>Nom du produit *</label><input type="text" id="prodName" placeholder="Ex: iPhone 14"></div>
         <div class="form-group"><label>Code-barres</label><input type="text" id="prodBarcode" placeholder="Code-barres" oninput="generateBarcodePreview()"></div>
-        <div id="barcodePreview" class="barcode-preview" style="display: none;">
-            <svg id="barcodeSvg" width="180" height="45"></svg>
-            <button type="button" onclick="downloadBarcode()" style="margin-top: 8px; background: var(--warning); font-size: 12px; padding: 6px;">📥 Télécharger</button>
-        </div>
+        <div id="barcodePreview" class="barcode-preview" style="display: none;"><svg id="barcodeSvg" width="180" height="45"></svg><button type="button" onclick="downloadBarcode()" style="margin-top: 8px; background: var(--warning); font-size: 12px; padding: 6px;">📥 Télécharger</button></div>
         <div class="form-group"><label>Prix (MAD)</label><input type="number" id="prodPrice" placeholder="0.00"></div>
         <div class="form-group"><label>Quantité initiale</label><input type="number" id="prodQty" placeholder="0" value="0"></div>
         <button id="saveProductBtn">💾 Enregistrer</button>
@@ -486,25 +282,11 @@
 <!-- Edit Transaction Modal -->
 <div id="editTransactionModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">
-            <span>✏️ Modifier le mouvement</span>
-            <button class="btn-icon" onclick="closeModal('editTransactionModal')" style="background: none;">✕</button>
-        </div>
+        <div class="modal-header"><span>✏️ Modifier le mouvement</span><button class="btn-icon" onclick="closeModal('editTransactionModal')" style="background: none;">✕</button></div>
         <input type="hidden" id="editTransactionId">
         <div class="form-group"><label>Produit</label><input type="text" id="editProductName" readonly style="background: var(--card);"></div>
-        <div class="form-group"><label>Type</label>
-            <select id="editTransactionType" style="width:100%; padding:10px; border-radius:10px; background:var(--bg); border:1px solid var(--border); color:white;">
-                <option value="income">➕ Entrée</option>
-                <option value="outcome">➖ Sortie</option>
-            </select>
-        </div>
-        <div class="form-group"><label>Quantité</label>
-            <div class="quantity-selector">
-                <button class="qty-btn" onclick="changeEditQty(-1)">-</button>
-                <input type="number" id="editQuantity" class="qty-input" value="1" min="1" style="flex:1; text-align:center;">
-                <button class="qty-btn" onclick="changeEditQty(1)">+</button>
-            </div>
-        </div>
+        <div class="form-group"><label>Type</label><select id="editTransactionType" style="width:100%; padding:10px; border-radius:10px; background:var(--bg); border:1px solid var(--border); color:white;"><option value="income">➕ Entrée</option><option value="outcome">➖ Sortie</option></select></div>
+        <div class="form-group"><label>Quantité</label><div class="quantity-selector"><button class="qty-btn" onclick="changeEditQty(-1)">-</button><input type="number" id="editQuantity" class="qty-input" value="1" min="1" style="flex:1; text-align:center;"><button class="qty-btn" onclick="changeEditQty(1)">+</button></div></div>
         <div class="form-group"><label>Client / Fournisseur</label><input type="text" id="editClient" placeholder="Nom"></div>
         <div class="form-group"><label>Date</label><input type="date" id="editDate"></div>
         <div class="form-group"><label>Prix unitaire (MAD)</label><input type="number" id="editPrice" step="0.01"></div>
@@ -513,7 +295,7 @@
     </div>
 </div>
 
-<!-- PDF Menu Modal (Mouvements) -->
+<!-- PDF Menu Modal -->
 <div id="pdfMenuModal" class="modal">
     <div class="modal-content">
         <div class="modal-header"><span>📄 Rapport des mouvements</span><button class="btn-icon" onclick="closeModal('pdfMenuModal')" style="background: none;">✕</button></div>
@@ -528,11 +310,8 @@
 
 <!-- Manual Barcode Modal -->
 <div id="manualBarcodeModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><span>🔢 Saisie manuelle</span><button class="btn-icon" onclick="closeModal('manualBarcodeModal')" style="background: none;">✕</button></div>
-        <input type="text" id="manualBarcode" placeholder="Code-barres" style="margin-bottom: 12px;">
-        <button onclick="searchManualBarcode()">Rechercher</button>
-    </div>
+    <div class="modal-content"><div class="modal-header"><span>🔢 Saisie manuelle</span><button class="btn-icon" onclick="closeModal('manualBarcodeModal')" style="background: none;">✕</button></div>
+    <input type="text" id="manualBarcode" placeholder="Code-barres" style="margin-bottom: 12px;"><button onclick="searchManualBarcode()">Rechercher</button></div>
 </div>
 
 <!-- Quantity Modal -->
@@ -540,13 +319,7 @@
     <div class="modal-content">
         <div class="modal-header"><span id="qtyModalTitle">➕ Entrée</span><button class="btn-icon" onclick="closeModal('quantityModal')" style="background: none;">✕</button></div>
         <div id="selectedProductInfo" style="margin-bottom: 12px; padding: 8px; background: var(--bg); border-radius: 10px; font-size: 13px;"></div>
-        <div class="form-group"><label>Quantité</label>
-            <div class="quantity-selector">
-                <button class="qty-btn" onclick="changeQty(-1)">-</button>
-                <input type="number" id="quantity" class="qty-input" value="1" min="1" style="flex:1; text-align:center;">
-                <button class="qty-btn" onclick="changeQty(1)">+</button>
-            </div>
-        </div>
+        <div class="form-group"><label>Quantité</label><div class="quantity-selector"><button class="qty-btn" onclick="changeQty(-1)">-</button><input type="number" id="quantity" class="qty-input" value="1" min="1" style="flex:1; text-align:center;"><button class="qty-btn" onclick="changeQty(1)">+</button></div></div>
         <div class="form-group"><label>Client / Fournisseur</label><input type="text" id="clientName" placeholder="Nom"></div>
         <button id="confirmQtyBtn" class="success">✅ Confirmer</button>
     </div>
@@ -565,14 +338,8 @@
 <div id="deleteAllModal" class="modal">
     <div class="modal-content">
         <div class="modal-header"><span>⚠️ Supprimer toutes les données</span><button class="btn-icon" onclick="closeModal('deleteAllModal')" style="background: none;">✕</button></div>
-        <div style="text-align: center; margin-bottom: 15px;">
-            <p>⚠️ Cette action est irréversible !</p>
-            <p style="font-size: 12px; margin-top: 10px;">Tous les produits et mouvements seront supprimés.</p>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="closeModal('deleteAllModal')" style="background: #2d2d44;">Annuler</button>
-            <button onclick="deleteAllData()" style="background: var(--danger);">🗑️ Confirmer la suppression</button>
-        </div>
+        <div style="text-align: center; margin-bottom: 15px;"><p>⚠️ Cette action est irréversible !</p><p style="font-size: 12px; margin-top: 10px;">Tous les produits et mouvements seront supprimés.</p></div>
+        <div style="display: flex; gap: 10px;"><button onclick="closeModal('deleteAllModal')" style="background: #2d2d44;">Annuler</button><button onclick="deleteAllData()" style="background: var(--danger);">🗑️ Confirmer la suppression</button></div>
     </div>
 </div>
 
@@ -582,10 +349,7 @@
         <div class="modal-header"><span>🏷️ Code-barres</span><button class="btn-icon" onclick="closeModal('barcodeViewModal')" style="background: none;">✕</button></div>
         <div id="barcodeViewContainer" style="padding: 10px;"><svg id="viewBarcodeSvg" width="220" height="60"></svg></div>
         <div id="barcodeProductName" style="margin: 8px 0; font-weight: bold;"></div>
-        <div style="display: flex; gap: 8px;">
-            <button onclick="downloadCurrentBarcode()" style="background: var(--warning);">📥 Télécharger</button>
-            <button onclick="printCurrentBarcode()" style="background: var(--primary);">🖨️ Imprimer</button>
-        </div>
+        <div style="display: flex; gap: 8px;"><button onclick="downloadCurrentBarcode()" style="background: var(--warning);">📥 Télécharger</button><button onclick="printCurrentBarcode()" style="background: var(--primary);">🖨️ Imprimer</button></div>
     </div>
 </div>
 
@@ -615,7 +379,6 @@
     db = firebase.database();
     auth = firebase.auth();
 
-    // Format number for PDF: 100000,00
     function formatNumberPDF(num) {
         if (num === undefined || num === null) return '0,00';
         let number = parseFloat(num);
@@ -639,24 +402,14 @@
             currentUserId = user.uid;
             document.getElementById('currentEmail').value = user.email || '';
             loadData();
-        } else {
-            showLogin();
-        }
+        } else { showLogin(); }
     });
 
     function showLogin() {
         const div = document.createElement('div');
         div.id = 'loginModal';
         div.className = 'modal active';
-        div.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header" style="justify-content: center;">🔐 Connexion</div>
-                <input type="email" id="loginEmail" placeholder="Email" style="width:100%; margin-bottom:10px; padding:10px; border-radius:10px; background:var(--bg); border:1px solid var(--border); color:white;">
-                <input type="password" id="loginPass" placeholder="Mot de passe" style="width:100%; margin-bottom:15px; padding:10px; border-radius:10px; background:var(--bg); border:1px solid var(--border); color:white;">
-                <button onclick="doLogin()">Se connecter</button>
-                <div id="loginError" style="color:red; margin-top:8px; text-align:center; font-size:12px;"></div>
-            </div>
-        `;
+        div.innerHTML = `<div class="modal-content"><div class="modal-header" style="justify-content: center;">🔐 Connexion</div><input type="email" id="loginEmail" placeholder="Email" style="width:100%; margin-bottom:10px; padding:10px; border-radius:10px; background:var(--bg); border:1px solid var(--border); color:white;"><input type="password" id="loginPass" placeholder="Mot de passe" style="width:100%; margin-bottom:15px; padding:10px; border-radius:10px; background:var(--bg); border:1px solid var(--border); color:white;"><button onclick="doLogin()">Se connecter</button><div id="loginError" style="color:red; margin-top:8px; text-align:center; font-size:12px;"></div></div>`;
         document.body.appendChild(div);
     }
 
@@ -666,15 +419,12 @@
         try {
             await auth.signInWithEmailAndPassword(email, pass);
             document.getElementById('loginModal')?.remove();
-        } catch(e) {
-            document.getElementById('loginError').innerText = e.message;
-        }
+        } catch(e) { document.getElementById('loginError').innerText = e.message; }
     };
 
     window.logout = () => auth.signOut();
     document.getElementById('logoutBtn').onclick = () => logout();
 
-    // Update Email
     window.updateEmail = async () => {
         const newEmail = document.getElementById('newEmail').value.trim();
         const password = document.getElementById('currentPassword').value.trim();
@@ -738,12 +488,7 @@
         document.getElementById('todayOut').innerHTML = formatMoney(todayOut);
 
         const recent = [...transactions].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
-        document.getElementById('recentList').innerHTML = recent.map(t => `
-            <div class="list-item">
-                <div><div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div><div class="item-details">${t.quantity} x ${formatMoney(t.price)}</div></div>
-                <div style="font-size:11px;">${t.client || '-'}<br>${formatDateFrench(t.date)}</div>
-            </div>
-        `).join('') || '<div class="empty">Aucun mouvement</div>';
+        document.getElementById('recentList').innerHTML = recent.map(t => `<div class="list-item"><div><div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div><div class="item-details">${t.quantity} x ${formatMoney(t.price)}</div></div><div style="font-size:11px;">${t.client || '-'}<br>${formatDateFrench(t.date)}</div></div>`).join('') || '<div class="empty">Aucun mouvement</div>';
 
         renderProductsList();
         renderTransactionsList();
@@ -754,17 +499,7 @@
         let filtered = products.filter(p => p.name.toLowerCase().includes(search) || (p.barcode || '').toLowerCase().includes(search));
         const container = document.getElementById('productsList');
         if (!filtered.length) { container.innerHTML = '<div class="empty">Aucun produit</div>'; return; }
-        container.innerHTML = filtered.map(p => `
-            <div class="list-item">
-                <div><div class="item-name">${p.name}</div><div class="item-details">💰 ${formatMoney(p.price)} | 📦 ${p.quantity}</div></div>
-                <div class="item-actions">
-                    <button class="small-btn income" onclick="openProductMovement('${p.id}', 'income')"><i class="fas fa-arrow-down"></i></button>
-                    <button class="small-btn outcome" onclick="openProductMovement('${p.id}', 'outcome')"><i class="fas fa-arrow-up"></i></button>
-                    <button class="small-btn barcode" onclick="showBarcode('${p.id}')"><i class="fas fa-barcode"></i></button>
-                    <button class="small-btn edit" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
-                </div>
-            </div>
-        `).join('');
+        container.innerHTML = filtered.map(p => `<div class="list-item"><div><div class="item-name">${p.name}</div><div class="item-details">💰 ${formatMoney(p.price)} | 📦 ${p.quantity}</div></div><div class="item-actions"><button class="small-btn income" onclick="openProductMovement('${p.id}', 'income')"><i class="fas fa-arrow-down"></i></button><button class="small-btn outcome" onclick="openProductMovement('${p.id}', 'outcome')"><i class="fas fa-arrow-up"></i></button><button class="small-btn barcode" onclick="showBarcode('${p.id}')"><i class="fas fa-barcode"></i></button><button class="small-btn edit" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button></div></div>`).join('');
     }
 
     function renderTransactionsList() {
@@ -773,30 +508,14 @@
         filtered = filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
         const container = document.getElementById('transactionsList');
         if (!filtered.length) { container.innerHTML = '<div class="empty">Aucun mouvement</div>'; return; }
-        container.innerHTML = filtered.map(t => `
-            <div class="list-item">
-                <div>
-                    <div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div>
-                    <div class="item-details">${t.quantity} x ${formatMoney(t.price)} = ${formatMoney(t.totalValue)}</div>
-                    <div class="item-details">🏢 ${t.client || '-'} | 📅 ${formatDateFrench(t.date)}</div>
-                </div>
-                <div class="item-actions">
-                    <button class="small-btn edit" onclick="openEditTransaction('${t.id}')"><i class="fas fa-edit"></i></button>
-                </div>
-            </div>
-        `).join('');
+        container.innerHTML = filtered.map(t => `<div class="list-item"><div><div class="item-name">${t.type === 'income' ? '➕' : '➖'} ${t.productName}</div><div class="item-details">${t.quantity} x ${formatMoney(t.price)} = ${formatMoney(t.totalValue)}</div><div class="item-details">🏢 ${t.client || '-'} | 📅 ${formatDateFrench(t.date)}</div></div><div class="item-actions"><button class="small-btn edit" onclick="openEditTransaction('${t.id}')"><i class="fas fa-edit"></i></button></div></div>`).join('');
     }
 
-    // STOCK PDF EXPORT - New Function
+    // STOCK PDF EXPORT
     window.exportStockPDF = () => {
-        if (products.length === 0) {
-            showFlash('Aucun produit à exporter', 'warning');
-            return;
-        }
-        
+        if (products.length === 0) { showFlash('Aucun produit à exporter', 'warning'); return; }
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
-        
         doc.setFont('helvetica');
         doc.setFontSize(16);
         doc.setTextColor(74, 158, 255);
@@ -804,68 +523,28 @@
         doc.setFontSize(14);
         doc.setTextColor(0, 0, 0);
         doc.text('RAPPORT DU STOCK', 20, 35);
-        
         const totalValue = products.reduce((s, p) => s + (p.quantity * p.price), 0);
-        
         let y = 50;
         doc.setFontSize(11);
         doc.setTextColor(0, 0, 0);
         doc.text(`Nombre total de produits: ${products.length}`, 20, y); y += 8;
         doc.text(`Valeur totale du stock: ${formatNumberPDF(totalValue)} MAD`, 20, y); y += 15;
-        
-        const stockData = products.map(p => [
-            p.name,
-            p.barcode || '-',
-            p.category || '-',
-            p.quantity,
-            formatNumberPDF(p.price) + ' MAD',
-            formatNumberPDF(p.quantity * p.price) + ' MAD'
-        ]);
-        
-        doc.autoTable({
-            startY: y,
-            head: [['Produit', 'Code-barres', 'Catégorie', 'Quantité', 'Prix unitaire', 'Valeur totale']],
-            body: stockData,
-            theme: 'striped',
-            headStyles: { fillColor: [74, 158, 255], textColor: 255 },
-            styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] }
-        });
-        
-        doc.setFontSize(8);
-        doc.setTextColor(128, 128, 128);
+        const stockData = products.map(p => [p.name, p.barcode || '-', p.category || '-', p.quantity, formatNumberPDF(p.price) + ' MAD', formatNumberPDF(p.quantity * p.price) + ' MAD']);
+        doc.autoTable({ startY: y, head: [['Produit', 'Code-barres', 'Catégorie', 'Stock restant', 'Prix unitaire', 'Valeur totale']], body: stockData, theme: 'striped', headStyles: { fillColor: [74, 158, 255], textColor: 255 }, styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] } });
+        doc.setFontSize(8); doc.setTextColor(128, 128, 128);
         doc.text(`Généré le ${new Date().toLocaleString('fr-FR')} - El Fath Service`, 20, 280);
-        
         doc.save(`Rapport_Stock_${new Date().toISOString().split('T')[0]}.pdf`);
         showFlash('Rapport PDF du stock généré avec succès', 'success');
     };
 
-    // STOCK EXCEL EXPORT - New Function
+    // STOCK EXCEL EXPORT
     window.exportStockExcel = () => {
-        if (products.length === 0) {
-            showFlash('Aucun produit à exporter', 'warning');
-            return;
-        }
-        
-        const wsData = [
-            ['Produit', 'Code-barres', 'Catégorie', 'Quantité', 'Prix unitaire (MAD)', 'Valeur totale (MAD)', 'Date de création']
-        ];
-        
-        products.forEach(p => {
-            wsData.push([
-                p.name,
-                p.barcode || '',
-                p.category || '',
-                p.quantity,
-                formatNumberPDF(p.price),
-                formatNumberPDF(p.quantity * p.price),
-                formatDateFrench(p.createdAt)
-            ]);
-        });
-        
+        if (products.length === 0) { showFlash('Aucun produit à exporter', 'warning'); return; }
+        const wsData = [['Produit', 'Code-barres', 'Catégorie', 'Stock restant', 'Prix unitaire (MAD)', 'Valeur totale (MAD)', 'Date de création']];
+        products.forEach(p => { wsData.push([p.name, p.barcode || '', p.category || '', p.quantity, formatNumberPDF(p.price), formatNumberPDF(p.quantity * p.price), formatDateFrench(p.createdAt)]); });
         const ws = XLSX.utils.aoa_to_sheet(wsData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Stock');
-        
         XLSX.writeFile(wb, `Stock_${new Date().toISOString().split('T')[0]}.xlsx`);
         showFlash('Rapport Excel du stock généré avec succès', 'success');
     };
@@ -904,8 +583,10 @@
         if (isNaN(newPrice) || newPrice <= 0) { alert('Prix invalide'); return; }
         const product = products.find(p => p.id === editingTransaction.productId);
         if (!product) { alert('Produit non trouvé'); return; }
+        // Revert old effect
         if (editingTransaction.type === 'income') { product.quantity -= editingTransaction.quantity; }
         else { product.quantity += editingTransaction.quantity; }
+        // Apply new effect
         if (newType === 'income') { product.quantity += newQuantity; }
         else {
             if (product.quantity < newQuantity) {
@@ -954,10 +635,7 @@
         const previewDiv = document.getElementById('barcodePreview');
         if (barcode) {
             previewDiv.style.display = 'block';
-            try {
-                JsBarcode("#barcodeSvg", barcode, { format: "CODE128", width: 1.5, height: 35, displayValue: true, fontSize: 10 });
-                currentBarcodeValue = barcode;
-            } catch(e) { console.log(e); }
+            try { JsBarcode("#barcodeSvg", barcode, { format: "CODE128", width: 1.5, height: 35, displayValue: true, fontSize: 10 }); currentBarcodeValue = barcode; } catch(e) {}
         } else { previewDiv.style.display = 'none'; }
     }
 
@@ -992,10 +670,7 @@
         if (product && product.barcode) {
             currentBarcodeValue = product.barcode;
             document.getElementById('barcodeProductName').innerHTML = product.name;
-            try {
-                JsBarcode("#viewBarcodeSvg", product.barcode, { format: "CODE128", width: 2, height: 50, displayValue: true, fontSize: 12 });
-                openModal('barcodeViewModal');
-            } catch(e) { alert('Erreur génération code-barres'); }
+            try { JsBarcode("#viewBarcodeSvg", product.barcode, { format: "CODE128", width: 2, height: 50, displayValue: true, fontSize: 12 }); openModal('barcodeViewModal'); } catch(e) { alert('Erreur génération code-barres'); }
         } else { alert('Ce produit n\'a pas de code-barres'); }
     }
 
@@ -1026,18 +701,10 @@
     function printCurrentBarcode() {
         const productName = document.getElementById('barcodeProductName').innerHTML;
         const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <html><head><title>Code-barres</title>
-            <style>body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; } .card { text-align: center; padding: 20px; }</style>
-            </head><body>
-            <div class="card"><svg id="barcode"></svg><div style="margin-top:15px; font-size:16px; font-weight:bold;">${productName}</div></div>
-            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
-            <script>JsBarcode("#barcode", "${currentBarcodeValue}", { format: "CODE128", width: 2, height: 80 }); setTimeout(() => { window.print(); window.close(); }, 500);<\/script>
-            </body></html>
-        `);
+        printWindow.document.write(`<html><head><title>Code-barres</title><style>body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; } .card { text-align: center; padding: 20px; }</style></head><body><div class="card"><svg id="barcode"></svg><div style="margin-top:15px; font-size:16px; font-weight:bold;">${productName}</div></div><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script><script>JsBarcode("#barcode", "${currentBarcodeValue}", { format: "CODE128", width: 2, height: 80 }); setTimeout(() => { window.print(); window.close(); }, 500);<\/script></body></html>`);
     }
 
-    // PDF Generation for Movements
+    // PDF Generation for Movements - CORRECTED Stock Calculation
     function showPDFMenu() { openModal('pdfMenuModal'); }
 
     function generatePDFReport(period) {
@@ -1080,6 +747,7 @@
                 break;
         }
         
+        // Get transactions in period
         const periodTransactions = transactions.filter(t => {
             const transDate = new Date(t.date);
             return transDate >= startDate && transDate <= endDate;
@@ -1094,7 +762,7 @@
         const productOutcomeSummary = {};
         periodOutcome.forEach(t => {
             if (!productOutcomeSummary[t.productId]) {
-                productOutcomeSummary[t.productId] = { productName: t.productName, totalQuantity: 0, totalValue: 0 };
+                productOutcomeSummary[t.productId] = { productName: t.productName, totalQuantity: 0, totalValue: 0, productId: t.productId };
             }
             productOutcomeSummary[t.productId].totalQuantity += t.quantity;
             productOutcomeSummary[t.productId].totalValue += t.quantity * t.price;
@@ -1117,14 +785,23 @@
         doc.text(`Total entrées: ${formatNumberPDF(totalIncome)} MAD`, 20, y); y += 8;
         doc.text(`Chiffre d'affaire: ${formatNumberPDF(totalOutcome)} MAD`, 20, y); y += 15;
         
+        // Summary table with Stock Restant (current stock after period)
         if (Object.keys(productOutcomeSummary).length > 0) {
             doc.setFontSize(11);
             doc.setTextColor(231, 76, 60);
             doc.text('RÉCAPITULATIF DES SORTIES PAR PRODUIT', 20, y); y += 8;
+            
+            const summaryData = Object.values(productOutcomeSummary).map(item => {
+                // Find current stock of the product
+                const product = products.find(p => p.id === item.productId);
+                const currentStock = product ? product.quantity : 0;
+                return [item.productName, item.totalQuantity, formatNumberPDF(item.totalValue) + ' MAD', currentStock];
+            });
+            
             doc.autoTable({
                 startY: y,
-                head: [['Produit', 'Quantité totale sortie', 'Valeur totale']],
-                body: Object.values(productOutcomeSummary).map(item => [item.productName, item.totalQuantity, formatNumberPDF(item.totalValue) + ' MAD']),
+                head: [['Produit', 'Quantité totale sortie', 'Valeur totale', 'Stock restant']],
+                body: summaryData,
                 theme: 'striped',
                 headStyles: { fillColor: [231, 76, 60], textColor: 255 },
                 styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] }
@@ -1132,14 +809,49 @@
             y = doc.lastAutoTable.finalY + 10;
         }
         
+        // Detailed Entries table with correct Stock Restant after each entry
         if (periodIncome.length > 0) {
             doc.setFontSize(11);
             doc.setTextColor(46, 204, 113);
             doc.text('DÉTAIL DES ENTRÉES', 20, y); y += 8;
+            
+            // Sort period income by date
+            const sortedIncome = [...periodIncome].sort((a,b) => new Date(a.date) - new Date(b.date));
+            
+            // For each product, calculate stock before the first transaction in period
+            const stockBeforePeriod = {};
+            products.forEach(p => { stockBeforePeriod[p.id] = p.quantity; });
+            
+            // Subtract all period transactions to get stock before period
+            periodTransactions.forEach(t => {
+                if (t.type === 'income') {
+                    stockBeforePeriod[t.productId] -= t.quantity;
+                } else {
+                    stockBeforePeriod[t.productId] += t.quantity;
+                }
+            });
+            
+            // Now calculate stock after each income
+            const incomeData = [];
+            const tempStock = { ...stockBeforePeriod };
+            
+            for (const t of sortedIncome) {
+                tempStock[t.productId] += t.quantity;
+                incomeData.push([
+                    t.productName,
+                    t.quantity,
+                    formatNumberPDF(t.price),
+                    formatNumberPDF(t.quantity * t.price),
+                    t.client || '-',
+                    formatDateFrench(t.date),
+                    tempStock[t.productId]
+                ]);
+            }
+            
             doc.autoTable({
                 startY: y,
-                head: [['Produit', 'Qté', 'Prix unitaire', 'Total', 'Fournisseur', 'Date']],
-                body: periodIncome.map(t => [t.productName, t.quantity, formatNumberPDF(t.price), formatNumberPDF(t.quantity * t.price), t.client || '-', formatDateFrench(t.date)]),
+                head: [['Produit', 'Qté', 'Prix unitaire', 'Total', 'Fournisseur', 'Date', 'Stock restant']],
+                body: incomeData,
                 theme: 'striped',
                 headStyles: { fillColor: [46, 204, 113], textColor: 255 },
                 styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] }
@@ -1147,14 +859,48 @@
             y = doc.lastAutoTable.finalY + 10;
         }
         
+        // Detailed Outcomes table with correct Stock Restant after each outcome
         if (periodOutcome.length > 0) {
             doc.setFontSize(11);
             doc.setTextColor(231, 76, 60);
             doc.text('DÉTAIL DES SORTIES', 20, y); y += 8;
+            
+            // Sort period outcomes by date
+            const sortedOutcome = [...periodOutcome].sort((a,b) => new Date(a.date) - new Date(b.date));
+            
+            // Calculate stock before period (same method as above)
+            const stockBeforePeriod = {};
+            products.forEach(p => { stockBeforePeriod[p.id] = p.quantity; });
+            
+            periodTransactions.forEach(t => {
+                if (t.type === 'income') {
+                    stockBeforePeriod[t.productId] -= t.quantity;
+                } else {
+                    stockBeforePeriod[t.productId] += t.quantity;
+                }
+            });
+            
+            // Calculate stock after each outcome
+            const outcomeData = [];
+            const tempStock = { ...stockBeforePeriod };
+            
+            for (const t of sortedOutcome) {
+                tempStock[t.productId] -= t.quantity;
+                outcomeData.push([
+                    t.productName,
+                    t.quantity,
+                    formatNumberPDF(t.price),
+                    formatNumberPDF(t.quantity * t.price),
+                    t.client || '-',
+                    formatDateFrench(t.date),
+                    tempStock[t.productId]
+                ]);
+            }
+            
             doc.autoTable({
                 startY: y,
-                head: [['Produit', 'Qté', 'Prix unitaire', 'Total', 'Client', 'Date']],
-                body: periodOutcome.map(t => [t.productName, t.quantity, formatNumberPDF(t.price), formatNumberPDF(t.quantity * t.price), t.client || '-', formatDateFrench(t.date)]),
+                head: [['Produit', 'Qté', 'Prix unitaire', 'Total', 'Client', 'Date', 'Stock restant']],
+                body: outcomeData,
                 theme: 'striped',
                 headStyles: { fillColor: [231, 76, 60], textColor: 255 },
                 styles: { fontSize: 9, cellPadding: 3, textColor: [0,0,0] }
@@ -1285,17 +1031,7 @@
         const div = document.createElement('div');
         div.className = 'modal active';
         div.id = 'movementChoiceModal';
-        div.innerHTML = `
-            <div class="modal-content" style="max-width: 280px;">
-                <div class="modal-header" style="justify-content: center;">${product.name}</div>
-                <div style="text-align:center; margin-bottom:12px;">💰 ${formatMoney(product.price)} | 📦 Stock: ${product.quantity}</div>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="selectMovement('income')" style="background:var(--success); margin:0;">➕ Entrée</button>
-                    <button onclick="selectMovement('outcome')" style="background:var(--danger); margin:0;">➖ Sortie</button>
-                </div>
-                <button onclick="closeModal('movementChoiceModal')" style="margin-top:10px; background:transparent; border:1px solid var(--border);">Annuler</button>
-            </div>
-        `;
+        div.innerHTML = `<div class="modal-content" style="max-width: 280px;"><div class="modal-header" style="justify-content: center;">${product.name}</div><div style="text-align:center; margin-bottom:12px;">💰 ${formatMoney(product.price)} | 📦 Stock: ${product.quantity}</div><div style="display: flex; gap: 10px;"><button onclick="selectMovement('income')" style="background:var(--success); margin:0;">➕ Entrée</button><button onclick="selectMovement('outcome')" style="background:var(--danger); margin:0;">➖ Sortie</button></div><button onclick="closeModal('movementChoiceModal')" style="margin-top:10px; background:transparent; border:1px solid var(--border);">Annuler</button></div>`;
         document.body.appendChild(div);
         window.selectMovement = (type) => {
             currentActionType = type;
@@ -1319,12 +1055,7 @@
         let filtered = products.filter(p => p.name.toLowerCase().includes(search) || (p.barcode || '').toLowerCase().includes(search));
         const container = document.getElementById('productListContainer');
         if (!filtered.length) { container.innerHTML = '<div class="empty">Aucun produit</div>'; return; }
-        container.innerHTML = filtered.map(p => `
-            <div class="result-item" onclick="selectProductForMovement('${p.id}')" style="padding:10px; border-bottom:1px solid var(--border); cursor:pointer;">
-                <div><strong>${p.name}</strong><br><small>💰 ${formatMoney(p.price)} | 📦 ${p.quantity}</small></div>
-                <i class="fas fa-chevron-left"></i>
-            </div>
-        `).join('');
+        container.innerHTML = filtered.map(p => `<div class="result-item" onclick="selectProductForMovement('${p.id}')" style="padding:10px; border-bottom:1px solid var(--border); cursor:pointer;"><div><strong>${p.name}</strong><br><small>💰 ${formatMoney(p.price)} | 📦 ${p.quantity}</small></div><i class="fas fa-chevron-left"></i></div>`).join('');
     }
 
     window.selectProductForMovement = (productId) => {
